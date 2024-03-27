@@ -18,7 +18,7 @@ public class ChatRepository {
         return chatList;
     }
     public Optional<Chat> findById(Integer id) {
-        return chatList.stream().filter(chat -> chat.id().equals(id)).findFirst();
+        return chatList.stream().filter(chat -> chat.getId().equals(id)).findFirst();
     }
 
 

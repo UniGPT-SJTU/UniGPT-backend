@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/chat")
+@RequestMapping("/api/chat")
 public class ChatController {
     private final ChatRepository repository;
 
