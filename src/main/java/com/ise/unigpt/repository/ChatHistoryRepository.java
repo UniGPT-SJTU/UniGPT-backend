@@ -13,11 +13,12 @@ public class ChatHistoryRepository {
     private final List<ChatHistory> chatHistoryList = new ArrayList<>();
     public ChatHistoryRepository() {
     }
+
     public List<ChatHistory> findAll() {
         return chatHistoryList;
     }
     public Optional<ChatHistory> findById(Integer id) {
-        return chatHistoryList.stream().filter(chatHistory -> chatHistory.id().equals(id)).findFirst();
+        return chatHistoryList.stream().filter(chatHistory -> chatHistory.getId().equals(id)).findFirst();
     }
 
 
