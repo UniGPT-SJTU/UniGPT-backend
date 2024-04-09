@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: unigpt
+  datasource:
+    url: http://139.224.10.154
+    username: root
+    password: Kiwi339bleavescreeper
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
