@@ -11,16 +11,16 @@ public class Chat {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    int id;
+    private int id;
 
     @ManyToOne
     @JsonIncludeProperties({"id"})
     @JoinColumn(name = "history_id")
-    History history;
+    private History history;
 
     @Column(name = "type")
-    ChatType type;
+    private ChatType type;
 
     @Column(name = "content")
-    String content;
+    private String content;
 }
