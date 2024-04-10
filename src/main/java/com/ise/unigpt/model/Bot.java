@@ -10,34 +10,34 @@ public class Bot {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    int id;
+    private int id;
 
     @Column(name = "name")
-    String name;
+    private String name;
 
     @Column(name = "avatar")
-    String avatar;
+    private String avatar;
 
     @Column(name = "description")
-    String description;
+    private String description;
 
     @Column(name = "base_model_api")
-    String baseModelAPI;
+    private String baseModelAPI;
 
     @Column(name = "is_published")
-    boolean isPublished;
+    private boolean isPublished;
 
     @Column(name = "detail")
-    String detail;
+    private String detail;
 
 //    @Column(name = "photos")
 //    String[] photos;
 
     @Column(name = "is_prompted")
-    boolean isPrompted;
+    private boolean isPrompted;
 
     @Column(name = "prompt_content")
-    String promptContent;
+    private String promptContent;
 
 //    @Column(name = "prompt_list")
 //    String[] promptList;

@@ -1,6 +1,6 @@
 package com.ise.unigpt.controller;
 
-import com.ise.unigpt.dto.CreateChatDTO;
+import com.ise.unigpt.dto.CreateChatRequestDTO;
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
@@ -26,7 +26,7 @@ public class HistoryController {
     }
 
     @PostMapping("/{id}/chats")
-    public void createChat(@PathVariable Integer id, @RequestBody CreateChatDTO dto) {
+    public void createChat(@PathVariable Integer id, @RequestBody CreateChatRequestDTO dto) {
         service.createChat(id, dto.getContent(), ChatType.USER);
     }
 }
