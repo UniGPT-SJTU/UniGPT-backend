@@ -1,41 +1,26 @@
 package com.ise.unigpt.model;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
 /**
  * 对话记录类
  */
+@Data
+@Entity
+@Table(name = "chats")
 public class Chat {
-    private final Integer id;
-    private final Integer historyId;
-    private final ChatType type;
-    private final String content;
 
-    /**
-     * Chat constructor
-     * @param id
-     * @param historyId 对话记录所在历史的id
-     * @param type 对话记录的类型(USER or BOT)
-     * @param content 对话记录的内容
-     */
-    public Chat(Integer id, Integer historyId, ChatType type, String content) {
-        this.id = id;
-        this.historyId = historyId;
-        this.type = type;
-        this.content = content;
-    }
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    int id;
 
-    public Integer getId() {
-        return id;
-    }
+    @Column(name = "history_id")
+    int historyId;
 
-    public Integer getHistoryId() {
-        return historyId;
-    }
+    @Column(name = "type")
+    ChatType type;
 
-    public String getContent() {
-        return content;
-    }
-
-    public ChatType getType() {
-        return type;
-    }
+    @Column(name = "content")
+    String content;
 }
