@@ -2,9 +2,9 @@ spring:
   application:
     name: unigpt
   datasource:
-    url: http://139.224.10.154
-    username: root
-    password: Kiwi339bleavescreeper
+    url: jdbc:mysql://139.224.10.154:3306/unigpt
+    username: creeper
+    password: creeper
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

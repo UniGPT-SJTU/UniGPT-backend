@@ -1,0 +1,37 @@
+package com.ise.unigpt.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.List;
+
+
+
+@Data
+@Entity
+@Table(name = "history")
+public class History {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private int id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIncludeProperties({"id", "name", "avatar"})
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "bot_id")
+    @JsonIgnore
+    private Bot bot;
+
+    @Column(name = "title")
+    private String title;
+
+    @OneToMany
+    @JoinColumn(name = "chats")
+    private List<Chat> chats;
+}

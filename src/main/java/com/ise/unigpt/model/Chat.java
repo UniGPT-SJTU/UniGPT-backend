@@ -1,22 +1,22 @@
 package com.ise.unigpt.model;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
-/**
- * 对话记录类
- */
 @Data
 @Entity
-@Table(name = "chats")
+@Table(name = "chat")
 public class Chat {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     int id;
 
-    @Column(name = "history_id")
-    int historyId;
+    @ManyToOne
+    @JsonIncludeProperties({"id"})
+    @JoinColumn(name = "history_id")
+    History history;
 
     @Column(name = "type")
     ChatType type;
