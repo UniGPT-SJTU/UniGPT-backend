@@ -14,6 +14,7 @@ import java.util.List;
 
 @Service
 public class ChatHistoryService {
+
     @Autowired
     private final ChatRepository chatRepository;
 
@@ -25,8 +26,14 @@ public class ChatHistoryService {
         this.historyRepository = historyRepository;
     }
 
+    /**
+     * @brief 在指定历史中加入对话
+     * @param historyId 历史id
+     * @param content 对话的内容
+     * @param type 对话的种类(USER, BOT)
+     */
     @Transactional
-    public void addNewChatToHistory(Integer historyId, String content, ChatType type) {
+    public void createChat(Integer historyId, String content, ChatType type) {
         Chat chat = new Chat();
         History history = historyRepository.findById(historyId).orElseThrow();
 
@@ -43,7 +50,7 @@ public class ChatHistoryService {
      * @param historyId 历史id
      * @return 对话的列表
      */
-    public List<Chat> getAllChats(Integer historyId) {
+    public List<Chat> getChats(Integer historyId) {
         History history = historyRepository.findById(historyId).orElseThrow();
         return history.getChats();
     }

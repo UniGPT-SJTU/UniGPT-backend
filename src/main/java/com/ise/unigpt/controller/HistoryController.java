@@ -21,12 +21,12 @@ public class HistoryController {
 
 
     @GetMapping("/{id}/chats")
-    public List<Chat> findAllChats(@PathVariable Integer id) {
-        return service.getAllChats(id);
+    public List<Chat> getAllChats(@PathVariable Integer id) {
+        return service.getChats(id);
     }
 
     @PostMapping("/{id}/chats")
     public void createChat(@PathVariable Integer id, @RequestBody CreateChatDTO dto) {
-        service.addNewChatToHistory(id, dto.getContent(), ChatType.USER);
+        service.createChat(id, dto.getContent(), ChatType.USER);
     }
 }
