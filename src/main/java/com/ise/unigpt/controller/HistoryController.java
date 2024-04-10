@@ -1,13 +1,11 @@
 package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.CreateChatRequestDTO;
-import com.ise.unigpt.model.Chat;
+import com.ise.unigpt.dto.GetChatsResponseDTO;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/histories")
@@ -21,7 +19,7 @@ public class HistoryController {
 
 
     @GetMapping("/{id}/chats")
-    public List<Chat> getAllChats(@PathVariable Integer id) {
+    public GetChatsResponseDTO getChats(@PathVariable Integer id) {
         return service.getChats(id);
     }
 
