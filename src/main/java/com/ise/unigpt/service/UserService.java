@@ -19,8 +19,13 @@ public class UserService {
         this.repository = repository;
     }
 
-    public Optional<User> findUserById(Integer id) {
-        return repository.findById(id);
+    public User findUserById(Integer id) {
+        Optional<User> optionalUser = repository.findById(id);
+        if(optionalUser.isEmpty()) {
+            throw new NoSuchElementException("User not found for ID: " + id);
+        }
+
+        return optionalUser.get();
     }
 
     /**
