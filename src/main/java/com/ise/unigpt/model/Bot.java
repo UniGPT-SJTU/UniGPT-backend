@@ -3,6 +3,8 @@ package com.ise.unigpt.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "bot")
@@ -36,8 +38,9 @@ public class Bot {
     @Column(name = "detail")
     private String detail;
 
-//    @Column(name = "photos")
-//    String[] photos;
+    @OneToMany
+    @JoinColumn(name = "photos")
+    private List<Photo> photos;
 
     @Column(name = "is_prompted")
     private boolean isPrompted;
@@ -53,4 +56,15 @@ public class Bot {
 
 //    @Column(name = "prompt_list")
 //    String[] promptList;
+
+    @ManyToMany(mappedBy = "likeBots")
+    private List<User> likeUsers;
+
+    @ManyToMany(mappedBy = "starBots")
+    private List<User> starUsers;
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private User creator;
+
 }

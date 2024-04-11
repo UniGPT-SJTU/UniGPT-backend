@@ -37,7 +37,7 @@ public class BotController {
     }
 
     @PostMapping("/")
-    public void createBot(@RequestBody CreateBotRequestDTO dto) {
+    public void createBot(@RequestBody CreateBotRequestDTO dto){
         service.createBot(dto);
     }
 
@@ -47,23 +47,23 @@ public class BotController {
     }
 
     @PutMapping("/{id}/likes")
-    public void likeBot(@PathVariable Integer id) {
-        service.likeBot(id);
+    public void likeBot(@PathVariable Integer id, @CookieValue("token") String token){
+        service.likeBot(id, token);
     }
 
     @DeleteMapping("/{id}/likes")
-    public void dislikeBot(@PathVariable Integer id) {
-        service.dislikeBot(id);
+    public void dislikeBot(@PathVariable Integer id, @CookieValue("token") String token) {
+        service.dislikeBot(id, token);
     }
 
     @PutMapping("/{id}/stars")
-    public void starBot(@PathVariable Integer id) {
-        service.starBot(id);
+    public void starBot(@PathVariable Integer id, @CookieValue("token") String token){
+        service.starBot(id, token);
     }
 
     @DeleteMapping("/{id}/stars")
-    public void unstarBot(@PathVariable Integer id) {
-        service.unstarBot(id);
+    public void unstarBot(@PathVariable Integer id, @CookieValue("token") String token){
+        service.unstarBot(id, token);
     }
 
 

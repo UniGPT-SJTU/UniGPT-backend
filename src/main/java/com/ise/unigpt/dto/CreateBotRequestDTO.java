@@ -1,5 +1,6 @@
 package com.ise.unigpt.dto;
 
+import com.ise.unigpt.model.Photo;
 import lombok.Data;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class CreateBotRequestDTO {
     private String baseModelAPI;
     private boolean isPublished;
     private String detail;
-    private List<String> photos;
+    private List<Photo> photos;
     private boolean isPrompted;
     private String promptContent;
     private List<String> promptList;

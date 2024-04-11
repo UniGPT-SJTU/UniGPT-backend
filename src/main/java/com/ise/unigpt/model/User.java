@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "user")
@@ -27,5 +29,27 @@ public class User {
 
     @Column(name = "description")
     private String description;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_like_bot",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "bot_id")
+    )
+    private List<Bot> likeBots;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_star_bot",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "bot_id")
+    )
+    private List<Bot> starBots;
+
+    @OneToMany
+    @JoinColumn(name = "create_bots")
+    private List<Bot> createBots;
+
+
 
 }
