@@ -2,7 +2,7 @@ package com.ise.unigpt.service;
 
 
 import com.ise.unigpt.dto.ChatDTO;
-import com.ise.unigpt.dto.GetChatsResponseDTO;
+import com.ise.unigpt.dto.GetChatsOkResponseDTO;
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.ChatType;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ChatHistoryService {
@@ -55,13 +56,14 @@ public class ChatHistoryService {
      * @param historyId 历史id
      * @return 对话的列表
      */
-    public GetChatsResponseDTO getChats(Integer historyId) {
-        History history = historyRepository.findById(historyId).orElseThrow();
+    public GetChatsOkResponseDTO getChats(Integer historyId) {
+        History history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
         List<Chat> chats = history.getChats();
         List<ChatDTO> chatDTOs = new ArrayList<>();
         for(Chat chat : chats) {
             chatDTOs.add(new ChatDTO(chat));
         }
-        return new GetChatsResponseDTO(chatDTOs);
+        return new GetChatsOkResponseDTO(chatDTOs);
     }
 }

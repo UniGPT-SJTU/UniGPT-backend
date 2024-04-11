@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -30,10 +31,10 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UpdateUserInfoResponseDTO> updateUserProfile(@PathVariable Integer id,
                                                                        @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO) {
-        boolean updateUserProfileResult = service.updateUserInfo(id, updateUserInfoRequestDTO);
-        if(updateUserProfileResult) {
+        try {
+            service.updateUserInfo(id, updateUserInfoRequestDTO);
             return ResponseEntity.ok(new UpdateUserInfoResponseDTO(true));
-        } else {
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new UpdateUserInfoResponseDTO(false));
         }

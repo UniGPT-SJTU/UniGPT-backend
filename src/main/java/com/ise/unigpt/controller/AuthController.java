@@ -1,8 +1,8 @@
 package com.ise.unigpt.controller;
 
-import com.ise.unigpt.dto.LoginFailureResponseDTO;
+import com.ise.unigpt.dto.LoginErrorResponseDTO;
 import com.ise.unigpt.dto.LoginRequestDTO;
-import com.ise.unigpt.dto.LoginSuccessResponseDTO;
+import com.ise.unigpt.dto.LoginOkResponseDTO;
 import com.ise.unigpt.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+import javax.naming.AuthenticationException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,18 +28,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequestDTO loginDTO, HttpServletResponse response) {
-        Optional<String> optionalToken = service.login(loginDTO.getUsername(), loginDTO.getPassword());
-        if(optionalToken.isPresent()) {
-
-            Cookie cookie = new Cookie("token", optionalToken.get());
+        try {
+            // 更新Cookies
+            String token = service.login(loginDTO.getUsername(), loginDTO.getPassword());
+            Cookie cookie = new Cookie("token", token);
             cookie.setMaxAge(24 * 60 * 60);
             cookie.setPath("/");
             response.addCookie(cookie);
 
-            return ResponseEntity.ok(new LoginSuccessResponseDTO(true, optionalToken.get()));
-        } else {
+            return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
+        } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginFailureResponseDTO(false, "Login fails!"));
+                .body(new LoginErrorResponseDTO(false, e.getMessage()));
         }
     }
 }
