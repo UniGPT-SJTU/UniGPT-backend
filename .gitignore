@@ -33,3 +33,4 @@ build/
 .vscode/
 
 doc
+src/main/resources/application.yml

@@ -15,6 +15,12 @@ public class Bot {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "author_id")
+    private int authorId;
+
+    @Column(name = "author")
+    private String author;
+
     @Column(name = "avatar")
     private String avatar;
 
@@ -38,6 +44,12 @@ public class Bot {
 
     @Column(name = "prompt_content")
     private String promptContent;
+
+    @Column(name = "like_number")
+    private int likeNumber;
+
+    @Column(name = "star_number")
+    private int starNumber;
 
 //    @Column(name = "prompt_list")
 //    String[] promptList;
