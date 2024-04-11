@@ -20,12 +20,10 @@ public class History {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIncludeProperties({"id", "name", "avatar"})
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "bot_id")
-    @JsonIgnore
     private Bot bot;
 
     @Column(name = "title")

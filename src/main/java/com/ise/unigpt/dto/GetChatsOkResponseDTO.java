@@ -5,11 +5,11 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class GetChatsResponseDTO {
+public class GetChatsOkResponseDTO {
     private Integer total;
     private List<ChatDTO> chats;
 
-    public GetChatsResponseDTO(List<ChatDTO> chats) {
+    public GetChatsOkResponseDTO(List<ChatDTO> chats) {
         this.total = chats.size();
         this.chats = chats;
     }

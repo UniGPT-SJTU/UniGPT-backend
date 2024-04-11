@@ -19,7 +19,6 @@ public class Chat {
     @ManyToOne
     @JsonIncludeProperties({"id"})
     @JoinColumn(name = "history_id")
-    @JsonIgnore
     private History history;
 
     @Column(name = "type")

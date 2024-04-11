@@ -1,11 +1,15 @@
 package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.CreateChatRequestDTO;
-import com.ise.unigpt.dto.GetChatsResponseDTO;
+import com.ise.unigpt.dto.GetChatsErrorResponseDTO;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/histories")
@@ -19,8 +23,13 @@ public class HistoryController {
 
 
     @GetMapping("/{id}/chats")
-    public GetChatsResponseDTO getChats(@PathVariable Integer id) {
-        return service.getChats(id);
+    public ResponseEntity<Object> getChats(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(service.getChats(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GetChatsErrorResponseDTO(e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/chats")

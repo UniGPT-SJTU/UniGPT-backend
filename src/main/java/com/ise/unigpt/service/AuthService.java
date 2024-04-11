@@ -7,6 +7,7 @@ import com.ise.unigpt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
 import java.util.Optional;
 
 @Service
@@ -22,22 +23,22 @@ public class AuthService {
         this.userRepository = userRepository;
     }
 
-
     /**
      * @brief 用户登录函数
      * @param username 用户名
      * @param password 密码
-     * @return 若登录成功，返回更新后的token，若登录失败，返回空。
+     * @return 若登录成功，返回更新后的token
+     * @throws AuthenticationException 登录异常
      */
-    public Optional<String> login(String username, String password) {
+    public String login(String username, String password) throws AuthenticationException {
         Optional<User> optionalUser = userRepository.findByName(username);
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
             if(user.getPassword().equals(password)) {
-                return Optional.of(generateAuthToken(user));
+                return generateAuthToken(user);
             }
         }
-        return Optional.empty();
+        throw new AuthenticationException("Invalid username or password");
     }
 
 
