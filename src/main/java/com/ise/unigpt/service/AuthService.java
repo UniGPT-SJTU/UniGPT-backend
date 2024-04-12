@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -64,9 +65,10 @@ public class AuthService {
         return auth.getToken();
     }
 
-    public Optional<User> getUserByToken(String token) {
-        Optional<Auth> optionalAuth = authRepository.findByToken(token);
-        return optionalAuth.map(Auth::getUser);
+    public User getUserByToken(String token) {
+        Auth auth = authRepository.findByToken(token)
+                .orElseThrow(() -> new NoSuchElementException("Invalid token"));
 
+        return auth.getUser();
     }
 }

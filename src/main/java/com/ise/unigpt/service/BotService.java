@@ -1,8 +1,6 @@
 package com.ise.unigpt.service;
 
-import com.ise.unigpt.dto.BotBriefInfoDTO;
-import com.ise.unigpt.dto.BotDetailInfoDTO;
-import com.ise.unigpt.dto.CreateBotRequestDTO;
+import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.BotRepository;
@@ -10,7 +8,10 @@ import com.ise.unigpt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class BotService {
@@ -29,49 +30,86 @@ public class BotService {
         this.authService = authService;
     }
 
-    public Optional<BotBriefInfoDTO> getBotBriefInfo(Integer id) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return Optional.empty();
+    public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
+
+        List<BotBriefInfoDTO> bots;
+
+        if (order != null) {
+            if (order.equals("latest")) {
+                if (q != null && !q.isEmpty()) {
+                    bots = botRepository.findAllByOrderByIdDesc().stream()
+                            .filter(bot -> bot.getName().contains(q))
+                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                            .collect(Collectors.toList());
+                } else {
+                    bots = botRepository.findAllByOrderByIdDesc().stream()
+                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                            .collect(Collectors.toList());
+                }
+            } else if (order.equals("star")) {
+                if (q != null && !q.isEmpty()) {
+                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
+                            .filter(bot -> bot.getName().contains(q))
+                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                            .collect(Collectors.toList());
+                } else {
+                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
+                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                            .collect(Collectors.toList());
+                }
+            } else {
+                return new GetBotsOkResponseDTO(new ArrayList<>());
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid order parameter");
         }
 
-        Bot bot = optionalBot.get();
-        BotBriefInfoDTO botBriefInfoDTO = new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription());
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, bots.size());
 
-        return Optional.of(botBriefInfoDTO);
+        return new GetBotsOkResponseDTO(bots.subList(start, end));
     }
 
-    public Optional<BotDetailInfoDTO> getBotDetailInfo(Integer id) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return Optional.empty();
-        }
+    public BotBriefInfoDTO getBotBriefInfo(Integer id) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        Bot bot = optionalBot.get();
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription());
+    }
+
+    public BotDetailInfoDTO getBotDetailInfo(Integer id) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
         if (!bot.isPublished()) {
-            return Optional.empty();
+            throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
-        BotDetailInfoDTO botDetailInfoDTO = new BotDetailInfoDTO(bot);
-
-        return Optional.of(botDetailInfoDTO);
+        return new BotDetailInfoDTO(bot);
     }
 
-    public void createBot(CreateBotRequestDTO dto) {
-        Bot bot = new Bot();
-        setBotFromDTO(bot, dto);
-        botRepository.save(bot);
-    }
-
-    public void updateBot(Integer id, CreateBotRequestDTO dto) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return;
+    public ResponseDTO createBot(CreateBotRequestDTO dto) {
+        try {
+            Bot bot = new Bot();
+            setBotFromDTO(bot, dto);
+            botRepository.save(bot);
+            return new ResponseDTO(true, "Bot created successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
+    }
 
-        Bot bot = optionalBot.get();
-        setBotFromDTO(bot, dto);
-        botRepository.save(bot);
+    public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            setBotFromDTO(bot, dto);
+            botRepository.save(bot);
+            return new ResponseDTO(true, "Bot updated successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
     }
 
     public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
@@ -86,93 +124,83 @@ public class BotService {
         bot.setPromptContent(dto.getPromptContent());
     }
 
-    public void likeBot(Integer id, String token) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return;
+    public ResponseDTO likeBot(Integer id, String token) {
+        try{
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            bot.setLikeNumber(bot.getLikeNumber() + 1);
+
+            User user = authService.getUserByToken(token);
+
+            bot.getLikeUsers().add(user);
+            user.getLikeBots().add(bot);
+
+            botRepository.save(bot);
+            userRepository.save(user);
+            return new ResponseDTO(true, "Bot liked successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
-
-        Bot bot = optionalBot.get();
-        bot.setLikeNumber(bot.getLikeNumber() + 1);
-
-        Optional<User> optionalUser = authService.getUserByToken(token);
-        if(optionalUser.isEmpty()) {
-            return;
-        }
-        User user = optionalUser.get();
-
-        bot.getLikeUsers().add(user);
-        user.getLikeBots().add(bot);
-
-        botRepository.save(bot);
-        userRepository.save(user);
     }
 
-    public void dislikeBot(Integer id, String token) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return;
+    public ResponseDTO dislikeBot(Integer id, String token) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            bot.setLikeNumber(bot.getLikeNumber() - 1);
+
+            User user = authService.getUserByToken(token);
+
+            bot.getLikeUsers().remove(user);
+            user.getLikeBots().remove(bot);
+
+            botRepository.save(bot);
+            userRepository.save(user);
+            return new ResponseDTO(true, "Bot disliked successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
-
-        Bot bot = optionalBot.get();
-        bot.setLikeNumber(bot.getLikeNumber() - 1);
-
-        Optional<User> optionalUser = authService.getUserByToken(token);
-        if(optionalUser.isEmpty()) {
-            return;
-        }
-        User user = optionalUser.get();
-
-        bot.getLikeUsers().remove(user);
-        user.getLikeBots().remove(bot);
-
-        botRepository.save(bot);
-        userRepository.save(user);
     }
 
-    public void starBot(Integer id, String token) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return;
+    public ResponseDTO starBot(Integer id, String token) {
+        try{
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            bot.setStarNumber(bot.getStarNumber() + 1);
+
+            User user = authService.getUserByToken(token);
+
+            bot.getStarUsers().add(user);
+            user.getStarBots().add(bot);
+
+            botRepository.save(bot);
+            userRepository.save(user);
+            return new ResponseDTO(true, "Bot starred successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
-
-        Bot bot = optionalBot.get();
-        bot.setStarNumber(bot.getStarNumber() + 1);
-
-        Optional<User> optionalUser = authService.getUserByToken(token);
-        if(optionalUser.isEmpty()) {
-            return;
-        }
-        User user = optionalUser.get();
-
-        bot.getStarUsers().add(user);
-        user.getStarBots().add(bot);
-
-        botRepository.save(bot);
-        userRepository.save(user);
     }
 
-    public void unstarBot(Integer id, String token) {
-        Optional<Bot> optionalBot = botRepository.findById(id);
-        if(optionalBot.isEmpty()) {
-            return;
+    public ResponseDTO unstarBot(Integer id, String token) {
+        try{
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            bot.setStarNumber(bot.getStarNumber() - 1);
+
+            User user = authService.getUserByToken(token);
+
+            bot.getStarUsers().remove(user);
+            user.getStarBots().remove(bot);
+
+            botRepository.save(bot);
+            userRepository.save(user);
+            return new ResponseDTO(true, "Bot unstarred successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
-
-        Bot bot = optionalBot.get();
-        bot.setStarNumber(bot.getStarNumber() - 1);
-
-        Optional<User> optionalUser = authService.getUserByToken(token);
-        if(optionalUser.isEmpty()) {
-            return;
-        }
-        User user = optionalUser.get();
-
-        bot.getStarUsers().remove(user);
-        user.getStarBots().remove(bot);
-
-        botRepository.save(bot);
-        userRepository.save(user);
     }
-
-
 }
