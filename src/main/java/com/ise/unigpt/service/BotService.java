@@ -3,10 +3,8 @@ package com.ise.unigpt.service;
 import com.ise.unigpt.dto.BotBriefInfoDTO;
 import com.ise.unigpt.dto.BotDetailInfoDTO;
 import com.ise.unigpt.dto.CreateBotRequestDTO;
-import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
-import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +18,15 @@ public class BotService {
     private final BotRepository botRepository;
 
     @Autowired
-    private final AuthRepository authRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private final UserRepository userRepository;
-    public BotService(BotRepository botRepository, AuthRepository authRepository, UserRepository userRepository) {
+    private final AuthService authService;
+
+    public BotService(BotRepository botRepository, UserRepository userRepository, AuthService authService) {
         this.botRepository = botRepository;
-        this.authRepository = authRepository;
         this.userRepository = userRepository;
+        this.authService = authService;
     }
 
     public Optional<BotBriefInfoDTO> getBotBriefInfo(Integer id) {
@@ -96,13 +95,11 @@ public class BotService {
         Bot bot = optionalBot.get();
         bot.setLikeNumber(bot.getLikeNumber() + 1);
 
-        Optional<Auth> optionalAuth = authRepository.findByToken(token);
-        if(optionalAuth.isEmpty()) {
+        Optional<User> optionalUser = authService.getUserByToken(token);
+        if(optionalUser.isEmpty()) {
             return;
         }
-
-        Auth auth = optionalAuth.get();
-        User user = auth.getUser();
+        User user = optionalUser.get();
 
         bot.getLikeUsers().add(user);
         user.getLikeBots().add(bot);
@@ -120,13 +117,11 @@ public class BotService {
         Bot bot = optionalBot.get();
         bot.setLikeNumber(bot.getLikeNumber() - 1);
 
-        Optional<Auth> optionalAuth = authRepository.findByToken(token);
-        if(optionalAuth.isEmpty()) {
+        Optional<User> optionalUser = authService.getUserByToken(token);
+        if(optionalUser.isEmpty()) {
             return;
         }
-
-        Auth auth = optionalAuth.get();
-        User user = auth.getUser();
+        User user = optionalUser.get();
 
         bot.getLikeUsers().remove(user);
         user.getLikeBots().remove(bot);
@@ -144,13 +139,11 @@ public class BotService {
         Bot bot = optionalBot.get();
         bot.setStarNumber(bot.getStarNumber() + 1);
 
-        Optional<Auth> optionalAuth = authRepository.findByToken(token);
-        if(optionalAuth.isEmpty()) {
+        Optional<User> optionalUser = authService.getUserByToken(token);
+        if(optionalUser.isEmpty()) {
             return;
         }
-
-        Auth auth = optionalAuth.get();
-        User user = auth.getUser();
+        User user = optionalUser.get();
 
         bot.getStarUsers().add(user);
         user.getStarBots().add(bot);
@@ -168,13 +161,11 @@ public class BotService {
         Bot bot = optionalBot.get();
         bot.setStarNumber(bot.getStarNumber() - 1);
 
-        Optional<Auth> optionalAuth = authRepository.findByToken(token);
-        if(optionalAuth.isEmpty()) {
+        Optional<User> optionalUser = authService.getUserByToken(token);
+        if(optionalUser.isEmpty()) {
             return;
         }
-
-        Auth auth = optionalAuth.get();
-        User user = auth.getUser();
+        User user = optionalUser.get();
 
         bot.getStarUsers().remove(user);
         user.getStarBots().remove(bot);

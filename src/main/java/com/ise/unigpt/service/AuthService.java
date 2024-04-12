@@ -63,4 +63,10 @@ public class AuthService {
         authRepository.save(auth);
         return auth.getToken();
     }
+
+    public Optional<User> getUserByToken(String token) {
+        Optional<Auth> optionalAuth = authRepository.findByToken(token);
+        return optionalAuth.map(Auth::getUser);
+
+    }
 }
