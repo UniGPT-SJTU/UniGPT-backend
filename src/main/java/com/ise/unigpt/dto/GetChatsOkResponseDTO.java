@@ -1,5 +1,6 @@
 package com.ise.unigpt.dto;
 
+import com.ise.unigpt.model.Chat;
 import lombok.Data;
 
 import java.util.List;

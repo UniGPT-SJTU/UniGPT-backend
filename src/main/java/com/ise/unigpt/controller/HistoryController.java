@@ -21,9 +21,12 @@ public class HistoryController {
 
 
     @GetMapping("/{id}/chats")
-    public ResponseEntity<Object> getChats(@PathVariable Integer id) {
+    public ResponseEntity<Object> getChats(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
         try {
-            return ResponseEntity.ok(service.getChats(id));
+            return ResponseEntity.ok(service.getChats(id, page, pagesize));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new GetChatsErrorResponseDTO(e.getMessage()));

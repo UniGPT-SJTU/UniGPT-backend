@@ -53,14 +53,13 @@ public class ChatHistoryService {
      * @param historyId 历史id
      * @return 对话的列表
      */
-    public GetChatsOkResponseDTO getChats(Integer historyId) {
+    public GetChatsOkResponseDTO getChats(Integer historyId, Integer page, Integer pageSize) {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
-        List<Chat> chats = history.getChats();
-        List<ChatDTO> chatDTOs = new ArrayList<>();
-        for(Chat chat : chats) {
-            chatDTOs.add(new ChatDTO(chat));
-        }
-        return new GetChatsOkResponseDTO(chatDTOs);
+        List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
+
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, chats.size());
+        return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 }
