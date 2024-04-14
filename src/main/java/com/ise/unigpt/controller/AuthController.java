@@ -1,8 +1,8 @@
 package com.ise.unigpt.controller;
 
-import com.ise.unigpt.dto.LoginErrorResponseDTO;
-import com.ise.unigpt.dto.LoginRequestDTO;
 import com.ise.unigpt.dto.LoginOkResponseDTO;
+import com.ise.unigpt.dto.LoginRequestDTO;
+import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,7 +37,16 @@ public class AuthController {
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new LoginErrorResponseDTO(false, e.getMessage()));
+                .body(new ResponseDTO(false, e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("token", "");
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return ResponseEntity.ok(new ResponseDTO(true, ""));
     }
 }
