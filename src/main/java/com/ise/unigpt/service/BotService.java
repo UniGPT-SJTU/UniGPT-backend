@@ -5,7 +5,6 @@ import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,13 +14,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class BotService {
-    @Autowired
     private final BotRepository botRepository;
-
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final AuthService authService;
 
     public BotService(BotRepository botRepository, UserRepository userRepository, AuthService authService) {

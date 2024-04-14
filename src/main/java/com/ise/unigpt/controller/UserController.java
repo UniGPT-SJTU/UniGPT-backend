@@ -5,7 +5,6 @@ import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.dto.UpdateUserInfoResponseDTO;
 import com.ise.unigpt.dto.UserDTO;
 import com.ise.unigpt.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    @Autowired
     private final UserService service;
 
     public UserController(UserService service) {

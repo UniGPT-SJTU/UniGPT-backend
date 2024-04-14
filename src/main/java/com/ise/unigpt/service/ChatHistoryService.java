@@ -9,7 +9,6 @@ import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,10 +19,8 @@ import java.util.NoSuchElementException;
 @Service
 public class ChatHistoryService {
 
-    @Autowired
     private final ChatRepository chatRepository;
 
-    @Autowired
     private final HistoryRepository historyRepository;
 
     public ChatHistoryService(ChatRepository chatRepository, HistoryRepository historyRepository) {

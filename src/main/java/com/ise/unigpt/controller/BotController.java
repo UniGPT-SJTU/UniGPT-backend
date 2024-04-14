@@ -3,13 +3,7 @@ package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.CreateBotRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.service.BotService;
-import com.ise.unigpt.service.UserService;
-import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/bots")
 public class BotController {
 
-    @Autowired
     private final BotService service;
 
     public BotController(BotService service) {

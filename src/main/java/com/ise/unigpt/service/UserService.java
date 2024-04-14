@@ -3,7 +3,6 @@ package com.ise.unigpt.service;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -11,7 +10,6 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
     private final UserRepository repository;
 
 
