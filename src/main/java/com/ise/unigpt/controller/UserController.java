@@ -2,7 +2,6 @@ package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
-import com.ise.unigpt.dto.UpdateUserInfoResponseDTO;
 import com.ise.unigpt.dto.UserDTO;
 import com.ise.unigpt.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -32,14 +31,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UpdateUserInfoResponseDTO> updateUserProfile(@PathVariable Integer id,
+    public ResponseEntity<Object> updateUserProfile(@PathVariable Integer id,
                                                                        @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO) {
         try {
             service.updateUserInfo(id, updateUserInfoRequestDTO);
-            return ResponseEntity.ok(new UpdateUserInfoResponseDTO(true));
+            return ResponseEntity.ok(new ResponseDTO(true, "Update user info successfully"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new UpdateUserInfoResponseDTO(false));
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
