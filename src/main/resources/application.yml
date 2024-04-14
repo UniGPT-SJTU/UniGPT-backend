@@ -3,8 +3,8 @@ spring:
     name: unigpt
   datasource:
     url: jdbc:mysql://139.224.10.154:3306/unigpt
-    username: wdl
-    password: wdl
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

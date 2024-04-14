@@ -35,4 +35,3 @@ build/
 doc
 
 # yml and properties files
-src/main/resources/*.yml
