@@ -67,4 +67,7 @@ public class Bot {
     @JoinColumn(name = "creator_id")
     private User creator;
 
+    @OneToMany
+    @JoinColumn(name = "comments")
+    private List<Comment> comments;
 }

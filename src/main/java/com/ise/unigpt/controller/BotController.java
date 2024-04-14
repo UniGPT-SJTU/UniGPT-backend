@@ -104,5 +104,26 @@ public class BotController {
         }
     }
 
+    @GetMapping("/{botid}/comments")
+    public ResponseEntity<Object> getComments(@PathVariable Integer botid,
+                                              @RequestParam(defaultValue = "0") Integer page,
+                                              @RequestParam(defaultValue = "20") Integer pagesize) {
+        try {
+            return ResponseEntity.ok(service.getComments(botid, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 
+    @PostMapping("/{botid}/comments")
+    public ResponseDTO createComment(@PathVariable Integer botid,
+                                     @CookieValue("token") String token,
+                                     @RequestBody String content) {
+        try {
+            return service.createComment(botid, token, content);
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
 }

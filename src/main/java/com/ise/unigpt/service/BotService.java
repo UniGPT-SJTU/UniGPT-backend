@@ -3,14 +3,18 @@ package com.ise.unigpt.service;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
+import com.ise.unigpt.model.Comment;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class BotService {
@@ -177,6 +181,37 @@ public class BotService {
             botRepository.save(bot);
             userRepository.save(user);
             return new ResponseDTO(true, "Bot unstarred successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
+
+    public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        List<CommentDTO> comments = bot.getComments()
+                .stream()
+                .map(comment -> new CommentDTO(comment))
+                .collect(Collectors.toList());
+
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, comments.size());
+        return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
+    }
+
+    public ResponseDTO createComment(Integer id, String token, String content) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+    
+            User user = authService.getUserByToken(token);
+    
+            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    
+            bot.getComments().add(new Comment(content, time, user, bot));
+            botRepository.save(bot);
+            return new ResponseDTO(true, "Comment created successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
