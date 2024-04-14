@@ -31,43 +31,27 @@ public class BotService {
     }
 
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
-
         List<BotBriefInfoDTO> bots;
-
-        if (order != null) {
-            if (order.equals("latest")) {
-                if (q != null && !q.isEmpty()) {
-                    bots = botRepository.findAllByOrderByIdDesc().stream()
-                            .filter(bot -> bot.getName().contains(q))
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                } else {
-                    bots = botRepository.findAllByOrderByIdDesc().stream()
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                }
-            } else if (order.equals("star")) {
-                if (q != null && !q.isEmpty()) {
-                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
-                            .filter(bot -> bot.getName().contains(q))
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                } else {
-                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                }
-            } else {
-                return new GetBotsOkResponseDTO(new ArrayList<>());
-            }
+        if(order.equals("latest")) {
+            bots = botRepository.findAllByOrderByIdDesc()
+                    .stream()
+                    .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .collect(Collectors.toList());
+        }
+        else if (order.equals("star")) {
+            bots = botRepository.findAllByOrderByStarNumberDesc()
+                    .stream()
+                    .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
         }
 
-        int start = (page - 1) * pageSize;
+        int start = page * pageSize;
         int end = Math.min(start + pageSize, bots.size());
-
-        return new GetBotsOkResponseDTO(bots.subList(start, end));
+        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
     public BotBriefInfoDTO getBotBriefInfo(Integer id) {

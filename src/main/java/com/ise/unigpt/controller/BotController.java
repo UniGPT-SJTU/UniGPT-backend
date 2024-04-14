@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 
 @RestController
@@ -24,15 +23,18 @@ public class BotController {
     @Autowired
     private final BotService service;
 
-    public  BotController(BotService service) {
+    public BotController(BotService service) {
         this.service = service;
     }
 
-    @GetMapping("/")
-
-    public ResponseEntity<Object> getBots(@RequestParam String q, @RequestParam String order, @RequestParam Integer page, @RequestParam Integer pageSize) {
+    @GetMapping
+    public ResponseEntity<Object> getBots(
+            @RequestParam(defaultValue = "") String q,
+            @RequestParam(defaultValue = "latest") String order,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
         try {
-            return ResponseEntity.ok(service.getBots(q, order, page, pageSize));
+            return ResponseEntity.ok(service.getBots(q, order, page, pagesize));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
