@@ -45,6 +45,14 @@ public class User {
     )
     private List<Bot> starBots;
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_used_bot",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "bot_id")
+    )
+    private List<Bot> usedBots;
+
     @OneToMany
     @JoinColumn(name = "create_bots")
     private List<Bot> createBots;

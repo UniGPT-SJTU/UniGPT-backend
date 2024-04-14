@@ -43,4 +43,48 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{userid}/used-bots")
+    public ResponseEntity<Object> getUsedBots(
+            @PathVariable Integer userid,
+            @CookieValue(value = "token", required = false) String token,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
+        try {
+            // 使用userid和token
+            return ResponseEntity.ok(service.getUsedBots(userid, token, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{userid}/starred-bots")
+    public ResponseEntity<Object> getStarredBots(
+            @PathVariable Integer userid,
+            @CookieValue(value = "token", required = false) String token,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
+        try {
+            // 使用userid和token
+            return ResponseEntity.ok(service.getStarredBots(userid, token, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{userid}/created-bots")
+    public ResponseEntity<Object> getCreatedBots(
+            @PathVariable Integer userid,
+            @CookieValue(value = "token", required = false) String token,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
+        try {
+            // 使用userid和token
+            return ResponseEntity.ok(service.getCreatedBots(userid, token, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }
