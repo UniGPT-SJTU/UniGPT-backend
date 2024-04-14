@@ -17,12 +17,6 @@ public class Bot {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "author_id")
-    private int authorId;
-
-    @Column(name = "author")
-    private String author;
-
     @Column(name = "avatar")
     private String avatar;
 

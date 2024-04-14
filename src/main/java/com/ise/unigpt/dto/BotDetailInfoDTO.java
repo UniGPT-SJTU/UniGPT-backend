@@ -11,8 +11,6 @@ public class BotDetailInfoDTO {
 
     private Integer id;
     private String name;
-    private Integer authorId;
-    private String author;
     private String description;
     private List<Photo> photos;
     private String detail;
@@ -24,8 +22,6 @@ public class BotDetailInfoDTO {
     public BotDetailInfoDTO(Bot bot){
         this.id = bot.getId();
         this.name = bot.getName();
-        this.authorId = bot.getAuthorId();
-        this.author = bot.getAuthor();
         this.description = bot.getDescription();
         this.photos = bot.getPhotos();
         this.detail = bot.getDetail();
