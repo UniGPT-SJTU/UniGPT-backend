@@ -8,8 +8,8 @@ import com.ise.unigpt.model.CommentRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
+import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bots")
@@ -105,6 +105,15 @@ public class BotController {
         }
     }
 
+    @GetMapping("/{id}/history")
+    public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestParam Integer page, @RequestParam Integer pageSize) {
+        try {
+            return ResponseEntity.ok(service.getBotHistory(id, token, page, pageSize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
     @GetMapping("/{botid}/comments")
     public ResponseEntity<Object> getComments(@PathVariable Integer botid,
                                               @RequestParam(defaultValue = "0") Integer page,
@@ -114,6 +123,15 @@ public class BotController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/history")
+    public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody String content) {
+        try {
+            return service.addChatHistory(id, token, content);
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
     }
 
