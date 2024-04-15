@@ -40,7 +40,8 @@ public class ChatHistoryService {
     @Transactional
     public void createChat(Integer historyId, String content, ChatType type) {
         Chat chat = new Chat();
-        History history = historyRepository.findById(historyId).orElseThrow();
+        History history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
 
         chat.setHistory(history);
         chat.setContent(content);

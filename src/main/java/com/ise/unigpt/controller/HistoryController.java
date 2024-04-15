@@ -36,8 +36,16 @@ public class HistoryController {
     }
 
     @PostMapping("/{id}/chats")
-    public void createChat(@PathVariable Integer id, @RequestBody CreateChatRequestDTO dto) {
-        service.createChat(id, dto.getContent(), ChatType.USER);
+    public ResponseEntity<ResponseDTO> createChat(
+            @PathVariable Integer id,
+            @RequestBody CreateChatRequestDTO dto) {
+        try {
+            service.createChat(id, dto.getContent(), ChatType.USER);
+            return ResponseEntity.ok(new ResponseDTO(true, "Chat created"));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
     }
 
     @GetMapping("/{historyid}/promptlist")
