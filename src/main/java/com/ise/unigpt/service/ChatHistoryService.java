@@ -65,9 +65,18 @@ public class ChatHistoryService {
      * @param historyId 历史id
      * @return 对话的列表
      */
-    public GetChatsOkResponseDTO getChats(Integer historyId, Integer page, Integer pageSize) {
+    public GetChatsOkResponseDTO getChats(
+            Integer historyId,
+            Integer page,
+            Integer pageSize,
+            String token) throws AuthenticationException {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
+
+        User requestUser = authService.getUserByToken(token);
+        if(!requestUser.equals(history.getUser())) {
+            throw new AuthenticationException("User not authorized to access this history");
+        }
         List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
 
         int start = page * pageSize;

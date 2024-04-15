@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.sasl.AuthenticationException;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -39,17 +40,12 @@ public class UserController {
         try {
             service.updateUserInfo(id, updateUserInfoRequestDTO, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Update user info successfully"));
-        } catch (Exception e) {
-            if(e.getClass() == NoSuchElementException.class)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ResponseDTO(false, e.getMessage()));
-            else if(e.getClass() == javax.security.sasl.AuthenticationException.class)
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ResponseDTO(false, e.getMessage()));
-            else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new ResponseDTO(false, e.getMessage()));
-            }
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
