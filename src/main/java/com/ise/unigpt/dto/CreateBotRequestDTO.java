@@ -1,5 +1,7 @@
 package com.ise.unigpt.dto;
 
+import com.ise.unigpt.model.Chat;
+import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.model.Photo;
 import lombok.Data;
 
@@ -14,9 +16,11 @@ public class CreateBotRequestDTO {
     private String baseModelAPI;
     private boolean isPublished;
     private String detail;
-    private List<Photo> photos;
+    private List<String> photos;
     private boolean isPrompted;
-    private String promptContent;
-    private List<String> promptList;
+    private List<PromptChatDTO> promptChats;
+    private List<String> promptKeys;
+
+
 
 }
