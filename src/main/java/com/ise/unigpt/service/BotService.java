@@ -117,6 +117,10 @@ public class BotService {
 
             User user = authService.getUserByToken(token);
 
+            if (bot.getLikeUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot already liked");
+            }
+
             bot.getLikeUsers().add(user);
             user.getLikeBots().add(bot);
 
@@ -136,6 +140,10 @@ public class BotService {
             bot.setLikeNumber(bot.getLikeNumber() - 1);
 
             User user = authService.getUserByToken(token);
+
+            if (!bot.getLikeUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot not liked yet");
+            }
 
             bot.getLikeUsers().remove(user);
             user.getLikeBots().remove(bot);
@@ -157,6 +165,10 @@ public class BotService {
 
             User user = authService.getUserByToken(token);
 
+            if (bot.getStarUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot already starred");
+            }
+
             bot.getStarUsers().add(user);
             user.getStarBots().add(bot);
 
@@ -176,6 +188,10 @@ public class BotService {
             bot.setStarNumber(bot.getStarNumber() - 1);
 
             User user = authService.getUserByToken(token);
+
+            if (!bot.getStarUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot not starred yet");
+            }
 
             bot.getStarUsers().remove(user);
             user.getStarBots().remove(bot);
