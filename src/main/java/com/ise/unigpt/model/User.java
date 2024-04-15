@@ -1,6 +1,5 @@
 package com.ise.unigpt.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -45,6 +44,14 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "bot_id")
     )
     private List<Bot> starBots;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_used_bot",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "bot_id")
+    )
+    private List<Bot> usedBots;
 
     @OneToMany
     @JoinColumn(name = "create_bots")

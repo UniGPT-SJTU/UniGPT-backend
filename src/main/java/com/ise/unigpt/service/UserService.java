@@ -2,18 +2,20 @@ package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.model.User;
+import com.ise.unigpt.dto.*;
+import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class UserService {
-    @Autowired
     private final UserRepository repository;
-
 
     public UserService(UserRepository repository) {
         this.repository = repository;
@@ -21,7 +23,7 @@ public class UserService {
 
     public User findUserById(Integer id) {
         Optional<User> optionalUser = repository.findById(id);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User not found for ID: " + id);
         }
 
@@ -30,13 +32,13 @@ public class UserService {
 
     /**
      * @brief 更新用户信息
-     * @param id 用户的id
+     * @param id                       用户的id
      * @param updateUserInfoRequestDTO 更新用户信息请求的DTO
      * @throws NoSuchElementException 找不到对应id的用户的异常
      */
     public void updateUserInfo(Integer id, UpdateUserInfoRequestDTO updateUserInfoRequestDTO) {
         Optional<User> optionalUser = repository.findById(id);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User not found for ID: " + id);
         }
 
@@ -46,5 +48,56 @@ public class UserService {
         user.setDescription(updateUserInfoRequestDTO.getDescription());
 
         repository.save(user);
+    }
+
+    public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize) {
+        Optional<User> optionalUser = repository.findById(userid);
+        if (!optionalUser.isPresent()) {
+            throw new NoSuchElementException("User with id " + userid + " not found");
+        }
+    
+        List<Bot> usedBots = optionalUser.get().getUsedBots();
+    
+        List<BotBriefInfoDTO> bots = usedBots.stream()
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .collect(Collectors.toList());
+    
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, bots.size());
+        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+    }
+
+    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize) {
+        Optional<User> optionalUser = repository.findById(userid);
+        if (!optionalUser.isPresent()) {
+            throw new NoSuchElementException("User with id " + userid + " not found");
+        }
+    
+        List<Bot> starredBots = optionalUser.get().getStarBots();
+    
+        List<BotBriefInfoDTO> bots = starredBots.stream()
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .collect(Collectors.toList());
+    
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, bots.size());
+        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+    }
+
+    public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
+        Optional<User> optionalUser = repository.findById(userid);
+        if (!optionalUser.isPresent()) {
+            throw new NoSuchElementException("User with id " + userid + " not found");
+        }
+    
+        List<Bot> createdBots = optionalUser.get().getCreateBots();
+    
+        List<BotBriefInfoDTO> bots = createdBots.stream()
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .collect(Collectors.toList());
+    
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, bots.size());
+        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 }

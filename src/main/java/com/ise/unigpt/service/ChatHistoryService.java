@@ -12,7 +12,6 @@ import com.ise.unigpt.model.PromptItem;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,10 +22,8 @@ import java.util.NoSuchElementException;
 @Service
 public class ChatHistoryService {
 
-    @Autowired
     private final ChatRepository chatRepository;
 
-    @Autowired
     private final HistoryRepository historyRepository;
 
     public ChatHistoryService(ChatRepository chatRepository, HistoryRepository historyRepository) {
@@ -59,15 +56,14 @@ public class ChatHistoryService {
      * @param historyId 历史id
      * @return 对话的列表
      */
-    public GetChatsOkResponseDTO getChats(Integer historyId) {
+    public GetChatsOkResponseDTO getChats(Integer historyId, Integer page, Integer pageSize) {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
-        List<Chat> chats = history.getChats();
-        List<ChatDTO> chatDTOs = new ArrayList<>();
-        for(Chat chat : chats) {
-            chatDTOs.add(new ChatDTO(chat));
-        }
-        return new GetChatsOkResponseDTO(chatDTOs);
+        List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
+
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, chats.size());
+        return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 
     public GetPromptListDTO getPromptList(Integer historyid){

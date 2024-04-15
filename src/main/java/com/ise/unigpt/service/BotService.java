@@ -1,10 +1,16 @@
 package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.*;
+<<<<<<< HEAD
 import com.ise.unigpt.model.*;
+=======
+import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.User;
+import com.ise.unigpt.model.Comment;
+>>>>>>> 69373b7e1df92cbaabbccd48ee1fde2c2020ed04
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,16 +21,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class BotService {
-    @Autowired
     private final BotRepository botRepository;
-
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final AuthService authService;
 
     public BotService(BotRepository botRepository, UserRepository userRepository, AuthService authService) {
@@ -34,43 +37,27 @@ public class BotService {
     }
 
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
-
         List<BotBriefInfoDTO> bots;
-
-        if (order != null) {
-            if (order.equals("latest")) {
-                if (q != null && !q.isEmpty()) {
-                    bots = botRepository.findAllByOrderByIdDesc().stream()
-                            .filter(bot -> bot.getName().contains(q))
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                } else {
-                    bots = botRepository.findAllByOrderByIdDesc().stream()
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                }
-            } else if (order.equals("star")) {
-                if (q != null && !q.isEmpty()) {
-                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
-                            .filter(bot -> bot.getName().contains(q))
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                } else {
-                    bots = botRepository.findAllByOrderByStarNumberDesc().stream()
-                            .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                            .collect(Collectors.toList());
-                }
-            } else {
-                return new GetBotsOkResponseDTO(new ArrayList<>());
-            }
+        if(order.equals("latest")) {
+            bots = botRepository.findAllByOrderByIdDesc()
+                    .stream()
+                    .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .collect(Collectors.toList());
+        }
+        else if (order.equals("star")) {
+            bots = botRepository.findAllByOrderByStarNumberDesc()
+                    .stream()
+                    .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
         }
 
-        int start = (page - 1) * pageSize;
+        int start = page * pageSize;
         int end = Math.min(start + pageSize, bots.size());
-
-        return new GetBotsOkResponseDTO(bots.subList(start, end));
+        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
     public BotBriefInfoDTO getBotBriefInfo(Integer id) {
@@ -234,8 +221,8 @@ public class BotService {
             User user = authService.getUserByToken(token);
             user.
 
-            // find history by bot and user
-            History history = user.getHistories().stream()
+                    // find history by bot and user
+                    History history = user.getHistories().stream()
                     .filter(h -> h.getBot().getId() == id)
                     .findFirst()
                     .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
@@ -256,7 +243,37 @@ public class BotService {
             // TODO: Check correctness of variables updating
 
             return new ResponseDTO(true, "Chat added successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
 
+    public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        List<CommentDTO> comments = bot.getComments()
+                .stream()
+                .map(comment -> new CommentDTO(comment))
+                .collect(Collectors.toList());
+
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, comments.size());
+        return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
+    }
+
+    public ResponseDTO createComment(Integer id, String token, String content) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+    
+            User user = authService.getUserByToken(token);
+    
+            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    
+            bot.getComments().add(new Comment(content, time, user, bot));
+            botRepository.save(bot);
+            return new ResponseDTO(true, "Comment created successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }

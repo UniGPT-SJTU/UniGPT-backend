@@ -3,37 +3,36 @@ package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.CreateBotRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.service.BotService;
-import com.ise.unigpt.service.UserService;
-import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< HEAD
 import java.util.Optional;
 import java.util.List;
+=======
+>>>>>>> 69373b7e1df92cbaabbccd48ee1fde2c2020ed04
 
 
 @RestController
 @RequestMapping("/api/bots")
 public class BotController {
 
-    @Autowired
     private final BotService service;
 
-    public  BotController(BotService service) {
+    public BotController(BotService service) {
         this.service = service;
     }
 
-    @GetMapping("/")
-
-    public ResponseEntity<Object> getBots(@RequestParam String q, @RequestParam String order, @RequestParam Integer page, @RequestParam Integer pageSize) {
+    @GetMapping
+    public ResponseEntity<Object> getBots(
+            @RequestParam(defaultValue = "") String q,
+            @RequestParam(defaultValue = "latest") String order,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
         try {
-            return ResponseEntity.ok(service.getBots(q, order, page, pageSize));
+            return ResponseEntity.ok(service.getBots(q, order, page, pagesize));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
@@ -119,6 +118,17 @@ public class BotController {
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+    @GetMapping("/{botid}/comments")
+    public ResponseEntity<Object> getComments(@PathVariable Integer botid,
+                                              @RequestParam(defaultValue = "0") Integer page,
+                                              @RequestParam(defaultValue = "20") Integer pagesize) {
+        try {
+            return ResponseEntity.ok(service.getComments(botid, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 
     @PostMapping("/{id}/history")
     public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody String content) {
@@ -129,4 +139,14 @@ public class BotController {
         }
     }
 
+    @PostMapping("/{botid}/comments")
+    public ResponseDTO createComment(@PathVariable Integer botid,
+                                     @CookieValue("token") String token,
+                                     @RequestBody String content) {
+        try {
+            return service.createComment(botid, token, content);
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
 }

@@ -4,7 +4,6 @@ import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
@@ -13,10 +12,7 @@ import java.util.Optional;
 
 @Service
 public class AuthService {
-    @Autowired
     private AuthRepository authRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     public AuthService(AuthRepository authRepository, UserRepository userRepository) {

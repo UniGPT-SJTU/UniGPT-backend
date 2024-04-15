@@ -33,4 +33,5 @@ build/
 .vscode/
 
 doc
-src/main/resources/application.yml
+
+# yml and properties files
