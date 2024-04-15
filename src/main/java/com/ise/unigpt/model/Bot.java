@@ -39,17 +39,18 @@ public class Bot {
     @Column(name = "is_prompted")
     private boolean isPrompted;
 
-    @Column(name = "prompt_content")
-    private String promptContent;
+    @OneToMany
+    @Column(name = "prompt_chats")
+    private List<Chat> promptChats;
+
+    @ElementCollection
+    private List<String> promptKeys;
 
     @Column(name = "like_number")
     private int likeNumber;
 
     @Column(name = "star_number")
     private int starNumber;
-
-    @Column(name = "prompt_list")
-    private String promptList;
 
     @ManyToMany(mappedBy = "likeBots")
     private List<User> likeUsers;

@@ -1,14 +1,13 @@
 package com.ise.unigpt.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "PromptItem")
-public class PromptItem {
+@Table(name = "PromptValue")
+public class PromptValue {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

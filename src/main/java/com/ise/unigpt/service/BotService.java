@@ -3,6 +3,8 @@ package com.ise.unigpt.service;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
+import com.ise.unigpt.repository.ChatRepository;
+import com.ise.unigpt.repository.PhotoRepository;
 import com.ise.unigpt.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
@@ -22,11 +24,21 @@ import java.time.format.DateTimeFormatter;
 public class BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
+
+    private final PhotoRepository photoRepository;
+
+    private final ChatRepository chatRepository;
     private final AuthService authService;
 
-    public BotService(BotRepository botRepository, UserRepository userRepository, AuthService authService) {
+    public BotService(BotRepository botRepository,
+                      UserRepository userRepository,
+                      PhotoRepository photoRepository,
+                        ChatRepository chatRepository,
+                      AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
+        this.photoRepository = photoRepository;
+        this.chatRepository = chatRepository;
         this.authService = authService;
     }
 
@@ -61,51 +73,100 @@ public class BotService {
         return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription());
     }
 
-    public BotDetailInfoDTO getBotDetailInfo(Integer id) {
+    public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        if (!bot.isPublished()) {
+        User user = authService.getUserByToken(token);
+
+        if (!bot.isPublished() && bot.getCreator().getId() != user.getId()){
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
         return new BotDetailInfoDTO(bot);
     }
 
-    public ResponseDTO createBot(CreateBotRequestDTO dto) {
+    public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
         try {
             Bot bot = new Bot();
-            setBotFromDTO(bot, dto);
+            User user = authService.getUserByToken(token);
+            bot.setCreator(user);
+
+            List<Photo> photos = new ArrayList<>();
+            setBotFromDTO(bot, photos, dto);
+
             botRepository.save(bot);
+            photoRepository.saveAll(photos);
+
             return new ResponseDTO(true, "Bot created successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
     }
 
-    public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto) {
+    public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto, String token) {
         try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            setBotFromDTO(bot, dto);
+            User user = authService.getUserByToken(token);
+            if (bot.getCreator().getId() != user.getId()) {
+                return new ResponseDTO(false, "Bot can only be updated by creator");
+            }
+
+            // todo：删不了一点
+            List<Chat> promptChats = bot.getPromptChats();
+            bot.getPromptChats().clear();
+            chatRepository.deleteAll(promptChats);
+
+            List<Photo> photos = bot.getPhotos();
+            bot.getPhotos().clear();
+            photoRepository.deleteAll(photos);
+
+            List<Photo> newPhotos = new ArrayList<>();
+            setBotFromDTO(bot, newPhotos, dto);
+
+            photoRepository.saveAll(newPhotos);
             botRepository.save(bot);
+
             return new ResponseDTO(true, "Bot updated successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
     }
 
-    public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
+    public void setBotFromDTO(Bot bot, List<Photo> photos,CreateBotRequestDTO dto) {
         bot.setName(dto.getName());
         bot.setAvatar(dto.getAvatar());
         bot.setDescription(dto.getDescription());
         bot.setBaseModelAPI(dto.getBaseModelAPI());
         bot.setPublished(dto.isPublished());
-        bot.setPhotos(dto.getPhotos());
         bot.setDetail(dto.getDetail());
+
+        dto.getPhotos().forEach(photoUrl -> {
+            Photo photo = new Photo();
+            photo.setUrl(photoUrl);
+            photo.setBot(bot);
+            photos.add(photo);
+        });
+        bot.setPhotos(photos);
+
         bot.setPrompted(dto.isPrompted());
-        bot.setPromptContent(dto.getPromptContent());
+
+        List<Chat> promptChats = new ArrayList<>();
+        dto.getPromptChats().forEach(chat -> {
+            Chat promptChat = new Chat();
+            promptChat.setContent(chat.getContent());
+            promptChat.setType(chat.getType());
+            promptChat.setTime(new Date());
+            promptChat.setHistory(null);
+            promptChats.add(promptChat);
+        });
+        bot.setPromptChats(promptChats);
+
+        bot.setPromptKeys(dto.getPromptKeys());
+
+        chatRepository.saveAll(promptChats);
     }
 
     public ResponseDTO likeBot(Integer id, String token) {
@@ -116,6 +177,10 @@ public class BotService {
             bot.setLikeNumber(bot.getLikeNumber() + 1);
 
             User user = authService.getUserByToken(token);
+
+            if (bot.getLikeUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot already liked");
+            }
 
             bot.getLikeUsers().add(user);
             user.getLikeBots().add(bot);
@@ -137,6 +202,10 @@ public class BotService {
 
             User user = authService.getUserByToken(token);
 
+            if (!bot.getLikeUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot not liked yet");
+            }
+
             bot.getLikeUsers().remove(user);
             user.getLikeBots().remove(bot);
 
@@ -157,6 +226,10 @@ public class BotService {
 
             User user = authService.getUserByToken(token);
 
+            if (bot.getStarUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot already starred");
+            }
+
             bot.getStarUsers().add(user);
             user.getStarBots().add(bot);
 
@@ -176,6 +249,10 @@ public class BotService {
             bot.setStarNumber(bot.getStarNumber() - 1);
 
             User user = authService.getUserByToken(token);
+
+            if (!bot.getStarUsers().contains(user)) {
+                return new ResponseDTO(false, "Bot not starred yet");
+            }
 
             bot.getStarUsers().remove(user);
             user.getStarBots().remove(bot);

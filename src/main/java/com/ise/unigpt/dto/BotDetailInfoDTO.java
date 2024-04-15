@@ -1,6 +1,7 @@
 package com.ise.unigpt.dto;
 
 import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.Photo;
 import lombok.Data;
 
