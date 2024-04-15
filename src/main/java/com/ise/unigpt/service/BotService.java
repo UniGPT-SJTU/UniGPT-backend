@@ -105,7 +105,7 @@ public class BotService {
         bot.setPhotos(dto.getPhotos());
         bot.setDetail(dto.getDetail());
         bot.setPrompted(dto.isPrompted());
-        bot.setPromptContent(dto.getPromptContent());
+//        bot.setPromptContent(dto.getPromptContent());
     }
 
     public ResponseDTO likeBot(Integer id, String token) {
