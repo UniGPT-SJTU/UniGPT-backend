@@ -66,5 +66,4 @@ public class Bot {
     @ManyToOne
     @JoinColumn(name = "creator_id")
     private User creator;
-
 }

@@ -2,11 +2,16 @@ package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.Chat;
+import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,5 +207,24 @@ public class BotService {
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
+    }
+
+    public GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize){
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        User user = authService.getUserByToken(token);
+
+        // find history by bot and user
+        History history = user.getHistories().stream()
+                .filter(h -> h.getBot().getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+        List<Chat> chats = history.getChats();
+        // Sort chats by time
+        chats.sort((c1, c2) -> c1.getTime().compareTo(c2.getTime()));
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, chats.size());
+        return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
     }
 }
