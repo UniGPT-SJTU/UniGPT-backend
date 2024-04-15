@@ -7,13 +7,8 @@ import com.ise.unigpt.service.BotService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-<<<<<<< HEAD
 import java.util.Optional;
 import java.util.List;
-=======
->>>>>>> 69373b7e1df92cbaabbccd48ee1fde2c2020ed04
-
 
 @RestController
 @RequestMapping("/api/bots")

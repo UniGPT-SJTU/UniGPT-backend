@@ -1,13 +1,7 @@
 package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.*;
-<<<<<<< HEAD
 import com.ise.unigpt.model.*;
-=======
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.User;
-import com.ise.unigpt.model.Comment;
->>>>>>> 69373b7e1df92cbaabbccd48ee1fde2c2020ed04
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
 
@@ -219,13 +213,11 @@ public class BotService {
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
             User user = authService.getUserByToken(token);
-            user.
-
                     // find history by bot and user
-                    History history = user.getHistories().stream()
-                    .filter(h -> h.getBot().getId() == id)
-                    .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+            History history = user.getHistories().stream()
+                .filter(h -> h.getBot().getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
 
             List<Chat> chats = history.getChats();
 
@@ -266,11 +258,11 @@ public class BotService {
         try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-    
+
             User user = authService.getUserByToken(token);
-    
+
             String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    
+
             bot.getComments().add(new Comment(content, time, user, bot));
             botRepository.save(bot);
             return new ResponseDTO(true, "Comment created successfully");
