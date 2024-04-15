@@ -4,6 +4,7 @@ package com.ise.unigpt.controller;
 import com.ise.unigpt.dto.CreateBotRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.model.CommentRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -119,9 +120,9 @@ public class BotController {
     @PostMapping("/{botid}/comments")
     public ResponseDTO createComment(@PathVariable Integer botid,
                                      @CookieValue("token") String token,
-                                     @RequestBody String content) {
+                                     @RequestBody CommentRequest request) {
         try {
-            return service.createComment(botid, token, content);
+            return service.createComment(botid, token, request.getContent());
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }

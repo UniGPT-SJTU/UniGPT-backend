@@ -61,7 +61,6 @@ public class Bot {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @OneToMany
-    @JoinColumn(name = "comments")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "bot")
     private List<Comment> comments;
 }
