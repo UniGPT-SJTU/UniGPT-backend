@@ -31,14 +31,25 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateUserProfile(@PathVariable Integer id,
-                                                                       @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO) {
+    public ResponseEntity<Object> updateUserProfile(
+            @PathVariable Integer id,
+            @CookieValue(value = "token") String token,
+            @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO
+    ) {
         try {
-            service.updateUserInfo(id, updateUserInfoRequestDTO);
+            service.updateUserInfo(id, updateUserInfoRequestDTO, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Update user info successfully"));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (Exception e) {
+            if(e.getClass() == NoSuchElementException.class)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            else if(e.getClass() == javax.security.sasl.AuthenticationException.class)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            }
         }
     }
 
