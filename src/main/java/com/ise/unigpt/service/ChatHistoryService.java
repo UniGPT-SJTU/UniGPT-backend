@@ -3,9 +3,12 @@ package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.ChatDTO;
 import com.ise.unigpt.dto.GetChatsOkResponseDTO;
+import com.ise.unigpt.dto.GetPromptListDTO;
+import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.ChatType;
+import com.ise.unigpt.model.PromptItem;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import jakarta.transaction.Transactional;
@@ -65,5 +68,25 @@ public class ChatHistoryService {
             chatDTOs.add(new ChatDTO(chat));
         }
         return new GetChatsOkResponseDTO(chatDTOs);
+    }
+
+    public GetPromptListDTO getPromptList(Integer historyid){
+        History history = historyRepository.findById(historyid)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
+        return new GetPromptListDTO(history.getPromptList());
+    }
+
+    public ResponseDTO changePromptList(Integer historyid, List<String> promptList){
+        History history = historyRepository.findById(historyid)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
+        List<PromptItem> promptItems = new ArrayList<>();
+        for (String prompt : promptList) {
+            PromptItem promptItem = new PromptItem();
+            promptItem.setContent(prompt);
+            promptItems.add(promptItem);
+        }
+        history.setPromptList(promptItems);
+        historyRepository.save(history);
+        return new ResponseDTO(true, "Prompt list changed successfully");
     }
 }

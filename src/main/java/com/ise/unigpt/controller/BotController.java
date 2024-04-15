@@ -121,7 +121,7 @@ public class BotController {
     }
 
     @PostMapping("/{id}/history")
-    public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> content) {
+    public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody String content) {
         try {
             return service.addChatHistory(id, token, content);
         } catch (Exception e) {

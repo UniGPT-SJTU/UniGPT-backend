@@ -1,10 +1,7 @@
 package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.*;
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.model.History;
-import com.ise.unigpt.model.User;
+import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -228,12 +226,13 @@ public class BotService {
         return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
     }
 
-    public ResponseDTO addChatHistory(Integer id, String token, List<String> content) {
+    public ResponseDTO addChatHistory(Integer id, String token, String content) {
         try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
             User user = authService.getUserByToken(token);
+            user.
 
             // find history by bot and user
             History history = user.getHistories().stream()
@@ -242,13 +241,22 @@ public class BotService {
                     .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
 
             List<Chat> chats = history.getChats();
+
             Chat chat = new Chat();
+            chat.setHistory(history);
+            chat.setType(ChatType.USER);
+            chat.setTime(new Date());
             chat.setContent(content);
-            chat.setTime(System.currentTimeMillis());
+
+            // TODO: GPT response needed here
+
             chats.add(chat);
             history.setChats(chats);
-            userRepository.save(user);
+
+            // TODO: Check correctness of variables updating
+
             return new ResponseDTO(true, "Chat added successfully");
+
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
