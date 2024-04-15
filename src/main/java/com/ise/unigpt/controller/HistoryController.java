@@ -38,13 +38,22 @@ public class HistoryController {
     @PostMapping("/{id}/chats")
     public ResponseEntity<ResponseDTO> createChat(
             @PathVariable Integer id,
+            @CookieValue(value = "token") String token,
             @RequestBody CreateChatRequestDTO dto) {
         try {
-            service.createChat(id, dto.getContent(), ChatType.USER);
+            service.createChat(id, dto.getContent(), ChatType.USER, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Chat created"));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (Exception e) {
+            if(e.getClass() == NoSuchElementException.class)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            else if(e.getClass() == javax.naming.AuthenticationException.class)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ResponseDTO(false, e.getMessage()));
+            }
         }
     }
 
@@ -59,7 +68,9 @@ public class HistoryController {
     }
 
     @PostMapping("/{historyid}/promptlist")
-    public ResponseDTO createPrompt(@PathVariable Integer historyid, @RequestBody List<String> promptList) {
+    public ResponseDTO createPrompt(
+            @PathVariable Integer historyid,
+            @RequestBody List<String> promptList) {
         try {
             return service.changePromptList(historyid, promptList);
         } catch (Exception e) {
