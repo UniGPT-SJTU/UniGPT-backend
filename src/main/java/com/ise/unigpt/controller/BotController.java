@@ -43,7 +43,9 @@ public class BotController {
             } else if (info.equals("detail")) {
                 return ResponseEntity.ok(service.getBotDetailInfo(id));
             } else {
-                return ResponseEntity.badRequest().body("Invalid info parameter");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDTO(false, "Invalid info parameter"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -51,7 +53,7 @@ public class BotController {
         }
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseDTO createBot(@RequestBody CreateBotRequestDTO dto){
         try{
             return service.createBot(dto);
