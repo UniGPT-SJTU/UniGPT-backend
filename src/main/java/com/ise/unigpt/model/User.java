@@ -57,6 +57,7 @@ public class User {
     @JoinColumn(name = "create_bots")
     private List<Bot> createBots;
 
-
-
+    @OneToMany
+    @JoinColumn(name = "histories")
+    private List<History> histories;
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.util.Date;
 import java.util.List;
 
 
@@ -26,10 +26,11 @@ public class History {
     @JoinColumn(name = "bot_id")
     private Bot bot;
 
-    @Column(name = "title")
-    private String title;
-
     @OneToMany
     @JoinColumn(name = "chats")
     private List<Chat> chats;
+
+    @OneToMany
+    @JoinColumn(name = "prompt_list")
+    private List<PromptItem> promptList;
 }

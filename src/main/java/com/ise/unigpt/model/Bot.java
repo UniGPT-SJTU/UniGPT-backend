@@ -48,8 +48,8 @@ public class Bot {
     @Column(name = "star_number")
     private int starNumber;
 
-//    @Column(name = "prompt_list")
-//    String[] promptList;
+    @Column(name = "prompt_list")
+    private String promptList;
 
     @ManyToMany(mappedBy = "likeBots")
     private List<User> likeUsers;

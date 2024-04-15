@@ -1,15 +1,17 @@
 package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.*;
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.User;
-import com.ise.unigpt.model.Comment;
+import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -186,6 +188,58 @@ public class BotService {
         }
     }
 
+    public GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize){
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        User user = authService.getUserByToken(token);
+
+        // find history by bot and user
+        History history = user.getHistories().stream()
+                .filter(h -> h.getBot().getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+        List<Chat> chats = history.getChats();
+        // Sort chats by time
+        chats.sort((c1, c2) -> c1.getTime().compareTo(c2.getTime()));
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, chats.size());
+        return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
+    }
+
+    public ResponseDTO addChatHistory(Integer id, String token, String content) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            User user = authService.getUserByToken(token);
+                    // find history by bot and user
+            History history = user.getHistories().stream()
+                .filter(h -> h.getBot().getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+
+            List<Chat> chats = history.getChats();
+
+            Chat chat = new Chat();
+            chat.setHistory(history);
+            chat.setType(ChatType.USER);
+            chat.setTime(new Date());
+            chat.setContent(content);
+
+            // TODO: GPT response needed here
+
+            chats.add(chat);
+            history.setChats(chats);
+
+            // TODO: Check correctness of variables updating
+
+            return new ResponseDTO(true, "Chat added successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
+
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -210,11 +264,11 @@ public class BotService {
         try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-    
+
             User user = authService.getUserByToken(token);
-    
+
             String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    
+
             bot.getComments().add(new Comment(content, time, user, bot));
             botRepository.save(bot);
             
