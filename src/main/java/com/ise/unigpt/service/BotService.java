@@ -227,4 +227,30 @@ public class BotService {
         int end = Math.min(start + pageSize, chats.size());
         return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
     }
+
+    public ResponseDTO addChatHistory(Integer id, String token, List<String> content) {
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            User user = authService.getUserByToken(token);
+
+            // find history by bot and user
+            History history = user.getHistories().stream()
+                    .filter(h -> h.getBot().getId() == id)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+
+            List<Chat> chats = history.getChats();
+            Chat chat = new Chat();
+            chat.setContent(content);
+            chat.setTime(System.currentTimeMillis());
+            chats.add(chat);
+            history.setChats(chats);
+            userRepository.save(user);
+            return new ResponseDTO(true, "Chat added successfully");
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
+    }
 }

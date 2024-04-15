@@ -29,4 +29,8 @@ public class History {
     @OneToMany
     @JoinColumn(name = "chats")
     private List<Chat> chats;
+
+    @OneToMany
+    @JoinColumn(name = "prompt_items")
+    private List<PromptItem> prompt_items;
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.List;
 
 
 @RestController
@@ -116,6 +117,15 @@ public class BotController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/history")
+    public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> content) {
+        try {
+            return service.addChatHistory(id, token, content);
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
         }
     }
 
