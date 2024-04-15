@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.sasl.AuthenticationException;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -31,13 +32,19 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateUserProfile(@PathVariable Integer id,
-                                                                       @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO) {
+    public ResponseEntity<Object> updateUserProfile(
+            @PathVariable Integer id,
+            @CookieValue(value = "token") String token,
+            @RequestBody UpdateUserInfoRequestDTO updateUserInfoRequestDTO
+    ) {
         try {
-            service.updateUserInfo(id, updateUserInfoRequestDTO);
+            service.updateUserInfo(id, updateUserInfoRequestDTO, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Update user info successfully"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
