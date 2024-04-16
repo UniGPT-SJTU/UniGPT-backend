@@ -10,6 +10,7 @@ public class BotDetailInfoDTO {
 
     private Integer id;
     private String name;
+    private String creator;
     private String description;
     private List<String> photos;
     private String detail;
@@ -21,6 +22,7 @@ public class BotDetailInfoDTO {
     public BotDetailInfoDTO(Bot bot){
         this.id = bot.getId();
         this.name = bot.getName();
+        this.creator = bot.getCreator().getName();
         this.description = bot.getDescription();
         this.photos = bot.getPhotos();
         this.detail = bot.getDetail();

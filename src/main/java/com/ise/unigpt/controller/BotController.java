@@ -40,7 +40,10 @@ public class BotController {
                 return ResponseEntity.ok(service.getBotBriefInfo(id));
             } else if (info.equals("detail")) {
                 return ResponseEntity.ok(service.getBotDetailInfo(id, token));
-            } else {
+            } else if (info.equals("edit")) {
+                return ResponseEntity.ok(service.getBotEditInfo(id, token));
+            }
+            else {
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(new ResponseDTO(false, "Invalid info parameter"));

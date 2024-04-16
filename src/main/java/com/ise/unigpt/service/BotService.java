@@ -79,6 +79,19 @@ public class BotService {
         return new BotDetailInfoDTO(bot);
     }
 
+    public BotEditInfoDTO getBotEditInfo(Integer id, String token) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        User user = authService.getUserByToken(token);
+
+        if (bot.getCreator().getId() != user.getId()){
+            throw new NoSuchElementException("Bot not published for ID: " + id);
+        }
+
+        return new BotEditInfoDTO(bot);
+    }
+
     public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
         User creatorUser = authService.getUserByToken(token);
 
