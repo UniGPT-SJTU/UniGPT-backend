@@ -1,7 +1,7 @@
 package com.ise.unigpt.controller;
 
 
-import com.ise.unigpt.dto.CreateBotRequestDTO;
+import com.ise.unigpt.dto.BotEditInfoDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.model.CommentRequest;
@@ -55,7 +55,7 @@ public class BotController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseDTO> createBot(@RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token){
+    public ResponseEntity<ResponseDTO> createBot(@RequestBody BotEditInfoDTO dto, @CookieValue("token") String token){
         try{
             return ResponseEntity.ok(service.createBot(dto, token));
         } catch (Exception e) {
@@ -65,7 +65,7 @@ public class BotController {
     }
 
     @PutMapping("/{id}")
-    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token) {
+    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody BotEditInfoDTO dto, @CookieValue("token") String token) {
         try {
             return service.updateBot(id, dto, token);
         } catch (Exception e) {

@@ -1,6 +1,6 @@
 package com.ise.unigpt.model;
 
-import com.ise.unigpt.dto.CreateBotRequestDTO;
+import com.ise.unigpt.dto.BotEditInfoDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -65,7 +65,7 @@ public class Bot {
     @OneToMany
     private List<Comment> comments;
 
-    public Bot(CreateBotRequestDTO dto, User creator) {
+    public Bot(BotEditInfoDTO dto, User creator) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
@@ -83,7 +83,7 @@ public class Bot {
         this.comments = new ArrayList<>();
     }
     // TODO: 将CreateBotRequestDTO和UpdateBotRequestDTO合并为一个DTO
-    public void updateInfo(CreateBotRequestDTO dto) {
+    public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();

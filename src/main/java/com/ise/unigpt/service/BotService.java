@@ -93,7 +93,7 @@ public class BotService {
         return new BotEditInfoDTO(bot);
     }
 
-    public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
+    public ResponseDTO createBot(BotEditInfoDTO dto, String token) {
         // 根据token获取用户
         User creatorUser = authService.getUserByToken(token);
 
@@ -113,7 +113,7 @@ public class BotService {
         return new ResponseDTO(true, "Bot created successfully");
     }
 
-    public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto, String token) {
+    public ResponseDTO updateBot(Integer id, BotEditInfoDTO dto, String token) {
 
         // 根据id获取bot
         Bot updatedBot = botRepository.findById(id)
