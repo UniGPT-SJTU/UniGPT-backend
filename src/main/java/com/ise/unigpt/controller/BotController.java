@@ -1,7 +1,7 @@
 package com.ise.unigpt.controller;
 
 
-import com.ise.unigpt.dto.CreateBotRequestDTO;
+import com.ise.unigpt.dto.BotEditInfoDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.dto.CommentRequestDTO;
@@ -40,7 +40,10 @@ public class BotController {
                 return ResponseEntity.ok(service.getBotBriefInfo(id));
             } else if (info.equals("detail")) {
                 return ResponseEntity.ok(service.getBotDetailInfo(id, token));
-            } else {
+            } else if (info.equals("edit")) {
+                return ResponseEntity.ok(service.getBotEditInfo(id, token));
+            }
+            else {
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(new ResponseDTO(false, "Invalid info parameter"));
@@ -52,16 +55,17 @@ public class BotController {
     }
 
     @PostMapping
-    public ResponseDTO createBot(@RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token){
+    public ResponseEntity<ResponseDTO> createBot(@RequestBody BotEditInfoDTO dto, @CookieValue("token") String token){
         try{
-            return service.createBot(dto, token);
+            return ResponseEntity.ok(service.createBot(dto, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token) {
+    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody BotEditInfoDTO dto, @CookieValue("token") String token) {
         try {
             return service.updateBot(id, dto, token);
         } catch (Exception e) {

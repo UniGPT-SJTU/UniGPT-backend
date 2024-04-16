@@ -1,8 +1,6 @@
 package com.ise.unigpt.dto;
 
 import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.model.Photo;
 import lombok.Data;
 
 import java.util.List;
@@ -12,8 +10,9 @@ public class BotDetailInfoDTO {
 
     private Integer id;
     private String name;
+    private String creator;
     private String description;
-    private List<Photo> photos;
+    private List<String> photos;
     private String detail;
     private String avatar;
     private String baseModelAPI;
@@ -23,6 +22,7 @@ public class BotDetailInfoDTO {
     public BotDetailInfoDTO(Bot bot){
         this.id = bot.getId();
         this.name = bot.getName();
+        this.creator = bot.getCreator().getName();
         this.description = bot.getDescription();
         this.photos = bot.getPhotos();
         this.detail = bot.getDetail();

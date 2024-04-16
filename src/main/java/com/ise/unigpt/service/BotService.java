@@ -4,13 +4,11 @@ import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.ChatRepository;
-import com.ise.unigpt.repository.PhotoRepository;
+import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,20 +23,16 @@ public class BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
 
-    private final PhotoRepository photoRepository;
-
-    private final ChatRepository chatRepository;
+    private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
 
     public BotService(BotRepository botRepository,
                       UserRepository userRepository,
-                      PhotoRepository photoRepository,
-                        ChatRepository chatRepository,
+                        PromptChatRepository promptChatRepository,
                       AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
-        this.photoRepository = photoRepository;
-        this.chatRepository = chatRepository;
+        this.promptChatRepository = promptChatRepository;
         this.authService = authService;
     }
 
@@ -86,88 +80,68 @@ public class BotService {
         return new BotDetailInfoDTO(bot);
     }
 
-    public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
-        try {
-            Bot bot = new Bot();
-            User user = authService.getUserByToken(token);
-            bot.setCreator(user);
+    public BotEditInfoDTO getBotEditInfo(Integer id, String token) {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            List<Photo> photos = new ArrayList<>();
-            setBotFromDTO(bot, photos, dto);
+        User user = authService.getUserByToken(token);
 
-            botRepository.save(bot);
-            photoRepository.saveAll(photos);
-
-            return new ResponseDTO(true, "Bot created successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+        if (bot.getCreator().getId() != user.getId()){
+            throw new NoSuchElementException("Bot not published for ID: " + id);
         }
+
+        return new BotEditInfoDTO(bot);
     }
 
-    public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto, String token) {
-        try {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+    public ResponseDTO createBot(BotEditInfoDTO dto, String token) {
+        // 根据token获取用户
+        User creatorUser = authService.getUserByToken(token);
 
-            User user = authService.getUserByToken(token);
-            if (bot.getCreator().getId() != user.getId()) {
-                return new ResponseDTO(false, "Bot can only be updated by creator");
-            }
+        // 创建promptChats列表并保存到数据库
+        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
+        promptChatRepository.saveAll(promptChats);
 
-            // todo：删不了一点
-            List<Chat> promptChats = bot.getPromptChats();
-            bot.getPromptChats().clear();
-            chatRepository.deleteAll(promptChats);
+        // 创建bot并保存到数据库
+        Bot newBot = new Bot(dto, creatorUser);
+        newBot.setPromptChats(promptChats);
+        botRepository.save(newBot);
 
-            List<Photo> photos = bot.getPhotos();
-            bot.getPhotos().clear();
-            photoRepository.deleteAll(photos);
+        // 更新用户的createBots列表
+        creatorUser.getCreateBots().add(newBot);
+        userRepository.save(creatorUser);
 
-            List<Photo> newPhotos = new ArrayList<>();
-            setBotFromDTO(bot, newPhotos, dto);
+        return new ResponseDTO(true, "Bot created successfully");
+    }
 
-            photoRepository.saveAll(newPhotos);
-            botRepository.save(bot);
+    public ResponseDTO updateBot(Integer id, BotEditInfoDTO dto, String token) {
 
-            return new ResponseDTO(true, "Bot updated successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+        // 根据id获取bot
+        Bot updatedBot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        // 根据token获取用户, 并检查用户是否有权限更新bot
+        User requestUser = authService.getUserByToken(token);
+        if (updatedBot.getCreator().getId() != requestUser.getId()) {
+            throw new IllegalArgumentException("User not authorized to update bot");
         }
+
+        // 删除原有的promptChats列表
+        List<PromptChat> oldPromptChats = new ArrayList<>(updatedBot.getPromptChats());
+        updatedBot.getPromptChats().clear();
+        promptChatRepository.deleteAll(oldPromptChats);
+
+        // 创建promptChats列表并保存到数据库
+        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
+        promptChatRepository.saveAll(promptChats);
+
+        // 更新bot信息并保存到数据库
+        updatedBot.updateInfo(dto);
+        updatedBot.setPromptChats(promptChats);
+        botRepository.save(updatedBot);
+
+        return new ResponseDTO(true, "Bot updated successfully");
     }
 
-    public void setBotFromDTO(Bot bot, List<Photo> photos,CreateBotRequestDTO dto) {
-        bot.setName(dto.getName());
-        bot.setAvatar(dto.getAvatar());
-        bot.setDescription(dto.getDescription());
-        bot.setBaseModelAPI(dto.getBaseModelAPI());
-        bot.setPublished(dto.isPublished());
-        bot.setDetail(dto.getDetail());
-
-        dto.getPhotos().forEach(photoUrl -> {
-            Photo photo = new Photo();
-            photo.setUrl(photoUrl);
-            photo.setBot(bot);
-            photos.add(photo);
-        });
-        bot.setPhotos(photos);
-
-        bot.setPrompted(dto.isPrompted());
-
-        List<Chat> promptChats = new ArrayList<>();
-        dto.getPromptChats().forEach(chat -> {
-            Chat promptChat = new Chat();
-            promptChat.setContent(chat.getContent());
-            promptChat.setType(chat.getType());
-            promptChat.setTime(new Date());
-            promptChat.setHistory(null);
-            promptChats.add(promptChat);
-        });
-        bot.setPromptChats(promptChats);
-
-        bot.setPromptKeys(dto.getPromptKeys());
-
-        chatRepository.saveAll(promptChats);
-    }
 
     public ResponseDTO likeBot(Integer id, String token) {
         try{
@@ -320,20 +294,20 @@ public class BotService {
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-    
+
         List<CommentDTO> comments = bot.getComments()
                 .stream()
                 .map(comment -> new CommentDTO(comment))
                 .collect(Collectors.toList());
-    
+
         System.out.println("Number of comments: " + comments.size());
         System.out.println("Page size: " + pageSize);
         int start = page * pageSize;
         int end = Math.min(start + pageSize, comments.size());
-    
+
         System.out.println("Start index: " + start);
         System.out.println("End index: " + end);
-    
+
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
@@ -348,7 +322,7 @@ public class BotService {
 
             bot.getComments().add(new Comment(content, time, user, bot));
             botRepository.save(bot);
-            
+
             return new ResponseDTO(true, "Comment created successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());

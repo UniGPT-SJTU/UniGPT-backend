@@ -21,10 +21,10 @@ public class ChatDTO {
         this.time = chat.getTime();
 
         History history = chat.getHistory();
-        this.avatar = chat.getType() == ChatType.ASSISTANT ?
+        this.avatar = chat.getType() == ChatType.BOT ?
                 history.getBot().getAvatar() :
                 history.getUser().getAvatar();
-        this.name = chat.getType() == ChatType.ASSISTANT ?
+        this.name = chat.getType() == ChatType.BOT ?
                 history.getBot().getName() :
                 history.getUser().getName();
     }
