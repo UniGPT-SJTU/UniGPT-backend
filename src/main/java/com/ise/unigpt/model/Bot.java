@@ -33,14 +33,12 @@ public class Bot {
     private String detail;
 
     @OneToMany
-    @JoinColumn(name = "photos")
     private List<Photo> photos;
 
     @Column(name = "is_prompted")
     private boolean isPrompted;
 
     @OneToMany
-    @Column(name = "prompt_chats")
     private List<Chat> promptChats;
 
     @ElementCollection

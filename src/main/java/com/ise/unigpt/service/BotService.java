@@ -114,7 +114,6 @@ public class BotService {
                 return new ResponseDTO(false, "Bot can only be updated by creator");
             }
 
-            // todo：删不了一点
             List<Chat> promptChats = bot.getPromptChats();
             bot.getPromptChats().clear();
             chatRepository.deleteAll(promptChats);
@@ -320,20 +319,20 @@ public class BotService {
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-    
+
         List<CommentDTO> comments = bot.getComments()
                 .stream()
                 .map(comment -> new CommentDTO(comment))
                 .collect(Collectors.toList());
-    
+
         System.out.println("Number of comments: " + comments.size());
         System.out.println("Page size: " + pageSize);
         int start = page * pageSize;
         int end = Math.min(start + pageSize, comments.size());
-    
+
         System.out.println("Start index: " + start);
         System.out.println("End index: " + end);
-    
+
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
@@ -348,7 +347,7 @@ public class BotService {
 
             bot.getComments().add(new Comment(content, time, user, bot));
             botRepository.save(bot);
-            
+
             return new ResponseDTO(true, "Comment created successfully");
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
