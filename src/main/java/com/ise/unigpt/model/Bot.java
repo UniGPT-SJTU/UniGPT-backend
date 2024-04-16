@@ -3,6 +3,7 @@ package com.ise.unigpt.model;
 import com.ise.unigpt.dto.CreateBotRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.dialect.SybaseSqmToSqlAstConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class Bot {
     @OneToMany
     private List<Comment> comments;
 
-    public Bot(CreateBotRequestDTO dto, User creator, List<PromptChat> promptChats) {
+    public Bot(CreateBotRequestDTO dto, User creator) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
@@ -74,7 +75,7 @@ public class Bot {
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
         this.isPrompted = dto.isPrompted();
-        this.promptChats = promptChats;
+        this.promptChats = new ArrayList<>();
         this.promptKeys = dto.getPromptKeys();
         this.likeNumber = 0;
         this.starNumber = 0;

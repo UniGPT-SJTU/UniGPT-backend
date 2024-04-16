@@ -70,6 +70,7 @@ public class AuthService {
     }
 
     public User getUserByToken(String token) {
+        // TODO: 登录请求应该抛出401(未授权)异常
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
         return auth.getUser();

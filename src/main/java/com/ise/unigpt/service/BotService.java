@@ -7,6 +7,7 @@ import com.ise.unigpt.repository.ChatRepository;
 import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -95,12 +96,19 @@ public class BotService {
     public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
         User creatorUser = authService.getUserByToken(token);
 
-        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).toList();
-        promptChatRepository.saveAll(promptChats);
-
-        Bot newBot = new Bot(dto, creatorUser, promptChats);
+        // 创建一个新的Bot对象并保存到数据库
+        Bot newBot = new Bot(dto, creatorUser);
         botRepository.save(newBot);
 
+        for(PromptChatDTO promptChatDTO: dto.getPromptChats()) {
+            PromptChat newPromptChat = new PromptChat(promptChatDTO);
+            promptChatRepository.save(newPromptChat);
+            newBot.getPromptChats().add(newPromptChat);
+        }
+        // 保存新的Bot对象
+        botRepository.save(newBot);
+
+        // 更新用户的创建Bot列表
         creatorUser.getCreateBots().add(newBot);
         userRepository.save(creatorUser);
 

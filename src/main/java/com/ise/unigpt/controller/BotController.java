@@ -55,11 +55,12 @@ public class BotController {
     }
 
     @PostMapping
-    public ResponseDTO createBot(@RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token){
+    public ResponseEntity<ResponseDTO> createBot(@RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token){
         try{
-            return service.createBot(dto, token);
+            return ResponseEntity.ok(service.createBot(dto, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
