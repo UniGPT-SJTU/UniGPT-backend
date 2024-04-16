@@ -64,7 +64,6 @@ public class AuthService {
     public User getUserByToken(String token) {
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
-
         return auth.getUser();
     }
 }

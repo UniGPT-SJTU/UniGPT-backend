@@ -31,6 +31,6 @@ public class History {
     private List<Chat> chats;
 
     @OneToMany
-    @JoinColumn(name = "prompt_list")
-    private List<PromptItem> promptList;
+    @JoinColumn(name = "prompt_values")
+    private List<PromptValue> promptValues;
 }

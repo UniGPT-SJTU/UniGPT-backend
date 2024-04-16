@@ -8,8 +8,6 @@ import com.ise.unigpt.dto.CommentRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/bots")
@@ -36,14 +34,16 @@ public class BotController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getBotProfile(@PathVariable Integer id, @RequestParam String info) {
+    public ResponseEntity<Object> getBotProfile(@PathVariable Integer id, @RequestParam String info, @CookieValue("token") String token) {
         try {
             if (info.equals("brief")) {
                 return ResponseEntity.ok(service.getBotBriefInfo(id));
             } else if (info.equals("detail")) {
-                return ResponseEntity.ok(service.getBotDetailInfo(id));
+                return ResponseEntity.ok(service.getBotDetailInfo(id, token));
             } else {
-                return ResponseEntity.badRequest().body("Invalid info parameter");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDTO(false, "Invalid info parameter"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -51,19 +51,19 @@ public class BotController {
         }
     }
 
-    @PostMapping("/")
-    public ResponseDTO createBot(@RequestBody CreateBotRequestDTO dto){
+    @PostMapping
+    public ResponseDTO createBot(@RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token){
         try{
-            return service.createBot(dto);
+            return service.createBot(dto, token);
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody CreateBotRequestDTO dto) {
+    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody CreateBotRequestDTO dto, @CookieValue("token") String token) {
         try {
-            return service.updateBot(id, dto);
+            return service.updateBot(id, dto, token);
         } catch (Exception e) {
             return new ResponseDTO(false, e.getMessage());
         }
