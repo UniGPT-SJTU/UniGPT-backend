@@ -2,6 +2,7 @@ package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.LoginOkResponseDTO;
 import com.ise.unigpt.dto.LoginRequestDTO;
+import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -28,7 +29,7 @@ public class AuthController {
     public ResponseEntity<Object> login(@RequestBody LoginRequestDTO loginDTO, HttpServletResponse response) {
         try {
             // 更新Cookies
-            String token = service.login(loginDTO.getUsername(), loginDTO.getPassword());
+            String token = service.login(loginDTO);
             Cookie cookie = new Cookie("token", token);
             cookie.setMaxAge(24 * 60 * 60);
             cookie.setPath("/");
@@ -37,6 +38,16 @@ public class AuthController {
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+    @PostMapping("/register")
+    public ResponseEntity<Object> register(@RequestBody RegisterRequestDTO registerDTO) {
+        try {
+            service.register(registerDTO);
+            return ResponseEntity.ok(new ResponseDTO(true, "register success"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseDTO(false, e.getMessage()));
         }
     }

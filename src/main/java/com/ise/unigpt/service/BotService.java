@@ -85,6 +85,8 @@ public class BotService {
             bot.setCreator(user);
 
             setBotFromDTO(bot, dto);
+            user.getCreateBots().add(bot);
+            userRepository.save(user);
 
             return new ResponseDTO(true, "Bot created successfully");
         } catch (Exception e) {

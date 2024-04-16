@@ -1,5 +1,7 @@
 package com.ise.unigpt.service;
 
+import com.ise.unigpt.dto.LoginRequestDTO;
+import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.AuthRepository;
@@ -7,6 +9,7 @@ import com.ise.unigpt.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -27,17 +30,22 @@ public class AuthService {
      * @return 若登录成功，返回更新后的token
      * @throws AuthenticationException 登录异常
      */
-    public String login(String username, String password) throws AuthenticationException {
-        Optional<User> optionalUser = userRepository.findByName(username);
+    public String login(LoginRequestDTO dto) throws AuthenticationException {
+        Optional<User> optionalUser = userRepository.findByName(dto.getUsername());
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
-            if(user.getPassword().equals(password)) {
+            if(user.getPassword().equals(dto.getPassword())) {
                 return generateAuthToken(user);
             }
         }
         throw new AuthenticationException("Invalid username or password");
     }
-
+    public void register(RegisterRequestDTO dto) {
+        if(userRepository.findByName(dto.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        userRepository.save(new User(dto));
+    }
 
     /**
      * @brief 生成认证的令牌

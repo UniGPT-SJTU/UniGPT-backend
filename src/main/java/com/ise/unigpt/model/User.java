@@ -1,8 +1,10 @@
 package com.ise.unigpt.model;
 
+import com.ise.unigpt.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -54,10 +56,29 @@ public class User {
     private List<Bot> usedBots;
 
     @OneToMany
-    @JoinColumn(name = "create_bots")
     private List<Bot> createBots;
 
     @OneToMany
-    @JoinColumn(name = "histories")
     private List<History> histories;
+
+    public User(RegisterRequestDTO dto) {
+
+        this.name = dto.getUsername();
+        this.email = dto.getEmail();
+        this.password = dto.getPassword();
+        this.avatar = dto.getAvatar();
+        this.description = dto.getDescription();
+
+        this.likeBots = new ArrayList<>();
+        this.starBots = new ArrayList<>();
+        this.usedBots = new ArrayList<>();
+        this.createBots = new ArrayList<>();
+    }
+
+    public User() {
+        this.likeBots = new ArrayList<>();
+        this.starBots = new ArrayList<>();
+        this.usedBots = new ArrayList<>();
+        this.createBots = new ArrayList<>();
+    }
 }

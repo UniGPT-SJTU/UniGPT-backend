@@ -60,6 +60,6 @@ public class Bot {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "bot")
+    @OneToMany
     private List<Comment> comments;
 }

@@ -27,10 +27,8 @@ public class History {
     private Bot bot;
 
     @OneToMany
-    @JoinColumn(name = "chats")
     private List<Chat> chats;
 
     @OneToMany
-    @JoinColumn(name = "prompt_values")
     private List<PromptValue> promptValues;
 }
