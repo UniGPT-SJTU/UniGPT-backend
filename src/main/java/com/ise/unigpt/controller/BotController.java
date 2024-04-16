@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+// TODO: 部分Exception需要分类处理
 @RestController
 @RequestMapping("/api/bots")
 public class BotController {
@@ -36,18 +37,14 @@ public class BotController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getBotProfile(@PathVariable Integer id, @RequestParam String info, @CookieValue("token") String token) {
         try {
-            if (info.equals("brief")) {
-                return ResponseEntity.ok(service.getBotBriefInfo(id));
-            } else if (info.equals("detail")) {
-                return ResponseEntity.ok(service.getBotDetailInfo(id, token));
-            } else if (info.equals("edit")) {
-                return ResponseEntity.ok(service.getBotEditInfo(id, token));
-            }
-            else {
-                return ResponseEntity
+            return switch (info) {
+                case "brief" -> ResponseEntity.ok(service.getBotBriefInfo(id));
+                case "detail" -> ResponseEntity.ok(service.getBotDetailInfo(id, token));
+                case "edit" -> ResponseEntity.ok(service.getBotEditInfo(id, token));
+                default -> ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(new ResponseDTO(false, "Invalid info parameter"));
-            }
+            };
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

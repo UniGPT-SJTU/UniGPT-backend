@@ -143,6 +143,8 @@ public class BotService {
     }
 
 
+
+    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO likeBot(Integer id, String token) {
         try{
             Bot bot = botRepository.findById(id)
@@ -167,6 +169,7 @@ public class BotService {
         }
     }
 
+    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO dislikeBot(Integer id, String token) {
         try {
             Bot bot = botRepository.findById(id)
@@ -191,6 +194,7 @@ public class BotService {
         }
     }
 
+    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO starBot(Integer id, String token) {
         try{
             Bot bot = botRepository.findById(id)
@@ -215,6 +219,7 @@ public class BotService {
         }
     }
 
+    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO unstarBot(Integer id, String token) {
         try{
             Bot bot = botRepository.findById(id)
@@ -311,6 +316,7 @@ public class BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
+    // TODO: 目前此接口有问题，除非bot.comment使用级联
     public ResponseDTO createComment(Integer id, String token, String content) {
         try {
             Bot bot = botRepository.findById(id)
@@ -320,7 +326,8 @@ public class BotService {
 
             String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-            bot.getComments().add(new Comment(content, time, user, bot));
+            Comment newComment = new Comment(content, time, user, bot);
+            bot.getComments().add(newComment);
             botRepository.save(bot);
 
             return new ResponseDTO(true, "Comment created successfully");

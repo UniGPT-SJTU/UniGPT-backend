@@ -62,7 +62,8 @@ public class Bot {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @OneToMany
+    // TODO: 是否使用级联操作？
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Comment> comments;
 
     public Bot(BotEditInfoDTO dto, User creator) {
@@ -82,7 +83,6 @@ public class Bot {
         this.creator = creator;
         this.comments = new ArrayList<>();
     }
-    // TODO: 将CreateBotRequestDTO和UpdateBotRequestDTO合并为一个DTO
     public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();

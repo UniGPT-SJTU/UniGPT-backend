@@ -19,7 +19,7 @@ import javax.naming.AuthenticationException;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private AuthService service;
+    private final AuthService service;
 
     public AuthController(AuthService service) {
         this.service = service;

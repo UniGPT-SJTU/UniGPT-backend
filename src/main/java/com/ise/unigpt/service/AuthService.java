@@ -25,8 +25,7 @@ public class AuthService {
 
     /**
      * @brief 用户登录函数
-     * @param username 用户名
-     * @param password 密码
+     * @param dto 登录请求
      * @return 若登录成功，返回更新后的token
      * @throws AuthenticationException 登录异常
      */
