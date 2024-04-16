@@ -1,8 +1,5 @@
 package com.ise.unigpt.dto;
 
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.model.ChatType;
-import com.ise.unigpt.model.Photo;
 import lombok.Data;
 
 import java.util.List;

@@ -4,13 +4,9 @@ import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.ChatRepository;
-import com.ise.unigpt.repository.PhotoRepository;
 import com.ise.unigpt.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,19 +21,15 @@ public class BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
 
-    private final PhotoRepository photoRepository;
-
     private final ChatRepository chatRepository;
     private final AuthService authService;
 
     public BotService(BotRepository botRepository,
                       UserRepository userRepository,
-                      PhotoRepository photoRepository,
                         ChatRepository chatRepository,
                       AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
-        this.photoRepository = photoRepository;
         this.chatRepository = chatRepository;
         this.authService = authService;
     }
@@ -92,11 +84,7 @@ public class BotService {
             User user = authService.getUserByToken(token);
             bot.setCreator(user);
 
-            List<Photo> photos = new ArrayList<>();
-            setBotFromDTO(bot, photos, dto);
-
-            botRepository.save(bot);
-            photoRepository.saveAll(photos);
+            setBotFromDTO(bot, dto);
 
             return new ResponseDTO(true, "Bot created successfully");
         } catch (Exception e) {
@@ -118,15 +106,7 @@ public class BotService {
             bot.getPromptChats().clear();
             chatRepository.deleteAll(promptChats);
 
-            List<Photo> photos = bot.getPhotos();
-            bot.getPhotos().clear();
-            photoRepository.deleteAll(photos);
-
-            List<Photo> newPhotos = new ArrayList<>();
-            setBotFromDTO(bot, newPhotos, dto);
-
-            photoRepository.saveAll(newPhotos);
-            botRepository.save(bot);
+            setBotFromDTO(bot, dto);
 
             return new ResponseDTO(true, "Bot updated successfully");
         } catch (Exception e) {
@@ -134,22 +114,14 @@ public class BotService {
         }
     }
 
-    public void setBotFromDTO(Bot bot, List<Photo> photos,CreateBotRequestDTO dto) {
+    public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
         bot.setName(dto.getName());
         bot.setAvatar(dto.getAvatar());
         bot.setDescription(dto.getDescription());
         bot.setBaseModelAPI(dto.getBaseModelAPI());
         bot.setPublished(dto.isPublished());
         bot.setDetail(dto.getDetail());
-
-        dto.getPhotos().forEach(photoUrl -> {
-            Photo photo = new Photo();
-            photo.setUrl(photoUrl);
-            photo.setBot(bot);
-            photos.add(photo);
-        });
-        bot.setPhotos(photos);
-
+        bot.setPhotos(dto.getPhotos());
         bot.setPrompted(dto.isPrompted());
 
         List<Chat> promptChats = new ArrayList<>();
@@ -166,6 +138,7 @@ public class BotService {
         bot.setPromptKeys(dto.getPromptKeys());
 
         chatRepository.saveAll(promptChats);
+        botRepository.save(bot);
     }
 
     public ResponseDTO likeBot(Integer id, String token) {

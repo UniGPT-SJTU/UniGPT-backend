@@ -32,8 +32,8 @@ public class Bot {
     @Column(name = "detail")
     private String detail;
 
-    @OneToMany
-    private List<Photo> photos;
+    @ElementCollection
+    private List<String> photos;
 
     @Column(name = "is_prompted")
     private boolean isPrompted;
