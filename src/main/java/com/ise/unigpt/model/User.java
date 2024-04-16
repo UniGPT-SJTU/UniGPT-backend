@@ -76,9 +76,6 @@ public class User {
     }
 
     public User() {
-        this.likeBots = new ArrayList<>();
-        this.starBots = new ArrayList<>();
-        this.usedBots = new ArrayList<>();
-        this.createBots = new ArrayList<>();
+        // not used
     }
 }

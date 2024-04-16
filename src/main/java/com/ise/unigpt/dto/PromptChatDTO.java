@@ -1,10 +1,10 @@
 package com.ise.unigpt.dto;
 
-import com.ise.unigpt.model.ChatType;
+import com.ise.unigpt.model.PromptChatType;
 import lombok.Data;
 
 @Data
 public class PromptChatDTO {
-    ChatType type;
-    String content;
+    private PromptChatType type;
+    private String content;
 }

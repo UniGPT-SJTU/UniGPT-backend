@@ -4,6 +4,7 @@ import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.ChatRepository;
+import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
@@ -21,16 +22,16 @@ public class BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
 
-    private final ChatRepository chatRepository;
+    private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
 
     public BotService(BotRepository botRepository,
                       UserRepository userRepository,
-                        ChatRepository chatRepository,
+                        PromptChatRepository promptChatRepository,
                       AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
-        this.chatRepository = chatRepository;
+        this.promptChatRepository = promptChatRepository;
         this.authService = authService;
     }
 
@@ -79,36 +80,52 @@ public class BotService {
     }
 
     public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
-        try {
-            Bot bot = new Bot();
-            User user = authService.getUserByToken(token);
-            bot.setCreator(user);
+        User creatorUser = authService.getUserByToken(token);
 
-            setBotFromDTO(bot, dto);
-            user.getCreateBots().add(bot);
-            userRepository.save(user);
+        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).toList();
+        promptChatRepository.saveAll(promptChats);
 
-            return new ResponseDTO(true, "Bot created successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
+        Bot newBot = new Bot(dto, creatorUser, promptChats);
+        botRepository.save(newBot);
+
+        creatorUser.getCreateBots().add(newBot);
+        userRepository.save(creatorUser);
+
+        return new ResponseDTO(true, "Bot created successfully");
     }
 
     public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto, String token) {
         try {
-            Bot bot = botRepository.findById(id)
+            Bot updatedBot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            User user = authService.getUserByToken(token);
-            if (bot.getCreator().getId() != user.getId()) {
+            User requestUser = authService.getUserByToken(token);
+            if (updatedBot.getCreator().getId() != requestUser.getId()) {
                 return new ResponseDTO(false, "Bot can only be updated by creator");
             }
 
-            List<Chat> promptChats = bot.getPromptChats();
-            bot.getPromptChats().clear();
-            chatRepository.deleteAll(promptChats);
+            promptChatRepository.deleteAll(updatedBot.getPromptChats());
 
-            setBotFromDTO(bot, dto);
+            updatedBot.setName(dto.getName());
+            updatedBot.setAvatar(dto.getAvatar());
+            updatedBot.setDescription(dto.getDescription());
+            updatedBot.setBaseModelAPI(dto.getBaseModelAPI());
+            updatedBot.setPublished(dto.isPublished());
+            updatedBot.setDetail(dto.getDetail());
+            updatedBot.setPhotos(dto.getPhotos());
+            updatedBot.setPrompted(dto.isPrompted());
+            updatedBot.setPromptChats(dto.getPromptChats().stream().map(PromptChat::new).toList());
+            updatedBot.setPromptKeys(dto.getPromptKeys());
+
+            promptChatRepository.saveAll(updatedBot.getPromptChats());
+            botRepository.save(updatedBot);
+
+
+//            List<Chat> promptChats = bot.getPromptChats();
+//            bot.getPromptChats().clear();
+//            chatRepository.deleteAll(promptChats);
+//
+//            setBotFromDTO(bot, dto);
 
             return new ResponseDTO(true, "Bot updated successfully");
         } catch (Exception e) {
@@ -116,32 +133,32 @@ public class BotService {
         }
     }
 
-    public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
-        bot.setName(dto.getName());
-        bot.setAvatar(dto.getAvatar());
-        bot.setDescription(dto.getDescription());
-        bot.setBaseModelAPI(dto.getBaseModelAPI());
-        bot.setPublished(dto.isPublished());
-        bot.setDetail(dto.getDetail());
-        bot.setPhotos(dto.getPhotos());
-        bot.setPrompted(dto.isPrompted());
-
-        List<Chat> promptChats = new ArrayList<>();
-        dto.getPromptChats().forEach(chat -> {
-            Chat promptChat = new Chat();
-            promptChat.setContent(chat.getContent());
-            promptChat.setType(chat.getType());
-            promptChat.setTime(new Date());
-            promptChat.setHistory(null);
-            promptChats.add(promptChat);
-        });
-        bot.setPromptChats(promptChats);
-
-        bot.setPromptKeys(dto.getPromptKeys());
-
-        chatRepository.saveAll(promptChats);
-        botRepository.save(bot);
-    }
+//    public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
+//        bot.setName(dto.getName());
+//        bot.setAvatar(dto.getAvatar());
+//        bot.setDescription(dto.getDescription());
+//        bot.setBaseModelAPI(dto.getBaseModelAPI());
+//        bot.setPublished(dto.isPublished());
+//        bot.setDetail(dto.getDetail());
+//        bot.setPhotos(dto.getPhotos());
+//        bot.setPrompted(dto.isPrompted());
+//
+//        List<Chat> promptChats = new ArrayList<>();
+//        dto.getPromptChats().forEach(chat -> {
+//            Chat promptChat = new Chat();
+//            promptChat.setContent(chat.getContent());
+//            promptChat.setType(chat.getType());
+//            promptChat.setTime(new Date());
+//            promptChat.setHistory(null);
+//            promptChats.add(promptChat);
+//        });
+//        bot.setPromptChats(promptChats);
+//
+//        bot.setPromptKeys(dto.getPromptKeys());
+//
+//        chatRepository.saveAll(promptChats);
+//        botRepository.save(bot);
+//    }
 
     public ResponseDTO likeBot(Integer id, String token) {
         try{

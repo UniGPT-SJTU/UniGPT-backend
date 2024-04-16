@@ -1,8 +1,10 @@
 package com.ise.unigpt.model;
 
+import com.ise.unigpt.dto.CreateBotRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -39,7 +41,7 @@ public class Bot {
     private boolean isPrompted;
 
     @OneToMany
-    private List<Chat> promptChats;
+    private List<PromptChat> promptChats;
 
     @ElementCollection
     private List<String> promptKeys;
@@ -62,4 +64,26 @@ public class Bot {
 
     @OneToMany
     private List<Comment> comments;
+
+    public Bot(CreateBotRequestDTO dto, User creator, List<PromptChat> promptChats) {
+        this.name = dto.getName();
+        this.avatar = dto.getAvatar();
+        this.description = dto.getDescription();
+        this.baseModelAPI = dto.getBaseModelAPI();
+        this.isPublished = dto.isPublished();
+        this.detail = dto.getDetail();
+        this.photos = dto.getPhotos();
+        this.isPrompted = dto.isPrompted();
+        this.promptChats = promptChats;
+        this.promptKeys = dto.getPromptKeys();
+        this.likeNumber = 0;
+        this.starNumber = 0;
+        this.likeUsers = new ArrayList<>();
+        this.starUsers = new ArrayList<>();
+        this.creator = creator;
+        this.comments = new ArrayList<>();
+    }
+    public Bot() {
+        // not used
+    }
 }

@@ -1,12 +1,12 @@
 package com.ise.unigpt.dto;
 
+import com.ise.unigpt.model.PromptChat;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class CreateBotRequestDTO {
-
     private String name;
     private String avatar;
     private String description;
@@ -17,7 +17,4 @@ public class CreateBotRequestDTO {
     private boolean isPrompted;
     private List<PromptChatDTO> promptChats;
     private List<String> promptKeys;
-
-
-
 }
