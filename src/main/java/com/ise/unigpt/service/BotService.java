@@ -94,21 +94,19 @@ public class BotService {
     }
 
     public ResponseDTO createBot(CreateBotRequestDTO dto, String token) {
+        // 根据token获取用户
         User creatorUser = authService.getUserByToken(token);
 
-        // 创建一个新的Bot对象并保存到数据库
+        // 创建promptChats列表并保存到数据库
+        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
+        promptChatRepository.saveAll(promptChats);
+
+        // 创建bot并保存到数据库
         Bot newBot = new Bot(dto, creatorUser);
+        newBot.setPromptChats(promptChats);
         botRepository.save(newBot);
 
-        for(PromptChatDTO promptChatDTO: dto.getPromptChats()) {
-            PromptChat newPromptChat = new PromptChat(promptChatDTO);
-            promptChatRepository.save(newPromptChat);
-            newBot.getPromptChats().add(newPromptChat);
-        }
-        // 保存新的Bot对象
-        botRepository.save(newBot);
-
-        // 更新用户的创建Bot列表
+        // 更新用户的createBots列表
         creatorUser.getCreateBots().add(newBot);
         userRepository.save(creatorUser);
 
@@ -116,70 +114,34 @@ public class BotService {
     }
 
     public ResponseDTO updateBot(Integer id, CreateBotRequestDTO dto, String token) {
-        try {
-            Bot updatedBot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            User requestUser = authService.getUserByToken(token);
-            if (updatedBot.getCreator().getId() != requestUser.getId()) {
-                return new ResponseDTO(false, "Bot can only be updated by creator");
-            }
+        // 根据id获取bot
+        Bot updatedBot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            promptChatRepository.deleteAll(updatedBot.getPromptChats());
-
-            updatedBot.setName(dto.getName());
-            updatedBot.setAvatar(dto.getAvatar());
-            updatedBot.setDescription(dto.getDescription());
-            updatedBot.setBaseModelAPI(dto.getBaseModelAPI());
-            updatedBot.setPublished(dto.isPublished());
-            updatedBot.setDetail(dto.getDetail());
-            updatedBot.setPhotos(dto.getPhotos());
-            updatedBot.setPrompted(dto.isPrompted());
-            updatedBot.setPromptChats(dto.getPromptChats().stream().map(PromptChat::new).toList());
-            updatedBot.setPromptKeys(dto.getPromptKeys());
-
-            promptChatRepository.saveAll(updatedBot.getPromptChats());
-            botRepository.save(updatedBot);
-
-
-//            List<Chat> promptChats = bot.getPromptChats();
-//            bot.getPromptChats().clear();
-//            chatRepository.deleteAll(promptChats);
-//
-//            setBotFromDTO(bot, dto);
-
-            return new ResponseDTO(true, "Bot updated successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+        // 根据token获取用户, 并检查用户是否有权限更新bot
+        User requestUser = authService.getUserByToken(token);
+        if (updatedBot.getCreator().getId() != requestUser.getId()) {
+            throw new IllegalArgumentException("User not authorized to update bot");
         }
+
+        // 删除原有的promptChats列表
+        List<PromptChat> oldPromptChats = new ArrayList<>(updatedBot.getPromptChats());
+        updatedBot.getPromptChats().clear();
+        promptChatRepository.deleteAll(oldPromptChats);
+
+        // 创建promptChats列表并保存到数据库
+        List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
+        promptChatRepository.saveAll(promptChats);
+
+        // 更新bot信息并保存到数据库
+        updatedBot.updateInfo(dto);
+        updatedBot.setPromptChats(promptChats);
+        botRepository.save(updatedBot);
+
+        return new ResponseDTO(true, "Bot updated successfully");
     }
 
-//    public void setBotFromDTO(Bot bot, CreateBotRequestDTO dto) {
-//        bot.setName(dto.getName());
-//        bot.setAvatar(dto.getAvatar());
-//        bot.setDescription(dto.getDescription());
-//        bot.setBaseModelAPI(dto.getBaseModelAPI());
-//        bot.setPublished(dto.isPublished());
-//        bot.setDetail(dto.getDetail());
-//        bot.setPhotos(dto.getPhotos());
-//        bot.setPrompted(dto.isPrompted());
-//
-//        List<Chat> promptChats = new ArrayList<>();
-//        dto.getPromptChats().forEach(chat -> {
-//            Chat promptChat = new Chat();
-//            promptChat.setContent(chat.getContent());
-//            promptChat.setType(chat.getType());
-//            promptChat.setTime(new Date());
-//            promptChat.setHistory(null);
-//            promptChats.add(promptChat);
-//        });
-//        bot.setPromptChats(promptChats);
-//
-//        bot.setPromptKeys(dto.getPromptKeys());
-//
-//        chatRepository.saveAll(promptChats);
-//        botRepository.save(bot);
-//    }
 
     public ResponseDTO likeBot(Integer id, String token) {
         try{

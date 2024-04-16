@@ -3,7 +3,6 @@ package com.ise.unigpt.model;
 import com.ise.unigpt.dto.CreateBotRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.dialect.SybaseSqmToSqlAstConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +74,6 @@ public class Bot {
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
         this.isPrompted = dto.isPrompted();
-        this.promptChats = new ArrayList<>();
         this.promptKeys = dto.getPromptKeys();
         this.likeNumber = 0;
         this.starNumber = 0;
@@ -83,6 +81,18 @@ public class Bot {
         this.starUsers = new ArrayList<>();
         this.creator = creator;
         this.comments = new ArrayList<>();
+    }
+    // TODO: 将CreateBotRequestDTO和UpdateBotRequestDTO合并为一个DTO
+    public void updateInfo(CreateBotRequestDTO dto) {
+        this.name = dto.getName();
+        this.avatar = dto.getAvatar();
+        this.description = dto.getDescription();
+        this.baseModelAPI = dto.getBaseModelAPI();
+        this.isPublished = dto.isPublished();
+        this.detail = dto.getDetail();
+        this.photos = dto.getPhotos();
+        this.isPrompted = dto.isPrompted();
+        this.promptKeys = dto.getPromptKeys();
     }
     public Bot() {
         // not used
