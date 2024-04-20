@@ -3,105 +3,54 @@ package com.ise.unigpt.service;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.dto.*;
-import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import javax.security.sasl.AuthenticationException;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.List;
-import java.util.ArrayList;
+public interface UserService {
 
-@Service
-public class UserService {
-    private final UserRepository repository;
-    private final AuthService authService;
+    /**
+     * @brief 根据用户id查找用户
+     * @param id 用户id
+     * @return 用户
+     */
+    User findUserById(Integer id);
 
-    public UserService(UserRepository repository, AuthService authService) {
-        this.repository = repository;
-        this.authService = authService;
-    }
-
-    public User findUserById(Integer id) {
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User not found for ID: " + id);
-        }
-
-        return optionalUser.get();
-    }
-
-    public void updateUserInfo(
+    /**
+     * @brief 更新用户信息
+     * @param id 用户id
+     * @param updateUserInfoRequestDTO 更新用户信息请求
+     * @param token 用户token
+     */
+    void updateUserInfo(
             Integer id,
             UpdateUserInfoRequestDTO updateUserInfoRequestDTO,
-            String token) throws AuthenticationException {
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User not found for ID: " + id);
-        }
+            String token
+    ) throws AuthenticationException;
 
-        User targetUser = optionalUser.get();
-        User requestUser = authService.getUserByToken(token);
-        if(!targetUser.equals(requestUser)) {
-            throw new AuthenticationException("Unauthorized to update user info");
-        }
-        targetUser.setName(updateUserInfoRequestDTO.getName());
-        targetUser.setAvatar(updateUserInfoRequestDTO.getAvatar());
-        targetUser.setDescription(updateUserInfoRequestDTO.getDescription());
+    /**
+     * @brief 获取使用过的机器人
+     * @param userid 用户id
+     * @param token 用户token
+     * @param page 页码
+     * @param pageSize 每页大小
+     */
+    GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize);
 
-        repository.save(targetUser);
-    }
+    /**
+     * @brief 获取收藏的机器人
+     * @param userid 用户id
+     * @param token 用户token
+     * @param page 页码
+     * @param pageSize 每页大小
+     */
+    GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize);
 
-    public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize) {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
+    /**
+     * @brief 获取创建的机器人
+     * @param userid 用户id
+     * @param token 用户token
+     * @param page 页码
+     * @param pageSize 每页大小
+     */
+    GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize);
 
-        List<Bot> usedBots = optionalUser.get().getUsedBots();
-
-        List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                .collect(Collectors.toList());
-
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
-    }
-
-    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize) {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
-
-        List<Bot> starredBots = optionalUser.get().getStarBots();
-
-        List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                .collect(Collectors.toList());
-
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
-    }
-
-    public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
-
-        List<Bot> createdBots = optionalUser.get().getCreateBots();
-
-        List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
-                .collect(Collectors.toList());
-
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
-    }
 }
