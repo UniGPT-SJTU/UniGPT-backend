@@ -84,9 +84,10 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
         List<PromptValue> promptValues = new ArrayList<>();
-        for (String prompt : promptList) {
+        for(String content: promptList){
             PromptValue promptValue = new PromptValue();
-            promptValue.setContent(prompt);
+            promptValue.setHistory(history);
+            promptValue.setContent(content);
             promptValues.add(promptValue);
         }
         history.setPromptValues(promptValues);
