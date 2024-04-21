@@ -30,7 +30,6 @@ public interface ChatHistoryService {
             String token)
     throws AuthenticationException ;
 
-    // TODO: 此处实现未完成
     /**
      * @brief 获取指定历史的所有对话列表
      * @param historyid 历史id
