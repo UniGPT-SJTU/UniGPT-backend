@@ -143,10 +143,7 @@ public class BotServiceImpl implements BotService {
     }
 
 
-
-    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO likeBot(Integer id, String token) {
-        try{
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -164,14 +161,10 @@ public class BotServiceImpl implements BotService {
             botRepository.save(bot);
             userRepository.save(user);
             return new ResponseDTO(true, "Bot liked successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
     }
 
-    // TODO: 直接抛出异常，不要在service中处理异常
+
     public ResponseDTO dislikeBot(Integer id, String token) {
-        try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -189,14 +182,9 @@ public class BotServiceImpl implements BotService {
             botRepository.save(bot);
             userRepository.save(user);
             return new ResponseDTO(true, "Bot disliked successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
     }
 
-    // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO starBot(Integer id, String token) {
-        try{
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -214,14 +202,10 @@ public class BotServiceImpl implements BotService {
             botRepository.save(bot);
             userRepository.save(user);
             return new ResponseDTO(true, "Bot starred successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
     }
 
-    // TODO: 直接抛出异常，不要在service中处理异常
+
     public ResponseDTO unstarBot(Integer id, String token) {
-        try{
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -239,9 +223,7 @@ public class BotServiceImpl implements BotService {
             botRepository.save(bot);
             userRepository.save(user);
             return new ResponseDTO(true, "Bot unstarred successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
+
     }
 
     public GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize){
