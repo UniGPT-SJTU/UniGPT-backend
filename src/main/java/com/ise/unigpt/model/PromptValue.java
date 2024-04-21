@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "PromptValue")
+@Table(name = "promt_value")
 public class PromptValue {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,8 +14,7 @@ public class PromptValue {
     private int id;
 
     @ManyToOne
-    @JsonIncludeProperties({"id"})
-    @JoinColumn(name = "history_id")
+    @JoinColumn(name = "history_id", nullable = false)
     private History history;
 
     @Column(name = "content")

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -137,9 +138,9 @@ public class BotController {
     }
 
     @PostMapping("/{id}/history")
-    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody String content) {
+    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> contentList) {
         try {
-            return ResponseEntity.ok(service.addChatHistory(id, token, content));
+            return ResponseEntity.ok(service.createChatHistory(id, token, contentList));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

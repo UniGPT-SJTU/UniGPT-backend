@@ -5,15 +5,15 @@ import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
+import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import jakarta.persistence.*;
+import lombok.Data;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,18 +22,21 @@ import java.time.format.DateTimeFormatter;
 public class BotServiceImpl implements BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
+    private final HistoryRepository historyRepository;
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
 
     public BotServiceImpl(BotRepository botRepository,
                           UserRepository userRepository,
+                            HistoryRepository historyRepository,
                           PromptChatRepository promptChatRepository,
                           AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
+        this.historyRepository = historyRepository;
     }
 
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
@@ -238,9 +241,9 @@ public class BotServiceImpl implements BotService {
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
         List<Chat> chats = history.getChats();
-        // Sort chats by time
-        chats.sort((c1, c2) -> c1.getTime().compareTo(c2.getTime()));
-        int start = (page - 1) * pageSize;
+        // Sort chats by time in descending order
+        chats.sort(Comparator.comparing(Chat::getTime).reversed());
+        int start = page * pageSize;
         int end = Math.min(start + pageSize, chats.size());
         return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
     }
@@ -297,6 +300,39 @@ public class BotServiceImpl implements BotService {
 
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
+
+    public ResponseDTO createChatHistory(Integer id, String token, List<String> contentList){
+        try {
+            Bot bot = botRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+            User user = authService.getUserByToken(token);
+
+            // create history
+            History history = new History();
+            history.setBot(bot);
+            history.setUser(user);
+            history.setChats(new ArrayList<>());
+            // create empty promptValues
+            List<PromptValue> promptValues = new ArrayList<>();
+            for(String content: contentList){
+                PromptValue promptValue = new PromptValue();
+                promptValue.setHistory(history);
+                promptValue.setContent(content);
+                promptValues.add(promptValue);
+            }
+            history.setPromptValues(promptValues);
+            historyRepository.save(history);
+
+            // save history
+            user.getHistories().add(history);
+            userRepository.save(user);
+
+            return new ResponseDTO(true, "Chat history created successfully");
+    } catch (Exception e) {
+        return new ResponseDTO(false, e.getMessage());
+    }
+}
 
     // TODO: 目前此接口有问题，除非bot.comment使用级联
     public ResponseDTO createComment(Integer id, String token, String content) {

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +31,11 @@ public class History {
     @OneToMany
     private List<Chat> chats;
 
-    @OneToMany
-    private List<PromptValue> promptValues;
+    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PromptValue> promptValues = new ArrayList<>();
+
+    public void setPromptValues(List<PromptValue> promptValues){
+        this.promptValues.clear();
+        this.promptValues.addAll(promptValues);
+    }
 }
