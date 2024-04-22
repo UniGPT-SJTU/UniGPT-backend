@@ -1,5 +1,6 @@
 package com.ise.unigpt.model;
 
+import com.ise.unigpt.dto.JaccountUserDTO;
 import com.ise.unigpt.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -75,6 +76,13 @@ public class User {
         this.createBots = new ArrayList<>();
     }
 
+    public User(JaccountUserDTO dto) {
+        this.name = dto.getName();
+        this.email = dto.getEmail();
+        this.avatar = dto.getAvatar();
+        this.description = dto.getDescription();
+    }
+    
     public User() {
         // not used
     }

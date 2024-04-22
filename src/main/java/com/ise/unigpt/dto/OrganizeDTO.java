@@ -3,7 +3,7 @@ package com.ise.unigpt.dto;
 import lombok.Data;
 
 @Data
-public class Organize {
+public class OrganizeDTO {
     private String name;
     private String id;
 }

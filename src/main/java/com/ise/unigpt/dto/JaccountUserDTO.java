@@ -22,4 +22,7 @@ public class JaccountUserDTO {
     private String unionId;
     private String accountExpireDate;
     // ... other fields ...
+
+    private String avatar;
+    private String description;
 }

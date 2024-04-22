@@ -10,9 +10,9 @@ public class IdentityDTO {
     private String code;
     private String userType;
     private String userTypeName;
-    private Organize organize;
-    private Organize topOrganize;
-    private Organize mgtOrganize;
+    private OrganizeDTO organize;
+    private OrganizeDTO topOrganize;
+    private OrganizeDTO mgtOrganize;
     private String status;
     private String expireDate;
     private long createDate;
@@ -22,5 +22,5 @@ public class IdentityDTO {
     private String admissionDate;
     private String trainLevel;
     private String graduateDate;
-    private List<Organize> topOrganizes;
+    private List<OrganizeDTO> topOrganizes;
 }

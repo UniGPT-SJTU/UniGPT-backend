@@ -90,8 +90,6 @@ public class AuthServiceImpl implements AuthService {
         return generateAuthToken(user);
     }
 
-    
-
     private User sendGetRequest(String urlStr) throws AuthenticationException {
         try {
             URL url = new URL(urlStr);
@@ -112,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
 
                 ObjectMapper mapper = new ObjectMapper();
                 JaccountUserDTO res = mapper.readValue(response.toString(), JaccountUserDTO.class);
-                return res.getUsers().get(0); // return the first user
+                return new User(res);
             } else {
                 throw new AuthenticationException("GET request not worked");
             }
