@@ -60,4 +60,21 @@ public class AuthController {
         response.addCookie(cookie);
         return ResponseEntity.ok(new ResponseDTO(true, ""));
     }
+
+    @PostMapping("/jaccountLogin")
+    public ResponseEntity<Object> jaccountLogin(@RequestBody String code, HttpServletResponse response) {
+        try {
+            // 更新Cookies
+            String token = service.jaccountLogin(code);
+            Cookie cookie = new Cookie("token", token);
+            cookie.setMaxAge(24 * 60 * 60);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }

@@ -6,7 +6,6 @@ import com.ise.unigpt.model.User;
 
 import javax.naming.AuthenticationException;
 
-
 public interface AuthService {
     /**
      * @brief 用户登录函数
@@ -27,5 +26,13 @@ public interface AuthService {
      * @param token 用户token
      * @return 用户
      */
-    User getUserByToken(String token) ;
+    User getUserByToken(String token);
+
+    /**
+     * @brief Jaccount登录函数
+     * @param code Jaccount返回的code
+     * @return 若登录成功，返回更新后的token
+     * @throws AuthenticationException 登录异常
+     */
+    String jaccountLogin(String code) throws AuthenticationException;
 }

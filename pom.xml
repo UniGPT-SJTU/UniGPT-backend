@@ -16,6 +16,36 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
+	<repositories>
+    <repository>
+        <id>public</id>
+        <name>SJTU Release Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public/</url>
+        <releases>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </releases>
+    </repository>
+    <repository>
+        <id>public-snapshots</id>
+        <name>SJTU Snapshots Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public-snapshots/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </repository>
+</repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>public</id>
+        <name>SJTU Release Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public/</url>
+    </pluginRepository>
+</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -50,6 +80,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+
+		<dependency>
+    		<groupId>sjtu</groupId>
+    		<artifactId>sjtu-api</artifactId>
+    		<version>1.0-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
