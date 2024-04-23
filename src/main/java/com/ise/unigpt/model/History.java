@@ -32,7 +32,7 @@ public class History {
     private List<Chat> chats;
 
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PromptValue> promptValues = new ArrayList<>();
+    private List<PromptValue> promptValues;
 
     public void setPromptValues(List<PromptValue> promptValues){
         this.promptValues.clear();

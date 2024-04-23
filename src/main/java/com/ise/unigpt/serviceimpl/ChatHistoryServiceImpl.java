@@ -77,6 +77,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     public GetPromptListDTO getPromptList(Integer historyid){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
+        if(history.getPromptValues() == null)
+            history.setPromptValues(new ArrayList<>());
         return new GetPromptListDTO(history.getPromptValues());
     }
 
