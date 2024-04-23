@@ -1,8 +1,10 @@
 package com.ise.unigpt.dto;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.ise.unigpt.model.Bot;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -33,6 +35,27 @@ public class BotEditInfoDTO {
     }
     public BotEditInfoDTO() {
         // not used
+    }
+    @VisibleForTesting
+    public BotEditInfoDTO(
+            String name,
+            String avatar,
+            String description,
+            String baseModelAPI,
+            boolean isPublished,
+            String detail,
+            boolean isPrompted
+    ) {
+        this.name = name;
+        this.avatar = avatar;
+        this.description = description;
+        this.baseModelAPI = baseModelAPI;
+        this.isPublished = isPublished;
+        this.detail = detail;
+        this.photos = new ArrayList<>();
+        this.isPrompted = isPrompted;
+        this.promptChats = new ArrayList<>();
+        this.promptKeys = new ArrayList<>();
     }
 }
 
