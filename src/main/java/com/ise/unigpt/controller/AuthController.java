@@ -38,9 +38,10 @@ public class AuthController {
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDTO(false, e.getMessage()));
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+
     @PostMapping("/register")
     public ResponseEntity<Object> register(@RequestBody RegisterRequestDTO registerDTO) {
         try {
@@ -48,7 +49,7 @@ public class AuthController {
             return ResponseEntity.ok(new ResponseDTO(true, "register success"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDTO(false, e.getMessage()));
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
@@ -63,6 +64,7 @@ public class AuthController {
 
     @PostMapping("/jaccountLogin")
     public ResponseEntity<Object> jaccountLogin(@RequestBody String code, HttpServletResponse response) {
+        System.out.println(code);
         try {
             // 更新Cookies
             String token = service.jaccountLogin(code);
@@ -74,7 +76,7 @@ public class AuthController {
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDTO(false, e.getMessage()));
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 }

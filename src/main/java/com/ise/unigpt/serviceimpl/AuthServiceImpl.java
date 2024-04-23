@@ -7,23 +7,26 @@ import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
+import com.ise.unigpt.dto.JaccountResponseDTO;
 import com.ise.unigpt.dto.JaccountUserDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.oltu.oauth2.common.token.OAuthToken;
 import org.springframework.stereotype.Service;
+import org.json.JSONObject;
 
 import javax.naming.AuthenticationException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import edu.sjtu.oauth.applicationToolkit.OAuth2Util;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -77,47 +80,81 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public String jaccountLogin(String code) throws AuthenticationException {
-
         String client_id = "ov3SLrO4HyZSELxcHiqS";
         String client_secret = "B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C";
-        OAuthToken token;
+        String accessToken;
+
         try {
-            token =  OAuth2Util.getToken(client_id, client_secret, "profile");
-        } catch (Exception e) {
+            Unirest.setTimeouts(0, 0);
+            HttpResponse<String> response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
+                    .header("Authorization",
+                            "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
+                    .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Accept", "*/* ")
+
+                    .header("Host", "jaccount.sjtu.edu.cn")
+                    .header("Connection", "keep-alive")
+                    .field("grant_type", "authorization_code")
+                    .field("code", code)
+                    .field("client_id", client_id)
+                    .field("client_secret", client_secret)
+                    .field("redirect_uri", "http://localhost:3000/login")
+                    .asString();
+
+            // Parse the response body to get the access token
+            // This depends on the format of the response. Here is an example if the
+            // response is JSON:
+            System.out.println("Response status: " + response.getStatus());
+            System.out.println("Response body: " + response.getBody());
+            JSONObject responseBody = new JSONObject(response.getBody());
+            System.out.println("Response body: " + responseBody);
+            accessToken = responseBody.getString("access_token");
+            System.out.println("Access token: " + accessToken);
+        } catch (UnirestException e) {
             throw new AuthenticationException("Jaccount login failed");
         }
-        User user = sendGetRequest("https://api.jaccount.sjtu.edu.cn/v1/me?access_token=" + token.getAccessToken());
+
+        User user = sendGetRequest("https://api.sjtu.edu.cn/v1/me/profile?access_token=" + accessToken);
+        System.out.println("user" + user);
+        // 查找是否已经注册
+        Optional<User> optionalUser = userRepository.findByName(user.getName());
+        if (optionalUser.isPresent()) {
+            return generateAuthToken(optionalUser.get());
+        }
+        userRepository.save(user);
+        String token = generateAuthToken(user);
+        System.out.println("token" + token);
         return generateAuthToken(user);
     }
 
     private User sendGetRequest(String urlStr) throws AuthenticationException {
         try {
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            System.out.println("urlStr: " + urlStr);
+            Unirest.setTimeouts(300, 3000);
+            HttpResponse<String> response = Unirest.get(urlStr)
+                    .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                    .header("Accept", "*/*")
+                    .header("Host", "api.sjtu.edu.cn")
+                    .header("Connection", "keep-alive")
+                    .asString();
 
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) { // success
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
+            System.out.println("Response status: " + response.getStatus());
+            System.out.println("Response body: " + response.getBody());
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-
-                in.close();
-
+            if (response.getStatus() == HttpURLConnection.HTTP_OK) {
                 ObjectMapper mapper = new ObjectMapper();
-                JaccountUserDTO res = mapper.readValue(response.toString(), JaccountUserDTO.class);
-                return new User(res);
+                JaccountResponseDTO jaccountResponse = mapper.readValue(response.getBody(), JaccountResponseDTO.class);
+
+                return new User(jaccountResponse.getUsers().get(0));
             } else {
+                System.out.println("GET request not worked");
                 throw new AuthenticationException("GET request not worked");
             }
 
         } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
             throw new AuthenticationException("Sending GET request failed");
         }
     }
 }
-

@@ -29,31 +29,22 @@ public class User {
     @Column(name = "avatar")
     private String avatar;
 
+    @Column(name = "account")
+    private String account;
+
     @Column(name = "description")
     private String description;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_like_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_like_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> likeBots;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_star_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_star_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> starBots;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_used_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_used_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> usedBots;
 
     @OneToMany
@@ -81,8 +72,9 @@ public class User {
         this.email = dto.getEmail();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
+        this.account = dto.getAccount();
     }
-    
+
     public User() {
         // not used
     }
