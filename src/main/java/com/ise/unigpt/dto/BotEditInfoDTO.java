@@ -4,6 +4,7 @@ import com.ise.unigpt.model.Bot;
 import lombok.Data;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class BotEditInfoDTO {
@@ -19,7 +20,6 @@ public class BotEditInfoDTO {
     private List<String> promptKeys;
 
     public BotEditInfoDTO(Bot bot){
-        // TODO: 需要审查
         this.name = bot.getName();
         this.avatar = bot.getAvatar();
         this.description = bot.getDescription();
@@ -28,7 +28,7 @@ public class BotEditInfoDTO {
         this.detail = bot.getDetail();
         this.photos = bot.getPhotos();
         this.isPrompted = bot.isPrompted();
-        bot.getPromptChats().forEach(promptChat -> this.promptChats.add(new PromptChatDTO(promptChat)));
+        this.promptChats = bot.getPromptChats().stream().map(PromptChatDTO::new).collect(Collectors.toList());
         this.promptKeys = bot.getPromptKeys();
     }
     public BotEditInfoDTO() {
