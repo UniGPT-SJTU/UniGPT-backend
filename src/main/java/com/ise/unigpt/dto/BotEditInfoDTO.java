@@ -1,6 +1,7 @@
 package com.ise.unigpt.dto;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.annotations.SerializedName;
 import com.ise.unigpt.model.Bot;
 import lombok.Data;
 
@@ -13,10 +14,16 @@ public class BotEditInfoDTO {
     private String avatar;
     private String description;
     private String baseModelAPI;
+
+    @SerializedName("published")
     private boolean isPublished;
+
     private String detail;
     private List<String> photos;
+
+    @SerializedName("prompted")
     private boolean isPrompted;
+
     private List<PromptChatDTO> promptChats;
     private List<String> promptKeys;
 

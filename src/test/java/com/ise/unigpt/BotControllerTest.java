@@ -118,7 +118,6 @@ public class BotControllerTest {
                 .andExpect(content().json(gson.toJson(botDetailInfoDTO)));
     }
 
-    // TODO: lombok转换的json和Gson转换的json不同（bool 成员 isXXX）
     @Test
     void shouldGetBotEditProfileOk() throws Exception  {
         mockMvc.perform(get("/api/bots/1")
