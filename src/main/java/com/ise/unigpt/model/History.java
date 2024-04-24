@@ -34,8 +34,4 @@ public class History {
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PromptValue> promptValues;
 
-    public void setPromptValues(List<PromptValue> promptValues){
-        this.promptValues.clear();
-        this.promptValues.addAll(promptValues);
-    }
 }
