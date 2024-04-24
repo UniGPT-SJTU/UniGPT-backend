@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         String client_id = "ov3SLrO4HyZSELxcHiqS";
         String client_secret = "B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C";
         String accessToken;
-
+        System.out.println("code in jaccountLogin Function: " + code);
         try {
             Unirest.setTimeouts(0, 0);
             HttpResponse<String> response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
@@ -105,6 +105,7 @@ public class AuthServiceImpl implements AuthService {
             // Parse the response body to get the access token
             // This depends on the format of the response. Here is an example if the
             // response is JSON:
+            System.out.println("sec code in jaccountLogin Function: " + code);
             System.out.println("Response status: " + response.getStatus());
             System.out.println("Response body: " + response.getBody());
             JSONObject responseBody = new JSONObject(response.getBody());

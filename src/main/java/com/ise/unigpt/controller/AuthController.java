@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.naming.AuthenticationException;
 
+import org.json.JSONObject;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -63,8 +65,11 @@ public class AuthController {
     }
 
     @PostMapping("/jaccountLogin")
-    public ResponseEntity<Object> jaccountLogin(@RequestBody String code, HttpServletResponse response) {
+    public ResponseEntity<Object> jaccountLogin(@RequestBody String jsonString, HttpServletResponse response) {
+        JSONObject jsonObject = new JSONObject(jsonString);
+        String code = jsonObject.getString("code");
         System.out.println(code);
+
         try {
             // 更新Cookies
             String token = service.jaccountLogin(code);
