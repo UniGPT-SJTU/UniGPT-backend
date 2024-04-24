@@ -79,45 +79,39 @@ public class AuthServiceImpl implements AuthService {
         return auth.getUser();
     }
 
-    public String jaccountLogin(String code) throws AuthenticationException {
+    public String requestAccessToken(String code) throws UnirestException {
         String client_id = "ov3SLrO4HyZSELxcHiqS";
         String client_secret = "B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C";
+        Unirest.setTimeouts(0, 0);
+        HttpResponse<String> response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
+                .header("Authorization",
+                        "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
+                .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Accept", "*/* ")
+                .header("Host", "jaccount.sjtu.edu.cn")
+                .header("Connection", "keep-alive")
+                .field("grant_type", "authorization_code")
+                .field("code", code)
+                .field("client_id", client_id)
+                .field("client_secret", client_secret)
+                .field("redirect_uri", "http://localhost:3000/login")
+                .asString();
+
+        JSONObject responseBody = new JSONObject(response.getBody());
+        return responseBody.getString("access_token");
+    }
+
+    public String jaccountLogin(String code) throws AuthenticationException {
         String accessToken;
-        System.out.println("code in jaccountLogin Function: " + code);
         try {
-            Unirest.setTimeouts(0, 0);
-            HttpResponse<String> response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
-                    .header("Authorization",
-                            "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
-                    .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .header("Accept", "*/* ")
-
-                    .header("Host", "jaccount.sjtu.edu.cn")
-                    .header("Connection", "keep-alive")
-                    .field("grant_type", "authorization_code")
-                    .field("code", code)
-                    .field("client_id", client_id)
-                    .field("client_secret", client_secret)
-                    .field("redirect_uri", "http://localhost:3000/login")
-                    .asString();
-
-            // Parse the response body to get the access token
-            // This depends on the format of the response. Here is an example if the
-            // response is JSON:
-            System.out.println("sec code in jaccountLogin Function: " + code);
-            System.out.println("Response status: " + response.getStatus());
-            System.out.println("Response body: " + response.getBody());
-            JSONObject responseBody = new JSONObject(response.getBody());
-            System.out.println("Response body: " + responseBody);
-            accessToken = responseBody.getString("access_token");
-            System.out.println("Access token: " + accessToken);
+            accessToken = requestAccessToken(code);
         } catch (UnirestException e) {
             throw new AuthenticationException("Jaccount login failed");
         }
 
         User user = sendGetRequest("https://api.sjtu.edu.cn/v1/me/profile?access_token=" + accessToken);
-        System.out.println("user" + user);
+        // System.out.println("user" + user);
         // 查找是否已经注册
         Optional<User> optionalUser = userRepository.findByName(user.getName());
         if (optionalUser.isPresent()) {
@@ -125,13 +119,13 @@ public class AuthServiceImpl implements AuthService {
         }
         userRepository.save(user);
         String token = generateAuthToken(user);
-        System.out.println("token" + token);
-        return generateAuthToken(user);
+        // System.out.println("token" + token);
+        return token;
     }
 
     private User sendGetRequest(String urlStr) throws AuthenticationException {
         try {
-            System.out.println("urlStr: " + urlStr);
+            // System.out.println("urlStr: " + urlStr);
             Unirest.setTimeouts(300, 3000);
             HttpResponse<String> response = Unirest.get(urlStr)
                     .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
@@ -140,8 +134,8 @@ public class AuthServiceImpl implements AuthService {
                     .header("Connection", "keep-alive")
                     .asString();
 
-            System.out.println("Response status: " + response.getStatus());
-            System.out.println("Response body: " + response.getBody());
+            // System.out.println("Response status: " + response.getStatus());
+            // System.out.println("Response body: " + response.getBody());
 
             if (response.getStatus() == HttpURLConnection.HTTP_OK) {
                 ObjectMapper mapper = new ObjectMapper();
@@ -149,12 +143,12 @@ public class AuthServiceImpl implements AuthService {
 
                 return new User(jaccountResponse.getUsers().get(0));
             } else {
-                System.out.println("GET request not worked");
+                // System.out.println("GET request not worked");
                 throw new AuthenticationException("GET request not worked");
             }
 
         } catch (Exception e) {
-            System.out.println("Exception: " + e.getMessage());
+            // System.out.println("Exception: " + e.getMessage());
             throw new AuthenticationException("Sending GET request failed");
         }
     }
