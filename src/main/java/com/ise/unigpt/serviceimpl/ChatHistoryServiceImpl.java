@@ -52,7 +52,9 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         chat.setTime(new Date());
 
         chatRepository.save(chat);
+
         history.getChats().add(chat);
+        historyRepository.save(history);
     }
 
     public GetChatsOkResponseDTO getChats(
