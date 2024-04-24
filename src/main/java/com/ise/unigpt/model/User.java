@@ -73,6 +73,8 @@ public class User {
         this.starBots = new ArrayList<>();
         this.usedBots = new ArrayList<>();
         this.createBots = new ArrayList<>();
+
+        this.histories = new ArrayList<>();
     }
 
     public User() {
