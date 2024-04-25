@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
         User targetUser = optionalUser.get();
         User requestUser = authService.getUserByToken(token);
-        if(!targetUser.equals(requestUser)) {
+        if (!targetUser.equals(requestUser)) {
             throw new AuthenticationException("Unauthorized to update user info");
         }
         targetUser.setName(updateUserInfoRequestDTO.getName());
@@ -56,16 +56,21 @@ public class UserServiceImpl implements UserService {
         repository.save(targetUser);
     }
 
-    public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize) {
+    public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize)
+            throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
         if (!optionalUser.isPresent()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
 
+        if (!authService.getUserByToken(token).equals(optionalUser.get())) {
+            throw new AuthenticationException("Unauthorized to get used bots");
+        }
+
         List<Bot> usedBots = optionalUser.get().getUsedBots();
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -73,16 +78,21 @@ public class UserServiceImpl implements UserService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
-    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize) {
+    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
+            throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
         if (!optionalUser.isPresent()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
 
+        if (!authService.getUserByToken(token).equals(optionalUser.get())) {
+            throw new AuthenticationException("Unauthorized to get used bots");
+        }
+
         List<Bot> starredBots = optionalUser.get().getStarBots();
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -99,7 +109,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;

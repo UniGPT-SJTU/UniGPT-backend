@@ -52,7 +52,9 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         chat.setTime(new Date());
 
         chatRepository.save(chat);
+
         history.getChats().add(chat);
+        historyRepository.save(history);
     }
 
     public GetChatsOkResponseDTO getChats(
@@ -77,6 +79,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     public GetPromptListDTO getPromptList(Integer historyid){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
+        if(history.getPromptValues() == null)
+            history.setPromptValues(new ArrayList<>());
         return new GetPromptListDTO(history.getPromptValues());
     }
 
@@ -84,9 +88,10 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
         List<PromptValue> promptValues = new ArrayList<>();
-        for (String prompt : promptList) {
+        for(String content: promptList){
             PromptValue promptValue = new PromptValue();
-            promptValue.setContent(prompt);
+            promptValue.setHistory(history);
+            promptValue.setContent(content);
             promptValues.add(promptValue);
         }
         history.setPromptValues(promptValues);

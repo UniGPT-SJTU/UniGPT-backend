@@ -68,13 +68,15 @@ public class HistoryController {
     }
 
     @PostMapping("/{historyid}/promptlist")
-    public ResponseDTO createPrompt(
+    public ResponseEntity<ResponseDTO> createPrompt(
             @PathVariable Integer historyid,
             @RequestBody List<String> promptList) {
         try {
-            return service.changePromptList(historyid, promptList);
+            service.changePromptList(historyid, promptList);
+            return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 }
