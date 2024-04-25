@@ -27,9 +27,9 @@ public class BotServiceImpl implements BotService {
     private final AuthService authService;
 
     public BotServiceImpl(BotRepository botRepository,
-                          UserRepository userRepository,
-                          PromptChatRepository promptChatRepository,
-                          AuthService authService) {
+            UserRepository userRepository,
+            PromptChatRepository promptChatRepository,
+            AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
@@ -38,14 +38,13 @@ public class BotServiceImpl implements BotService {
 
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
         List<BotBriefInfoDTO> bots;
-        if(order.equals("latest")) {
+        if (order.equals("latest")) {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
                     .collect(Collectors.toList());
-        }
-        else if (order.equals("star")) {
+        } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
@@ -73,7 +72,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (!bot.isPublished() && bot.getCreator().getId() != user.getId()){
+        if (!bot.isPublished() && bot.getCreator().getId() != user.getId()) {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -86,7 +85,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (bot.getCreator().getId() != user.getId()){
+        if (bot.getCreator().getId() != user.getId()) {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -142,11 +141,9 @@ public class BotServiceImpl implements BotService {
         return new ResponseDTO(true, "Bot updated successfully");
     }
 
-
-
     // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO likeBot(Integer id, String token) {
-        try{
+        try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -196,7 +193,7 @@ public class BotServiceImpl implements BotService {
 
     // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO starBot(Integer id, String token) {
-        try{
+        try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -221,7 +218,7 @@ public class BotServiceImpl implements BotService {
 
     // TODO: 直接抛出异常，不要在service中处理异常
     public ResponseDTO unstarBot(Integer id, String token) {
-        try{
+        try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
@@ -244,10 +241,12 @@ public class BotServiceImpl implements BotService {
         }
     }
 
-    public GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize){
+    public GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
+        // System.out.println("page: \n\n" + page);
+        // System.out.println("pageSize: \n\n" + pageSize);
         User user = authService.getUserByToken(token);
 
         // find history by bot and user
@@ -258,7 +257,7 @@ public class BotServiceImpl implements BotService {
         List<Chat> chats = history.getChats();
         // Sort chats by time
         chats.sort((c1, c2) -> c1.getTime().compareTo(c2.getTime()));
-        int start = (page - 1) * pageSize;
+        int start = page * pageSize;
         int end = Math.min(start + pageSize, chats.size());
         return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
     }
@@ -269,11 +268,11 @@ public class BotServiceImpl implements BotService {
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
             User user = authService.getUserByToken(token);
-                    // find history by bot and user
+            // find history by bot and user
             History history = user.getHistories().stream()
-                .filter(h -> h.getBot().getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+                    .filter(h -> h.getBot().getId() == id)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
 
             List<Chat> chats = history.getChats();
 
