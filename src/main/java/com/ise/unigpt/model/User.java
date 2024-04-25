@@ -1,5 +1,6 @@
 package com.ise.unigpt.model;
 
+import com.ise.unigpt.dto.JaccountUserDTO;
 import com.ise.unigpt.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -28,31 +29,22 @@ public class User {
     @Column(name = "avatar")
     private String avatar;
 
+    @Column(name = "account")
+    private String account;
+
     @Column(name = "description")
     private String description;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_like_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_like_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> likeBots;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_star_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_star_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> starBots;
 
     @ManyToMany
-    @JoinTable(
-            name = "user_used_bot",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bot_id")
-    )
+    @JoinTable(name = "user_used_bot", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "bot_id"))
     private List<Bot> usedBots;
 
     @OneToMany
@@ -73,6 +65,16 @@ public class User {
         this.starBots = new ArrayList<>();
         this.usedBots = new ArrayList<>();
         this.createBots = new ArrayList<>();
+
+        this.histories = new ArrayList<>();
+    }
+
+    public User(JaccountUserDTO dto) {
+        this.name = dto.getName();
+        this.email = dto.getEmail();
+        this.avatar = dto.getAvatar();
+        this.description = dto.getDescription();
+        this.account = dto.getAccount();
     }
 
     public User() {

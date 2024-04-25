@@ -16,70 +16,91 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
+	<repositories>
+    <repository>
+        <id>public</id>
+        <name>SJTU Release Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public/</url>
+        <releases>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </releases>
+    </repository>
+    <repository>
+        <id>public-snapshots</id>
+        <name>SJTU Snapshots Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public-snapshots/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </repository>
+</repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>public</id>
+        <name>SJTU Release Repository</name>
+        <url>https://maven.dev.sjtu.edu.cn/content/groups/public/</url>
+    </pluginRepository>
+</pluginRepositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>3.0.3</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>5.11.0</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.10.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>33.1.0-jre</version>
 		</dependency>
-
-
-
-
+		<dependency>
+    		<groupId>com.mashape.unirest</groupId>
+    		<artifactId>unirest-java</artifactId>
+    		<version>1.4.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>
