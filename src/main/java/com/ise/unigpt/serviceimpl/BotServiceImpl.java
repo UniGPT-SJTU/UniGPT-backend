@@ -231,21 +231,11 @@ public class BotServiceImpl implements BotService {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        // System.out.println("page: \n\n" + page);
-        // System.out.println("pageSize: \n\n" + pageSize);
         User user = authService.getUserByToken(token);
-
-        // find history by bot and user
-        History history = user.getHistories().stream()
-                .filter(h -> h.getBot().getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
-        List<Chat> chats = history.getChats();
-        // Sort chats by time in descending order
-        chats.sort(Comparator.comparing(Chat::getTime).reversed());
+        List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot).collect(Collectors.toList());
         int start = page * pageSize;
-        int end = Math.min(start + pageSize, chats.size());
-        return new GetBotHistoryOkResponseDTO(chats.subList(start, end));
+        int end = Math.min(start + pageSize, historyList.size());
+        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end): new ArrayList<>());
     }
 
     public ResponseDTO addChatHistory(Integer id, String token, String content) {

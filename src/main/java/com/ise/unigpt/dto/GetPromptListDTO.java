@@ -1,19 +1,17 @@
 package com.ise.unigpt.dto;
 
 import com.ise.unigpt.model.PromptValue;
+import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Getter
 public class GetPromptListDTO {
-    private List<String> promptList = new java.util.ArrayList<>();
+    private final List<String> promptList;
 
     public GetPromptListDTO(List<PromptValue> promptList) {
-        for (PromptValue promptValue : promptList) {
-            this.promptList.add(promptValue.getContent());
-        }
-    }
-
-    public List<String> getPromptList() {
-        return promptList;
+        this.promptList = promptList.stream().map(PromptValue::getContent).collect(Collectors.toList());
     }
 }
