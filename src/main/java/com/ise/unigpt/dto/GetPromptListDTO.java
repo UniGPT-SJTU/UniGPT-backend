@@ -5,7 +5,7 @@ import com.ise.unigpt.model.PromptValue;
 import java.util.List;
 
 public class GetPromptListDTO {
-    private List<String> promptList;
+    private List<String> promptList = new java.util.ArrayList<>();
 
     public GetPromptListDTO(List<PromptValue> promptList) {
         for (PromptValue promptValue : promptList) {

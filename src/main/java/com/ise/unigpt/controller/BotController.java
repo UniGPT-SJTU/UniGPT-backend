@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// TODO: 部分Exception需要分类处理
+import java.util.List;
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/api/bots")
 public class BotController {
@@ -62,48 +64,55 @@ public class BotController {
     }
 
     @PutMapping("/{id}")
-    public ResponseDTO updateBot(@PathVariable Integer id, @RequestBody BotEditInfoDTO dto,
-            @CookieValue("token") String token) {
+    public ResponseEntity<Object> updateBot(@PathVariable Integer id, @RequestBody BotEditInfoDTO dto, @CookieValue("token") String token) {
         try {
-            return service.updateBot(id, dto, token);
+            return ResponseEntity.ok(service.updateBot(id, dto, token));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @PutMapping("/{id}/likes")
-    public ResponseDTO likeBot(@PathVariable Integer id, @CookieValue("token") String token) {
+    public ResponseEntity<Object> likeBot(@PathVariable Integer id, @CookieValue("token") String token){
         try {
-            return service.likeBot(id, token);
+            return ResponseEntity.ok(service.likeBot(id, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}/likes")
-    public ResponseDTO dislikeBot(@PathVariable Integer id, @CookieValue("token") String token) {
+    public ResponseEntity<Object> dislikeBot(@PathVariable Integer id, @CookieValue("token") String token) {
         try {
-            return service.dislikeBot(id, token);
+            return ResponseEntity.ok(service.dislikeBot(id, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @PutMapping("/{id}/stars")
-    public ResponseDTO starBot(@PathVariable Integer id, @CookieValue("token") String token) {
+    public ResponseEntity<Object> starBot(@PathVariable Integer id, @CookieValue("token") String token){
         try {
-            return service.starBot(id, token);
+            return ResponseEntity.ok(service.starBot(id, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}/stars")
-    public ResponseDTO unstarBot(@PathVariable Integer id, @CookieValue("token") String token) {
+    public ResponseEntity<Object> unstarBot(@PathVariable Integer id, @CookieValue("token") String token){
         try {
-            return service.unstarBot(id, token);
+            return ResponseEntity.ok(service.unstarBot(id, token));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
@@ -130,24 +139,25 @@ public class BotController {
         }
     }
 
-    @PostMapping("/{id}/histories")
-    public ResponseDTO addChatHistory(@PathVariable Integer id, @CookieValue("token") String token,
-            @RequestBody String content) {
+    @PostMapping("/{id}/history")
+    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> contentList) {
         try {
-            return service.addChatHistory(id, token, content);
+            return ResponseEntity.ok(service.createChatHistory(id, token, contentList));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 
     @PostMapping("/{botid}/comments")
-    public ResponseDTO createComment(@PathVariable Integer botid,
-            @CookieValue("token") String token,
-            @RequestBody CommentRequestDTO request) {
+    public ResponseEntity<Object> createComment(@PathVariable Integer botid,
+                                     @CookieValue("token") String token,
+                                     @RequestBody CommentRequestDTO request) {
         try {
-            return service.createComment(botid, token, request.getContent());
+            return ResponseEntity.ok(service.createComment(botid, token, request.getContent()));
         } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
         }
     }
 }

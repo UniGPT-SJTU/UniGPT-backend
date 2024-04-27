@@ -1,6 +1,8 @@
 package com.ise.unigpt.service;
 import com.ise.unigpt.dto.*;
 
+import java.util.List;
+
 public interface BotService {
     /**
      * @brief 获取机器人列表
@@ -99,12 +101,12 @@ public interface BotService {
      * @brief 添加机器人历史记录
      * @param id 机器人id
      * @param token 用户token
-     * @param content 历史记录内容
+     * @param contentList 历史记录内容
      * @return 添加结果
      */
-    ResponseDTO addChatHistory(Integer id, String token, String content);
+    ResponseDTO createChatHistory(Integer id, String token, List<String> contentList);
 
-    /**
+    /**s
      * @brief 获取机器人评论
      * @param id 机器人id
      * @param page 页码

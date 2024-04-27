@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.json.JSONException;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -79,47 +81,64 @@ public class AuthServiceImpl implements AuthService {
         return auth.getUser();
     }
 
-    public String requestAccessToken(String code) throws UnirestException {
+    public String requestAccessToken(String code) throws AuthenticationException {
         String client_id = "ov3SLrO4HyZSELxcHiqS";
         String client_secret = "B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C";
         Unirest.setTimeouts(0, 0);
-        HttpResponse<String> response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
-                .header("Authorization",
-                        "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
-                .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("Accept", "*/* ")
-                .header("Host", "jaccount.sjtu.edu.cn")
-                .header("Connection", "keep-alive")
-                .field("grant_type", "authorization_code")
-                .field("code", code)
-                .field("client_id", client_id)
-                .field("client_secret", client_secret)
-                .field("redirect_uri", "http://localhost:3000/login")
-                .asString();
+        HttpResponse<String> response = null;
+        try {
+            response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
+                    .header("Authorization",
+                            "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
+                    .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Accept", "*/* ")
+                    .header("Host", "jaccount.sjtu.edu.cn")
+                    .header("Connection", "keep-alive")
+                    .field("grant_type", "authorization_code")
+                    .field("code", code)
+                    .field("client_id", client_id)
+                    .field("client_secret", client_secret)
+                    .field("redirect_uri", "http://localhost:3000/login")
+                    .asString();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
 
-        JSONObject responseBody = new JSONObject(response.getBody());
-        return responseBody.getString("access_token");
+        JSONObject responseBody = null;
+        try {
+            responseBody = new JSONObject(response.getBody());
+        } catch (JSONException e) {
+            throw new AuthenticationException("Request access token failed");
+        }
+        String accessToken ;
+        try{
+            accessToken = responseBody.getString("access_token");
+        }
+        catch (JSONException e){
+            throw new AuthenticationException("Request access token failed");
+        }
+        return accessToken;
     }
 
     public String jaccountLogin(String code) throws AuthenticationException {
         String accessToken;
         try {
             accessToken = requestAccessToken(code);
-        } catch (UnirestException e) {
+        } catch (AuthenticationException e) {
             throw new AuthenticationException("Jaccount login failed");
         }
 
         User user = sendGetRequest("https://api.sjtu.edu.cn/v1/me/profile?access_token=" + accessToken);
         // System.out.println("user" + user);
         // 查找是否已经注册
-        Optional<User> optionalUser = userRepository.findByName(user.getName());
+        Optional<User> optionalUser = userRepository.findByAccount(user.getAccount());
         if (optionalUser.isPresent()) {
             return generateAuthToken(optionalUser.get());
         }
         userRepository.save(user);
         String token = generateAuthToken(user);
-        // System.out.println("token" + token);
+        System.out.println("token" + token);
         return token;
     }
 
