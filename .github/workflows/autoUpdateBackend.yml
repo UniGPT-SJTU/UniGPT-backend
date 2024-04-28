@@ -13,7 +13,7 @@ jobs:
     - name: Execute remote SSH commands to deploy
       uses: appleboy/ssh-action@master
       with:
-        host: 139.202.10.154
+        host: 139.224.10.154
         username: uni
         key: ${{ secrets.DEPLOY_BACKEND_TO_SERVER }}
         script: |
