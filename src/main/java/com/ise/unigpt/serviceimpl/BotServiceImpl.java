@@ -75,7 +75,8 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (!bot.isPublished()) {
+        if (!bot.isPublished() && bot.getCreator() != user) {
+            // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
