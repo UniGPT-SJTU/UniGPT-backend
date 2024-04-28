@@ -73,9 +73,9 @@ public class BotServiceImpl implements BotService {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        User user = authService.getUserByToken(token);
+//        User user = authService.getUserByToken(token);
 
-        if (!bot.isPublished() && bot.getCreator().getId() != user.getId()) {
+        if (!bot.isPublished()) {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
