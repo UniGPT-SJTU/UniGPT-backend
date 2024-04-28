@@ -73,13 +73,13 @@ public class BotServiceImpl implements BotService {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-//        User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
         if (!bot.isPublished()) {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
-        return new BotDetailInfoDTO(bot);
+        return new BotDetailInfoDTO(bot, user);
     }
 
     public BotEditInfoDTO getBotEditInfo(Integer id, String token) {
