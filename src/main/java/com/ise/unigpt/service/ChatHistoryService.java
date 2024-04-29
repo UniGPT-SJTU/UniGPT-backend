@@ -1,10 +1,8 @@
 package com.ise.unigpt.service;
 import com.ise.unigpt.dto.GetChatsOkResponseDTO;
-import com.ise.unigpt.dto.GetPromptListDTO;
 import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.*;
-import jakarta.transaction.Transactional;
 
 import javax.naming.AuthenticationException;
 import java.util.List;
@@ -36,7 +34,7 @@ public interface ChatHistoryService {
      * @param historyid 历史id
      * @return 对话的列表
      */
-    GetPromptListDTO getPromptList(Integer historyid);
+    List<PromptDTO> getPromptList(Integer historyid);
 
     // TODO: 此处实现未完成
     /**

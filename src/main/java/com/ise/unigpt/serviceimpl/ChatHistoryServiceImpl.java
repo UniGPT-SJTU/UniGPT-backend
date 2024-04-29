@@ -73,7 +73,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 
-    public GetPromptListDTO getPromptList(Integer historyid){
+    public List<PromptDTO> getPromptList(Integer historyid){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
         if(history.getPromptValues() == null)
@@ -83,7 +83,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new NoSuchElementException("Bot not found for history ID: " + historyid);
         if(bot.getPromptKeys() == null)
             bot.setPromptKeys(new ArrayList<>());
-        return new GetPromptListDTO(bot.getPromptKeys(), history.getPromptValues());
+
+        List<PromptDTO> promptList = new ArrayList<>();
+        int botPromptKeysSize = bot.getPromptKeys().size();
+        for (int i = 0; i < botPromptKeysSize; ++i) {
+            promptList.add(
+                    new PromptDTO( bot.getPromptKeys().get(i),
+                            history.getPromptValues().get(i) == null ? "" : history.getPromptValues().get(i).getContent()));
+        }
+        return promptList;
     }
 
     public ResponseDTO changePromptList(Integer historyid,  List<PromptDTO> promptList){
