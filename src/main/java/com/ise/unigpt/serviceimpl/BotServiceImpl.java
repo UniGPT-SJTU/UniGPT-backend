@@ -299,6 +299,7 @@ public class BotServiceImpl implements BotService {
 
             User user = authService.getUserByToken(token);
 
+            // TODO: 使用History构造函数，不要手动set属性
             // create history
             History history = new History();
             history.setBot(bot);
@@ -327,7 +328,6 @@ public class BotServiceImpl implements BotService {
     }
 }
 
-    // TODO: 目前此接口有问题，除非bot.comment使用级联
     public ResponseDTO createComment(Integer id, String token, String content) {
         try {
             Bot bot = botRepository.findById(id)

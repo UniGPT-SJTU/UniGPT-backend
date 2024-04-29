@@ -9,7 +9,6 @@ public class PromptChatDTO {
     private PromptChatType type;
     private String content;
 
-    // TODO: 需要审查
     public PromptChatDTO(PromptChat promptChat){
         this.type = promptChat.getType();
         this.content = promptChat.getContent();

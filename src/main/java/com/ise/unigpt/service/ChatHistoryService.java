@@ -36,7 +36,6 @@ public interface ChatHistoryService {
      */
     List<PromptDTO> getPromptList(Integer historyid);
 
-    // TODO: 此处实现未完成
     /**
      * @brief 修改指定历史的提示列表
      * @param historyid 历史id
