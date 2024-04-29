@@ -1,10 +1,7 @@
 package com.ise.unigpt.serviceimpl;
 
 
-import com.ise.unigpt.dto.ChatDTO;
-import com.ise.unigpt.dto.GetChatsOkResponseDTO;
-import com.ise.unigpt.dto.GetPromptListDTO;
-import com.ise.unigpt.dto.ResponseDTO;
+import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
@@ -89,17 +86,19 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return new GetPromptListDTO(bot.getPromptKeys(), history.getPromptValues());
     }
 
-    public ResponseDTO changePromptList(Integer historyid, List<String> promptList){
+    public ResponseDTO changePromptList(Integer historyid,  List<PromptDTO> promptList){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
-        List<PromptValue> promptValues = new ArrayList<>();
-        for(String content: promptList){
+        // Clear existing PromptValues but maintain the same list object
+        List<PromptValue> promptValues = history.getPromptValues();
+        promptValues.clear();  // Clear the current contents
+
+        for(PromptDTO prompt: promptList){
             PromptValue promptValue = new PromptValue();
             promptValue.setHistory(history);
-            promptValue.setContent(content);
+            promptValue.setContent(prompt.getPromptValue());
             promptValues.add(promptValue);
         }
-        history.setPromptValues(promptValues);
         historyRepository.save(history);
         return new ResponseDTO(true, "Prompt list changed successfully");
     }

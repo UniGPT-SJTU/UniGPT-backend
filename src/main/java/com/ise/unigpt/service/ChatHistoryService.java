@@ -1,6 +1,7 @@
 package com.ise.unigpt.service;
 import com.ise.unigpt.dto.GetChatsOkResponseDTO;
 import com.ise.unigpt.dto.GetPromptListDTO;
+import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.*;
 import jakarta.transaction.Transactional;
@@ -44,5 +45,5 @@ public interface ChatHistoryService {
      * @param promptList 提示列表
      * @return 修改结果
      */
-    ResponseDTO changePromptList(Integer historyid, List<String> promptList);
+    ResponseDTO changePromptList(Integer historyid,  List<PromptDTO>  promptList);
 }

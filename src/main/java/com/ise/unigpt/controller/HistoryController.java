@@ -1,8 +1,6 @@
 package com.ise.unigpt.controller;
 
-import com.ise.unigpt.dto.CreateChatRequestDTO;
-import com.ise.unigpt.dto.GetChatsErrorResponseDTO;
-import com.ise.unigpt.dto.ResponseDTO;
+import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
 import org.springframework.http.HttpStatus;
@@ -70,7 +68,7 @@ public class HistoryController {
     @PostMapping("/{historyid}/promptlist")
     public ResponseEntity<ResponseDTO> createPrompt(
             @PathVariable Integer historyid,
-            @RequestBody List<String> promptList) {
+            @RequestBody List<PromptDTO> promptList) {
         try {
             service.changePromptList(historyid, promptList);
             return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));

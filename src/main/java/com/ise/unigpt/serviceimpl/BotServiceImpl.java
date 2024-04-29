@@ -319,6 +319,8 @@ public class BotServiceImpl implements BotService {
             user.getHistories().add(history);
             userRepository.save(user);
 
+            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
+
             return new ResponseDTO(true, "Chat history created successfully");
     } catch (Exception e) {
         return new ResponseDTO(false, e.getMessage());
