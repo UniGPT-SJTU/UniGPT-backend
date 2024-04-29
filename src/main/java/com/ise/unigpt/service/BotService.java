@@ -96,15 +96,14 @@ public interface BotService {
      */
     GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize);
 
-    //TODO: 此处接口有些模糊
     /**
      * @brief 添加机器人历史记录
      * @param id 机器人id
      * @param token 用户token
-     * @param contentList 历史记录内容
+     * @param promptList prompt记录内容
      * @return 添加结果
      */
-    ResponseDTO createChatHistory(Integer id, String token, List<String> contentList);
+    ResponseDTO createChatHistory(Integer id, String token, List<PromptDTO> promptList);
 
     /**s
      * @brief 获取机器人评论

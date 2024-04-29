@@ -1,6 +1,7 @@
 package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.BotEditInfoDTO;
+import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.dto.CommentRequestDTO;
@@ -140,9 +141,9 @@ public class BotController {
     }
 
     @PostMapping("/{id}/history")
-    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> contentList) {
+    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<PromptDTO> promptList) {
         try {
-            return ResponseEntity.ok(service.createChatHistory(id, token, contentList));
+            return ResponseEntity.ok(service.createChatHistory(id, token, promptList));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

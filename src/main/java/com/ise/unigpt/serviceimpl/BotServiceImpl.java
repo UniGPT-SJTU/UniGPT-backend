@@ -292,13 +292,14 @@ public class BotServiceImpl implements BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO createChatHistory(Integer id, String token, List<String> contentList){
+    public ResponseDTO createChatHistory(Integer id, String token, List<PromptDTO> promptList) {
         try {
             Bot bot = botRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
             User user = authService.getUserByToken(token);
 
+            // TODO: 使用History构造函数，不要手动set属性
             // create history
             History history = new History();
             history.setBot(bot);
@@ -306,10 +307,10 @@ public class BotServiceImpl implements BotService {
             history.setChats(new ArrayList<>());
             // create empty promptValues
             List<PromptValue> promptValues = new ArrayList<>();
-            for(String content: contentList){
+            for(PromptDTO prompt: promptList){
                 PromptValue promptValue = new PromptValue();
                 promptValue.setHistory(history);
-                promptValue.setContent(content);
+                promptValue.setContent(prompt.getPromptValue());
                 promptValues.add(promptValue);
             }
             history.setPromptValues(promptValues);
@@ -319,13 +320,14 @@ public class BotServiceImpl implements BotService {
             user.getHistories().add(history);
             userRepository.save(user);
 
+            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
+
             return new ResponseDTO(true, "Chat history created successfully");
     } catch (Exception e) {
         return new ResponseDTO(false, e.getMessage());
     }
 }
 
-    // TODO: 目前此接口有问题，除非bot.comment使用级联
     public ResponseDTO createComment(Integer id, String token, String content) {
         try {
             Bot bot = botRepository.findById(id)
