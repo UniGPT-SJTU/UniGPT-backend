@@ -81,7 +81,12 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
         if(history.getPromptValues() == null)
             history.setPromptValues(new ArrayList<>());
-        return new GetPromptListDTO(history.getPromptValues());
+        Bot bot = history.getBot();
+        if(bot == null)
+            throw new NoSuchElementException("Bot not found for history ID: " + historyid);
+        if(bot.getPromptKeys() == null)
+            bot.setPromptKeys(new ArrayList<>());
+        return new GetPromptListDTO(bot.getPromptKeys(), history.getPromptValues());
     }
 
     public ResponseDTO changePromptList(Integer historyid, List<String> promptList){
