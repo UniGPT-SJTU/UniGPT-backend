@@ -7,7 +7,6 @@ import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;

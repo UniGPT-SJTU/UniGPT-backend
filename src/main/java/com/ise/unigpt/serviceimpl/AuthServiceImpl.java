@@ -8,7 +8,6 @@ import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.dto.JaccountResponseDTO;
-import com.ise.unigpt.dto.JaccountUserDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,10 +18,7 @@ import javax.naming.AuthenticationException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import org.json.JSONException;
 
