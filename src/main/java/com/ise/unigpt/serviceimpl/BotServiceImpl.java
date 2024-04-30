@@ -299,29 +299,13 @@ public class BotServiceImpl implements BotService {
 
             User user = authService.getUserByToken(token);
 
-            // TODO: 使用History构造函数，不要手动set属性
-            // create history
-            History history = new History();
-            history.setBot(bot);
-            history.setUser(user);
-            history.setChats(new ArrayList<>());
-            // create empty promptValues
-            List<PromptValue> promptValues = new ArrayList<>();
-            for(PromptDTO prompt: promptList){
-                PromptValue promptValue = new PromptValue();
-                promptValue.setHistory(history);
-                promptValue.setContent(prompt.getPromptValue());
-                promptValues.add(promptValue);
-            }
-            history.setPromptValues(promptValues);
+            History history = new History(user, bot, new ArrayList<>());
+            history.setPromptValues(promptList.stream().map(promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
             historyRepository.save(history);
 
-            // save history
             user.getHistories().add(history);
             userRepository.save(user);
-
-            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
-
+//            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
             return new ResponseDTO(true, "Chat history created successfully");
     } catch (Exception e) {
         return new ResponseDTO(false, e.getMessage());
