@@ -28,10 +28,10 @@ public class BotServiceImpl implements BotService {
     private final AuthService authService;
 
     public BotServiceImpl(BotRepository botRepository,
-                          UserRepository userRepository,
-                            HistoryRepository historyRepository,
-                          PromptChatRepository promptChatRepository,
-                          AuthService authService) {
+            UserRepository userRepository,
+            HistoryRepository historyRepository,
+            PromptChatRepository promptChatRepository,
+            AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
@@ -45,7 +45,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                     .collect(Collectors.toList());
         } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
@@ -146,85 +146,83 @@ public class BotServiceImpl implements BotService {
     }
 
     public ResponseDTO likeBot(Integer id, String token) {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            bot.setLikeNumber(bot.getLikeNumber() + 1);
+        bot.setLikeNumber(bot.getLikeNumber() + 1);
 
-            User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
-            if (bot.getLikeUsers().contains(user)) {
-                return new ResponseDTO(false, "Bot already liked");
-            }
+        if (bot.getLikeUsers().contains(user)) {
+            return new ResponseDTO(false, "Bot already liked");
+        }
 
-            bot.getLikeUsers().add(user);
-            user.getLikeBots().add(bot);
+        bot.getLikeUsers().add(user);
+        user.getLikeBots().add(bot);
 
-            botRepository.save(bot);
-            userRepository.save(user);
-            return new ResponseDTO(true, "Bot liked successfully");
+        botRepository.save(bot);
+        userRepository.save(user);
+        return new ResponseDTO(true, "Bot liked successfully");
     }
 
-
     public ResponseDTO dislikeBot(Integer id, String token) {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            bot.setLikeNumber(bot.getLikeNumber() - 1);
+        bot.setLikeNumber(bot.getLikeNumber() - 1);
 
-            User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
-            if (!bot.getLikeUsers().contains(user)) {
-                return new ResponseDTO(false, "Bot not liked yet");
-            }
+        if (!bot.getLikeUsers().contains(user)) {
+            return new ResponseDTO(false, "Bot not liked yet");
+        }
 
-            bot.getLikeUsers().remove(user);
-            user.getLikeBots().remove(bot);
+        bot.getLikeUsers().remove(user);
+        user.getLikeBots().remove(bot);
 
-            botRepository.save(bot);
-            userRepository.save(user);
-            return new ResponseDTO(true, "Bot disliked successfully");
+        botRepository.save(bot);
+        userRepository.save(user);
+        return new ResponseDTO(true, "Bot disliked successfully");
     }
 
     public ResponseDTO starBot(Integer id, String token) {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            bot.setStarNumber(bot.getStarNumber() + 1);
+        bot.setStarNumber(bot.getStarNumber() + 1);
 
-            User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
-            if (bot.getStarUsers().contains(user)) {
-                return new ResponseDTO(false, "Bot already starred");
-            }
+        if (bot.getStarUsers().contains(user)) {
+            return new ResponseDTO(false, "Bot already starred");
+        }
 
-            bot.getStarUsers().add(user);
-            user.getStarBots().add(bot);
+        bot.getStarUsers().add(user);
+        user.getStarBots().add(bot);
 
-            botRepository.save(bot);
-            userRepository.save(user);
-            return new ResponseDTO(true, "Bot starred successfully");
+        botRepository.save(bot);
+        userRepository.save(user);
+        return new ResponseDTO(true, "Bot starred successfully");
     }
 
-
     public ResponseDTO unstarBot(Integer id, String token) {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            bot.setStarNumber(bot.getStarNumber() - 1);
+        bot.setStarNumber(bot.getStarNumber() - 1);
 
-            User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
-            if (!bot.getStarUsers().contains(user)) {
-                return new ResponseDTO(false, "Bot not starred yet");
-            }
+        if (!bot.getStarUsers().contains(user)) {
+            return new ResponseDTO(false, "Bot not starred yet");
+        }
 
-            bot.getStarUsers().remove(user);
-            user.getStarBots().remove(bot);
+        bot.getStarUsers().remove(user);
+        user.getStarBots().remove(bot);
 
-            botRepository.save(bot);
-            userRepository.save(user);
-            return new ResponseDTO(true, "Bot unstarred successfully");
+        botRepository.save(bot);
+        userRepository.save(user);
+        return new ResponseDTO(true, "Bot unstarred successfully");
 
     }
 
@@ -233,10 +231,11 @@ public class BotServiceImpl implements BotService {
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         User user = authService.getUserByToken(token);
-        List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot).collect(Collectors.toList());
+        List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
+                .collect(Collectors.toList());
         int start = page * pageSize;
         int end = Math.min(start + pageSize, historyList.size());
-        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end): new ArrayList<>());
+        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end) : new ArrayList<>());
     }
 
     public ResponseDTO addChatHistory(Integer id, String token, String content) {
@@ -307,7 +306,7 @@ public class BotServiceImpl implements BotService {
             history.setChats(new ArrayList<>());
             // create empty promptValues
             List<PromptValue> promptValues = new ArrayList<>();
-            for(PromptDTO prompt: promptList){
+            for (PromptDTO prompt : promptList) {
                 PromptValue promptValue = new PromptValue();
                 promptValue.setHistory(history);
                 promptValue.setContent(prompt.getPromptValue());
@@ -323,10 +322,10 @@ public class BotServiceImpl implements BotService {
             historyRepository.saveAndFlush(history); // This saves the history and flushes the session
 
             return new ResponseDTO(true, "Chat history created successfully");
-    } catch (Exception e) {
-        return new ResponseDTO(false, e.getMessage());
+        } catch (Exception e) {
+            return new ResponseDTO(false, e.getMessage());
+        }
     }
-}
 
     public ResponseDTO createComment(Integer id, String token, String content) {
         try {
