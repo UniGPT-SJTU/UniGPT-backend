@@ -14,10 +14,8 @@ public class HistoryItemDTO {
     String title;
     String content;
 
-    public HistoryItemDTO(int id, String title, String content) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
+    public HistoryItemDTO() {
+        // not used
     }
 
     public HistoryItemDTO(History history) {

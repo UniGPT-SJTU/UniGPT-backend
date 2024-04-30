@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 public class PromptDTO {
-    private final String promptKey, promptValue;
+    private final String promptKey;
+    private final String promptValue;
 
     public PromptDTO(String promptKey, String promptValue) {
         this.promptKey = promptKey;

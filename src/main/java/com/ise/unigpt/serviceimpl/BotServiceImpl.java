@@ -239,39 +239,6 @@ public class BotServiceImpl implements BotService {
         return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end): new ArrayList<>());
     }
 
-    public ResponseDTO addChatHistory(Integer id, String token, String content) {
-        try {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-
-            User user = authService.getUserByToken(token);
-            // find history by bot and user
-            History history = user.getHistories().stream()
-                    .filter(h -> h.getBot().getId() == id)
-                    .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
-
-            List<Chat> chats = history.getChats();
-
-            Chat chat = new Chat();
-            chat.setHistory(history);
-            chat.setType(ChatType.USER);
-            chat.setTime(new Date());
-            chat.setContent(content);
-
-            // TODO: GPT response needed here
-
-            chats.add(chat);
-            history.setChats(chats);
-
-            // TODO: Check correctness of variables updating
-
-            return new ResponseDTO(true, "Chat added successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
-    }
-
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -300,12 +267,12 @@ public class BotServiceImpl implements BotService {
             User user = authService.getUserByToken(token);
 
             History history = new History(user, bot, new ArrayList<>());
-            history.setPromptValues(promptList.stream().map(promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
+            history.setPromptValues(promptList.stream().map(
+                    promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
             historyRepository.save(history);
 
             user.getHistories().add(history);
             userRepository.save(user);
-//            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
             return new ResponseDTO(true, "Chat history created successfully");
     } catch (Exception e) {
         return new ResponseDTO(false, e.getMessage());
