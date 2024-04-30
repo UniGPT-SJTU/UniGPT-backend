@@ -140,7 +140,7 @@ public class BotController {
         }
     }
 
-    @PostMapping("/{id}/history")
+    @PostMapping("/{id}/histories")
     public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<PromptDTO> promptList) {
         try {
             return ResponseEntity.ok(service.createChatHistory(id, token, promptList));
