@@ -42,5 +42,5 @@ public interface ChatHistoryService {
      * @param promptList 提示列表
      * @return 修改结果
      */
-    ResponseDTO changePromptList(Integer historyid,  List<PromptDTO>  promptList);
+    ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO>  promptList);
 }

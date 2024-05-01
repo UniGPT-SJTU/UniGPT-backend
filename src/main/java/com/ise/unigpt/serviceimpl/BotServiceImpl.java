@@ -9,8 +9,8 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
-import jakarta.persistence.*;
-import lombok.Data;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -260,9 +260,20 @@ public class BotServiceImpl implements BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO createChatHistory(Integer id, String token, List<PromptDTO> promptList) {
+    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        // 校验promptList与bot.promptKeys的对应关系
+        int promptListSize = promptList.size();
+        if(promptListSize != bot.getPromptKeys().size()) {
+            throw new BadRequestException("Prompt list not match");
+        }
+        for(int i = 0;i < promptListSize; ++i) {
+            if(!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
+                throw new BadRequestException("Prompt list not match");
+            }
+        }
 
         User user = authService.getUserByToken(token);
 

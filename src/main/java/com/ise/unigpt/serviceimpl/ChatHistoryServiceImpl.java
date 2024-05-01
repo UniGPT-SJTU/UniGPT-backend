@@ -41,12 +41,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new AuthenticationException("User not authorized to access this history");
         }
 
-        Chat chat = new Chat();
-        chat.setHistory(history);
-        chat.setContent(content);
-        chat.setType(type);
-        chat.setTime(new Date());
-
+        Chat chat = new Chat(history, type, content);
         chatRepository.save(chat);
 
         history.getChats().add(chat);
@@ -75,25 +70,19 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     public List<PromptDTO> getPromptList(Integer historyid){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
-        if(history.getPromptValues() == null)
-            history.setPromptValues(new ArrayList<>());
         Bot bot = history.getBot();
-        if(bot == null)
-            throw new NoSuchElementException("Bot not found for history ID: " + historyid);
-        if(bot.getPromptKeys() == null)
-            bot.setPromptKeys(new ArrayList<>());
-
         List<PromptDTO> promptList = new ArrayList<>();
         int botPromptKeysSize = bot.getPromptKeys().size();
         for (int i = 0; i < botPromptKeysSize; ++i) {
             promptList.add(
                     new PromptDTO( bot.getPromptKeys().get(i),
-                            history.getPromptValues().get(i) == null ? "" : history.getPromptValues().get(i).getContent()));
+                            history.getPromptValues().get(i).getContent()));
         }
         return promptList;
     }
 
-    public ResponseDTO changePromptList(Integer historyid,  List<PromptDTO> promptList){
+    public ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO> promptList){
+        // TODO: 校验promptList是否与bot.promptKeys匹配
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
         // Clear existing PromptValues but maintain the same list object
@@ -101,7 +90,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         promptValues.clear();  // Clear the current contents
 
         for(PromptDTO prompt: promptList){
-            PromptValue promptValue = new PromptValue();
+            PromptValue promptValue = new PromptValue();    
             promptValue.setHistory(history);
             promptValue.setContent(prompt.getPromptValue());
             promptValues.add(promptValue);
