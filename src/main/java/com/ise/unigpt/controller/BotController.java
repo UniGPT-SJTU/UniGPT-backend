@@ -1,10 +1,12 @@
 package com.ise.unigpt.controller;
 
-
 import com.ise.unigpt.dto.BotEditInfoDTO;
+import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.dto.CommentRequestDTO;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +39,8 @@ public class BotController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getBotProfile(@PathVariable Integer id, @RequestParam String info, @CookieValue("token") String token) {
+    public ResponseEntity<Object> getBotProfile(@PathVariable Integer id, @RequestParam String info,
+            @CookieValue("token") String token) {
         try {
             return switch (info) {
                 case "brief" -> ResponseEntity.ok(service.getBotBriefInfo(id));
@@ -54,8 +57,8 @@ public class BotController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseDTO> createBot(@RequestBody BotEditInfoDTO dto, @CookieValue("token") String token){
-        try{
+    public ResponseEntity<ResponseDTO> createBot(@RequestBody BotEditInfoDTO dto, @CookieValue("token") String token) {
+        try {
             return ResponseEntity.ok(service.createBot(dto, token));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -116,8 +119,9 @@ public class BotController {
         }
     }
 
-    @GetMapping("/{id}/history")
-    public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestParam Integer page, @RequestParam Integer pageSize) {
+    @GetMapping("/{id}/histories")
+    public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token,
+            @RequestParam Integer page, @RequestParam Integer pageSize) {
         try {
             return ResponseEntity.ok(service.getBotHistory(id, token, page, pageSize));
         } catch (Exception e) {
@@ -125,10 +129,11 @@ public class BotController {
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+
     @GetMapping("/{botid}/comments")
     public ResponseEntity<Object> getComments(@PathVariable Integer botid,
-                                              @RequestParam(defaultValue = "0") Integer page,
-                                              @RequestParam(defaultValue = "20") Integer pagesize) {
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize) {
         try {
             return ResponseEntity.ok(service.getComments(botid, page, pagesize));
         } catch (Exception e) {
@@ -137,12 +142,15 @@ public class BotController {
         }
     }
 
-    @PostMapping("/{id}/history")
-    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<String> contentList) {
+    @PostMapping("/{id}/histories")
+    public ResponseEntity<Object> createBotHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<PromptDTO> promptList) {
         try {
-            return ResponseEntity.ok(service.createChatHistory(id, token, contentList));
-        } catch (Exception e) {
+            return ResponseEntity.ok(service.createBotHistory(id, token, promptList));
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }

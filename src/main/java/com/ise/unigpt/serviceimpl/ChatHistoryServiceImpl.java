@@ -1,16 +1,12 @@
 package com.ise.unigpt.serviceimpl;
 
 
-import com.ise.unigpt.dto.ChatDTO;
-import com.ise.unigpt.dto.GetChatsOkResponseDTO;
-import com.ise.unigpt.dto.GetPromptListDTO;
-import com.ise.unigpt.dto.ResponseDTO;
+import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
@@ -45,12 +41,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new AuthenticationException("User not authorized to access this history");
         }
 
-        Chat chat = new Chat();
-        chat.setHistory(history);
-        chat.setContent(content);
-        chat.setType(type);
-        chat.setTime(new Date());
-
+        Chat chat = new Chat(history, type, content);
         chatRepository.save(chat);
 
         history.getChats().add(chat);
@@ -76,25 +67,34 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 
-    public GetPromptListDTO getPromptList(Integer historyid){
+    public List<PromptDTO> getPromptList(Integer historyid){
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
-        if(history.getPromptValues() == null)
-            history.setPromptValues(new ArrayList<>());
-        return new GetPromptListDTO(history.getPromptValues());
+        Bot bot = history.getBot();
+        List<PromptDTO> promptList = new ArrayList<>();
+        int botPromptKeysSize = bot.getPromptKeys().size();
+        for (int i = 0; i < botPromptKeysSize; ++i) {
+            promptList.add(
+                    new PromptDTO( bot.getPromptKeys().get(i),
+                            history.getPromptValues().get(i).getContent()));
+        }
+        return promptList;
     }
 
-    public ResponseDTO changePromptList(Integer historyid, List<String> promptList){
+    public ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO> promptList){
+        // TODO: 校验promptList是否与bot.promptKeys匹配
         History history = historyRepository.findById(historyid)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
-        List<PromptValue> promptValues = new ArrayList<>();
-        for(String content: promptList){
-            PromptValue promptValue = new PromptValue();
+        // Clear existing PromptValues but maintain the same list object
+        List<PromptValue> promptValues = history.getPromptValues();
+        promptValues.clear();  // Clear the current contents
+
+        for(PromptDTO prompt: promptList){
+            PromptValue promptValue = new PromptValue();    
             promptValue.setHistory(history);
-            promptValue.setContent(content);
+            promptValue.setContent(prompt.getPromptValue());
             promptValues.add(promptValue);
         }
-        history.setPromptValues(promptValues);
         historyRepository.save(history);
         return new ResponseDTO(true, "Prompt list changed successfully");
     }

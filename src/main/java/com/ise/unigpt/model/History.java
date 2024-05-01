@@ -3,6 +3,7 @@ package com.ise.unigpt.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,5 +30,15 @@ public class History {
 
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PromptValue> promptValues;
+
+    public History() {
+        // not used
+    }
+    public History(User user, Bot bot, List<PromptValue> promptValues) {
+        this.user = user;
+        this.bot = bot;
+        this.chats = new ArrayList<>();
+        this.promptValues = promptValues;
+    }
 
 }

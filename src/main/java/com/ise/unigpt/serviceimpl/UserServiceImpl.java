@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
 
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
     public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
 
@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
         Optional<User> optionalUser = repository.findById(userid);
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
 

@@ -2,6 +2,7 @@ package com.ise.unigpt.dto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.User;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -20,8 +21,11 @@ public class BotDetailInfoDTO {
     private String baseModelAPI;
     private Integer likeNumber;
     private Integer starNumber;
+    private boolean liked;
+    private boolean starred;
+    private boolean asCreator;
 
-    public BotDetailInfoDTO(Bot bot){
+    public BotDetailInfoDTO(Bot bot, User user){
         this.id = bot.getId();
         this.name = bot.getName();
         this.creator = bot.getCreator().getName();
@@ -32,6 +36,9 @@ public class BotDetailInfoDTO {
         this.baseModelAPI = bot.getBaseModelAPI();
         this.likeNumber = bot.getLikeNumber();
         this.starNumber = bot.getStarNumber();
+        this.liked = bot.getLikeUsers().contains(user);
+        this.starred = bot.getStarUsers().contains(user);
+        this.asCreator = bot.getCreator().equals(user);
     }
 
     @VisibleForTesting
