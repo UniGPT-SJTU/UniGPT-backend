@@ -96,7 +96,6 @@ public interface BotService {
      */
     GetBotHistoryOkResponseDTO getBotHistory(Integer id, String token, Integer page,Integer pageSize);
 
-    //TODO: 此处接口有些模糊
     /**
      * @brief 添加机器人历史记录
      * @param id 机器人id

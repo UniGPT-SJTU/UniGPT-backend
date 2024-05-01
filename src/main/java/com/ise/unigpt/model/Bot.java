@@ -62,7 +62,6 @@ public class Bot {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    // TODO: 是否使用级联操作？
     @OneToMany(cascade = CascadeType.ALL)
     private List<Comment> comments;
 
