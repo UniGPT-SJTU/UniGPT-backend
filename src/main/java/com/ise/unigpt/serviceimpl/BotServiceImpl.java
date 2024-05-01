@@ -9,6 +9,7 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -57,6 +58,7 @@ public class BotServiceImpl implements BotService {
 
         int start = page * pageSize;
         int end = Math.min(start + pageSize, bots.size());
+        // TODO: 抽象分页逻辑
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
@@ -236,39 +238,6 @@ public class BotServiceImpl implements BotService {
         return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO addChatHistory(Integer id, String token, String content) {
-        try {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
-
-            User user = authService.getUserByToken(token);
-            // find history by bot and user
-            History history = user.getHistories().stream()
-                    .filter(h -> h.getBot().getId() == id)
-                    .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
-
-            List<Chat> chats = history.getChats();
-
-            Chat chat = new Chat();
-            chat.setHistory(history);
-            chat.setType(ChatType.USER);
-            chat.setTime(new Date());
-            chat.setContent(content);
-
-            // TODO: GPT response needed here
-
-            chats.add(chat);
-            history.setChats(chats);
-
-            // TODO: Check correctness of variables updating
-
-            return new ResponseDTO(true, "Chat added successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
-    }
-
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -289,58 +258,45 @@ public class BotServiceImpl implements BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO createChatHistory(Integer id, String token, List<PromptDTO> promptList) {
-        try {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException {
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            User user = authService.getUserByToken(token);
-
-            // TODO: 使用History构造函数，不要手动set属性
-            // create history
-            History history = new History();
-            history.setBot(bot);
-            history.setUser(user);
-            history.setChats(new ArrayList<>());
-            // create empty promptValues
-            List<PromptValue> promptValues = new ArrayList<>();
-            for (PromptDTO prompt : promptList) {
-                PromptValue promptValue = new PromptValue();
-                promptValue.setHistory(history);
-                promptValue.setContent(prompt.getPromptValue());
-                promptValues.add(promptValue);
-            }
-            history.setPromptValues(promptValues);
-            historyRepository.save(history);
-
-            // save history
-            user.getHistories().add(history);
-            userRepository.save(user);
-
-            historyRepository.saveAndFlush(history); // This saves the history and flushes the session
-
-            return new ResponseDTO(true, "Chat history created successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
+        // 校验promptList与bot.promptKeys的对应关系
+        int promptListSize = promptList.size();
+        if(promptListSize != bot.getPromptKeys().size()) {
+            throw new BadRequestException("Prompt list not match");
         }
-    }
+        for(int i = 0;i < promptListSize; ++i) {
+            if(!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
+                throw new BadRequestException("Prompt list not match");
+            }
+        }
+
+        User user = authService.getUserByToken(token);
+
+        History history = new History(user, bot, new ArrayList<>());
+        history.setPromptValues(promptList.stream().map(
+                promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
+        historyRepository.save(history);
+
+        user.getHistories().add(history);
+        userRepository.save(user);
+        return new ResponseDTO(true, "Chat history created successfully");
+}
 
     public ResponseDTO createComment(Integer id, String token, String content) {
-        try {
-            Bot bot = botRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-            User user = authService.getUserByToken(token);
+        User user = authService.getUserByToken(token);
 
-            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-            Comment newComment = new Comment(content, time, user, bot);
-            bot.getComments().add(newComment);
-            botRepository.save(bot);
+        Comment newComment = new Comment(content, time, user, bot);
+        bot.getComments().add(newComment);
+        botRepository.save(bot);
 
-            return new ResponseDTO(true, "Comment created successfully");
-        } catch (Exception e) {
-            return new ResponseDTO(false, e.getMessage());
-        }
+        return new ResponseDTO(true, "Comment created successfully");
     }
 }
