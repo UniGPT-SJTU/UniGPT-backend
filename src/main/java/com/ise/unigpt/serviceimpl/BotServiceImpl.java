@@ -9,7 +9,6 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
-
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +27,10 @@ public class BotServiceImpl implements BotService {
     private final AuthService authService;
 
     public BotServiceImpl(BotRepository botRepository,
-                          UserRepository userRepository,
-                            HistoryRepository historyRepository,
-                          PromptChatRepository promptChatRepository,
-                          AuthService authService) {
+            UserRepository userRepository,
+            HistoryRepository historyRepository,
+            PromptChatRepository promptChatRepository,
+            AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
@@ -45,13 +44,13 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                     .collect(Collectors.toList());
         } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
@@ -166,7 +165,6 @@ public class BotServiceImpl implements BotService {
         return new ResponseDTO(true, "Bot liked successfully");
     }
 
-
     public ResponseDTO dislikeBot(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -207,7 +205,6 @@ public class BotServiceImpl implements BotService {
         return new ResponseDTO(true, "Bot starred successfully");
     }
 
-
     public ResponseDTO unstarBot(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -234,10 +231,11 @@ public class BotServiceImpl implements BotService {
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         User user = authService.getUserByToken(token);
-        List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot).collect(Collectors.toList());
+        List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
+                .collect(Collectors.toList());
         int start = page * pageSize;
         int end = Math.min(start + pageSize, historyList.size());
-        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end): new ArrayList<>());
+        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end) : new ArrayList<>());
     }
 
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
