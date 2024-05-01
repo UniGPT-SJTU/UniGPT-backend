@@ -46,10 +46,6 @@ public class UserController {
         }
     }
 
-    public String getMethodName(@RequestParam String param) {
-        return new String();
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateUserProfile(
             @PathVariable Integer id,

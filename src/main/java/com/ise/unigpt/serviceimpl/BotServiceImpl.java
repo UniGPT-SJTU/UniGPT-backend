@@ -9,8 +9,6 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
-import jakarta.persistence.*;
-import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -51,7 +49,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
