@@ -70,7 +70,7 @@ public class HistoryController {
             @PathVariable Integer historyid,
             @RequestBody List<PromptDTO> promptList) {
         try {
-            service.changePromptList(historyid, promptList);
+            service.updatePromptList(historyid, promptList);
             return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
