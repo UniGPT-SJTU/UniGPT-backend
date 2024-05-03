@@ -5,6 +5,9 @@ import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.*;
 
 import javax.naming.AuthenticationException;
+
+import org.apache.coyote.BadRequestException;
+
 import java.util.List;
 
 public interface ChatHistoryService {
@@ -42,5 +45,5 @@ public interface ChatHistoryService {
      * @param promptList 提示列表
      * @return 修改结果
      */
-    ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO>  promptList);
+    ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO>  promptList) throws BadRequestException;
 }

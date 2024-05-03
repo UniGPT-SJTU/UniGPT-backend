@@ -275,9 +275,16 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        History history = new History(user, bot, new ArrayList<>());
-        history.setPromptValues(promptList.stream().map(
-                promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
+        // 创建新的对话历史
+        History history = new History(
+            user, 
+            bot, 
+            promptList.stream()
+                .collect(Collectors.toMap(
+                    PromptDTO::getPromptKey, 
+                    PromptDTO::getPromptValue
+                ))
+        );
         historyRepository.save(history);
 
         user.getHistories().add(history);

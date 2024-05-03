@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 
@@ -28,18 +29,20 @@ public class History {
     @OneToMany
     private List<Chat> chats;
 
-    // TODO: 使用java.utils.Map存储
-    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PromptValue> promptValues;
+    // // TODO: 使用java.utils.Map存储
+    // @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<PromptValue> promptValues;
+    @ElementCollection
+    private Map<String, String> promptList;
 
     public History() {
         // not used
     }
-    public History(User user, Bot bot, List<PromptValue> promptValues) {
+    public History(User user, Bot bot, Map<String, String> promptList) {
         this.user = user;
         this.bot = bot;
         this.chats = new ArrayList<>();
-        this.promptValues = promptValues;
+        this.promptList = promptList;
     }
 
 }

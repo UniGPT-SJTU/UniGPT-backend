@@ -3,7 +3,6 @@ package com.ise.unigpt.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.UUID;
 
 /**
  * @brief 评论的类
