@@ -27,6 +27,7 @@ public class History {
     @OneToMany
     private List<Chat> chats;
 
+    // TODO: 使用java.utils.Map存储
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PromptValue> promptValues;
 
