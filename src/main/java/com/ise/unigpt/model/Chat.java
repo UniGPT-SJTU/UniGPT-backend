@@ -36,4 +36,10 @@ public class Chat {
         this.time = new Date();
         this.content = content;
     }
+    public Chat(ChatType type, String content) {
+        // 只在测试使用
+        this.history = null;
+        this.type = type;
+        this.content = content;
+    }
 }

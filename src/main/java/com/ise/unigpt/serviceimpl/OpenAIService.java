@@ -18,6 +18,10 @@ import com.ise.unigpt.utils.StringTemplateParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
+/**
+ * 基于OpenAI接口的LLMService实现，
+ * 需要配置环境变量： OPENAI_API_BASE_URL, OPENAI_API_KEY
+ */
 public class OpenAIService implements LLMService{
 
     @Override
