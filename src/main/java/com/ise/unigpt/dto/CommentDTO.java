@@ -10,7 +10,7 @@ public class CommentDTO {
     private String content;
     private String time;
     private String avatar;
-    private String name;
+    private String userName;
     private Integer botId;
     private Integer userId;
 
@@ -19,7 +19,7 @@ public class CommentDTO {
         this.content = comment.getContent();
         this.time = comment.getTime();
         this.avatar = comment.getUser().getAvatar();
-        this.name = comment.getUser().getName();
+        this.userName = comment.getUser().getName();
         this.botId = comment.getBot().getId();
         this.userId = comment.getUser().getId();
     }
@@ -29,7 +29,7 @@ public class CommentDTO {
         this.content = content;
         this.time = time;
         this.avatar = avatar;
-        this.name = name;
+        this.userName = name;
         this.botId = botId;
         this.userId = userId;
     }
