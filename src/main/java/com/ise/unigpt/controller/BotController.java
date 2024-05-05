@@ -166,4 +166,14 @@ public class BotController {
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+
+    @GetMapping("/{id}/historyid")
+    public ResponseEntity<Object> getHistoryId(@PathVariable Integer id, @CookieValue("token") String token) {
+        try {
+            return ResponseEntity.ok(service.getHistoryId(id, token));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }

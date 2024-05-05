@@ -125,4 +125,12 @@ public interface BotService {
      * @return 创建结果
      */
     ResponseDTO createComment(Integer id, String token, String content) ;
+
+    /**
+     * @brief 获取机器人历史记录ID
+     * @param id 机器人id
+     * @param token 用户token
+     * @return 机器人历史记录ID
+     */
+    Integer getHistoryId(Integer id, String token);
 }

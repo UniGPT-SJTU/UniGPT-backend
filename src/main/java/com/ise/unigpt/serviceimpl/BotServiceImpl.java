@@ -309,4 +309,14 @@ public class BotServiceImpl implements BotService {
 
         return new ResponseDTO(true, "Comment created successfully");
     }
+
+    public Integer getHistoryId(Integer id, String token){
+        Bot bot = botRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
+
+        User user = authService.getUserByToken(token);
+        History history = user.getHistories().stream().filter(h -> h.getBot() == bot).findFirst()
+                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
+        return history.getId();
+    }
 }
