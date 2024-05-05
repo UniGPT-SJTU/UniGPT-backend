@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> usedBots = optionalUser.get().getUsedBots();
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> starredBots = optionalUser.get().getStarBots();
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
