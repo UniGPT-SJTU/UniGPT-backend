@@ -18,4 +18,12 @@ public class PromptValue {
 
     @Column(name = "content")
     private String content;
+
+    public PromptValue() {
+        // not used
+    }
+    public PromptValue(History history, String content) {
+        this.history = history;
+        this.content = content;
+    }
 }

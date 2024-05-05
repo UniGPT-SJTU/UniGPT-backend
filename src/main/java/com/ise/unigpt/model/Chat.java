@@ -1,7 +1,5 @@
 package com.ise.unigpt.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,7 +15,6 @@ public class Chat {
     private int id;
 
     @ManyToOne
-    @JsonIncludeProperties({"id"})
     @JoinColumn(name = "history_id")
     private History history;
 
@@ -29,4 +26,14 @@ public class Chat {
 
     @Column(name = "content")
     private String content;
+
+    public Chat() {
+        // not used
+    }
+    public Chat(History history, ChatType type, String content) {
+        this.history = history;
+        this.type = type;
+        this.time = new Date();
+        this.content = content;
+    }
 }

@@ -3,6 +3,8 @@ import com.ise.unigpt.dto.*;
 
 import java.util.List;
 
+import org.apache.coyote.BadRequestException;
+
 public interface BotService {
     /**
      * @brief 获取机器人列表
@@ -103,7 +105,7 @@ public interface BotService {
      * @param promptList prompt记录内容
      * @return 添加结果
      */
-    ResponseDTO createChatHistory(Integer id, String token, List<PromptDTO> promptList);
+    ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException;
 
     /**s
      * @brief 获取机器人评论

@@ -5,6 +5,8 @@ import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.dto.CommentRequestDTO;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -141,11 +143,14 @@ public class BotController {
     }
 
     @PostMapping("/{id}/histories")
-    public ResponseEntity<Object> addChatHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<PromptDTO> promptList) {
+    public ResponseEntity<Object> createBotHistory(@PathVariable Integer id, @CookieValue("token") String token, @RequestBody List<PromptDTO> promptList) {
         try {
-            return ResponseEntity.ok(service.createChatHistory(id, token, promptList));
-        } catch (Exception e) {
+            return ResponseEntity.ok(service.createBotHistory(id, token, promptList));
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
