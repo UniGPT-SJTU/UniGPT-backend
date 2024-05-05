@@ -34,7 +34,7 @@ public interface ChatHistoryService {
      * @param historyid 历史id
      * @return 对话的列表
      */
-    List<PromptDTO> getPromptList(Integer historyid);
+    List<PromptDTO> getPromptList(Integer historyid, Integer botId);
 
     /**
      * @brief 修改指定历史的提示列表

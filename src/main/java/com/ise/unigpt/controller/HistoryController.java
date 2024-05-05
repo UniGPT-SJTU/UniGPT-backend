@@ -56,9 +56,9 @@ public class HistoryController {
     }
 
     @GetMapping("/{historyid}/promptlist")
-    public ResponseEntity<Object> getPromptList(@PathVariable Integer historyid) {
+    public ResponseEntity<Object> getPromptList(@PathVariable Integer historyid, @RequestParam Integer botId) {
         try {
-            return ResponseEntity.ok(service.getPromptList(historyid));
+            return ResponseEntity.ok(service.getPromptList(historyid, botId));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new GetChatsErrorResponseDTO(e.getMessage()));

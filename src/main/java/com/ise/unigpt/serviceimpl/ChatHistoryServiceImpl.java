@@ -5,6 +5,7 @@ import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
+import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,16 @@ import java.util.NoSuchElementException;
 public class ChatHistoryServiceImpl implements ChatHistoryService {
 
     private final ChatRepository chatRepository;
-
+    private final BotRepository botRepository;
     private final HistoryRepository historyRepository;
     private final AuthService authService;
 
     public ChatHistoryServiceImpl(
+            BotRepository botRepository,
             ChatRepository chatRepository,
             HistoryRepository historyRepository,
             AuthService authService) {
+        this.botRepository = botRepository;
         this.chatRepository = chatRepository;
         this.historyRepository = historyRepository;
         this.authService = authService;
@@ -67,18 +70,32 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 
-    public List<PromptDTO> getPromptList(Integer historyid){
-        History history = historyRepository.findById(historyid)
-                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
-        Bot bot = history.getBot();
-        List<PromptDTO> promptList = new ArrayList<>();
-        int botPromptKeysSize = bot.getPromptKeys().size();
-        for (int i = 0; i < botPromptKeysSize; ++i) {
-            promptList.add(
-                    new PromptDTO( bot.getPromptKeys().get(i),
-                            history.getPromptValues().get(i).getContent()));
+    public List<PromptDTO> getPromptList(Integer historyid, Integer botId){
+        if(historyid == 0){
+            Bot bot = botRepository.findById(botId)
+                    .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + botId));
+            List<PromptDTO> promptList = new ArrayList<>();
+            int botPromptKeysSize = bot.getPromptKeys().size();
+            for (int i = 0; i < botPromptKeysSize; ++i) {
+                promptList.add(
+                        new PromptDTO( bot.getPromptKeys().get(i),
+                                ""));
+            }
+            return promptList;
         }
-        return promptList;
+        else{
+            History history = historyRepository.findById(historyid)
+                    .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyid));
+            Bot bot = history.getBot();
+            List<PromptDTO> promptList = new ArrayList<>();
+            int botPromptKeysSize = bot.getPromptKeys().size();
+            for (int i = 0; i < botPromptKeysSize; ++i) {
+                promptList.add(
+                        new PromptDTO( bot.getPromptKeys().get(i),
+                                history.getPromptValues().get(i).getContent()));
+            }
+            return promptList;
+        }
     }
 
     public ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO> promptList){
