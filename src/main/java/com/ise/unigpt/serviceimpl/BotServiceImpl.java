@@ -38,6 +38,7 @@ public class BotServiceImpl implements BotService {
         this.historyRepository = historyRepository;
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
         List<BotBriefInfoDTO> bots;
         if (order.equals("latest")) {

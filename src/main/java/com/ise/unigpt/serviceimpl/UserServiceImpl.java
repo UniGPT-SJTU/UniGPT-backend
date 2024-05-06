@@ -56,6 +56,7 @@ public class UserServiceImpl implements UserService {
         repository.save(targetUser);
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
@@ -78,6 +79,7 @@ public class UserServiceImpl implements UserService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
@@ -100,6 +102,9 @@ public class UserServiceImpl implements UserService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
+
+
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
         Optional<User> optionalUser = repository.findById(userid);
         if (optionalUser.isEmpty()) {
