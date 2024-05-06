@@ -43,7 +43,7 @@ public class BotController {
             @CookieValue("token") String token) {
         try {
             return switch (info) {
-                case "brief" -> ResponseEntity.ok(service.getBotBriefInfo(id));
+                case "brief" -> ResponseEntity.ok(service.getBotBriefInfo(id, token));
                 case "detail" -> ResponseEntity.ok(service.getBotDetailInfo(id, token));
                 case "edit" -> ResponseEntity.ok(service.getBotEditInfo(id, token));
                 default -> ResponseEntity

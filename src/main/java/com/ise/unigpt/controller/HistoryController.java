@@ -39,13 +39,13 @@ public class HistoryController {
         }
     }
 
-    @PostMapping("/{id}/chats")
+    @PostMapping("/{historyid}/chats")
     public ResponseEntity<ResponseDTO> createChat(
-            @PathVariable Integer id,
+            @PathVariable Integer historyid,
             @CookieValue(value = "token") String token,
             @RequestBody CreateChatRequestDTO dto) {
         try {
-            service.createChat(id, dto.getContent(), ChatType.USER, token);
+            service.createChat(historyid, dto.getContent(), ChatType.USER, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Chat created"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
