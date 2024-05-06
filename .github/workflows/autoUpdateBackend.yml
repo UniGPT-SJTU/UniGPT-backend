@@ -1,0 +1,22 @@
+name: Deploy backend to server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Execute remote SSH commands to deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: 139.224.10.154
+        username: uni
+        key: ${{ secrets.DEPLOY_BACKEND_TO_SERVER }}
+        script: |
+          cd /home/uni/ISE-AI-assistant-Backend
+          git pull
+          ./deploy.sh
