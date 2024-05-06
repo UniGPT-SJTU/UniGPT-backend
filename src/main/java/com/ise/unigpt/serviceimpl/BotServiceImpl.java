@@ -315,8 +315,8 @@ public class BotServiceImpl implements BotService {
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         User user = authService.getUserByToken(token);
-        History history = user.getHistories().stream().filter(h -> h.getBot() == bot).findFirst()
-                .orElseThrow(() -> new NoSuchElementException("History not found for bot ID: " + id));
-        return history.getId();
+        History history = user.getHistories().stream().filter(h -> h.getBot().equals(bot)).findFirst().orElse(null);
+        if(history == null) return 0;
+        else return history.getId();
     }
 }
