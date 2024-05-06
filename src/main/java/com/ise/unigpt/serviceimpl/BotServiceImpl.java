@@ -45,13 +45,15 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                            false))
                     .collect(Collectors.toList());
         } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                            false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
@@ -73,7 +75,8 @@ public class BotServiceImpl implements BotService {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(), bot.getCreator().equals(user));
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(),
+                bot.getCreator().equals(user));
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
@@ -252,6 +255,7 @@ public class BotServiceImpl implements BotService {
         List<CommentDTO> comments = bot.getComments()
                 .stream()
                 .map(comment -> new CommentDTO(comment))
+                .sorted(Comparator.comparing(CommentDTO::getTime, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
         System.out.println("Number of comments: " + comments.size());
@@ -265,17 +269,18 @@ public class BotServiceImpl implements BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException {
+    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList)
+            throws BadRequestException {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         // 校验promptList与bot.promptKeys的对应关系
         int promptListSize = promptList.size();
-        if(promptListSize != bot.getPromptKeys().size()) {
+        if (promptListSize != bot.getPromptKeys().size()) {
             throw new BadRequestException("Prompt list not match");
         }
-        for(int i = 0;i < promptListSize; ++i) {
-            if(!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
+        for (int i = 0; i < promptListSize; ++i) {
+            if (!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
                 throw new BadRequestException("Prompt list not match");
             }
         }
@@ -294,7 +299,7 @@ public class BotServiceImpl implements BotService {
         user.getHistories().add(history);
         userRepository.save(user);
         return new ResponseDTO(true, "Chat history created successfully");
-}
+    }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
         Bot bot = botRepository.findById(id)
