@@ -38,19 +38,20 @@ public class BotServiceImpl implements BotService {
         this.historyRepository = historyRepository;
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
         List<BotBriefInfoDTO> bots;
         if (order.equals("latest")) {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                     .collect(Collectors.toList());
         } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
@@ -62,11 +63,17 @@ public class BotServiceImpl implements BotService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
-    public BotBriefInfoDTO getBotBriefInfo(Integer id) {
+    public BotBriefInfoDTO getBotBriefInfo(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription());
+        User user = authService.getUserByToken(token);
+
+        if (!bot.isPublished() && bot.getCreator() != user) {
+            // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
+            throw new NoSuchElementException("Bot not published for ID: " + id);
+        }
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(), bot.getCreator().equals(user));
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
@@ -274,6 +281,10 @@ public class BotServiceImpl implements BotService {
         }
 
         User user = authService.getUserByToken(token);
+
+        // 将对应 bot 加入用户的 usedBots 列表
+        user.getUsedBots().add(bot);
+        userRepository.save(user);
 
         History history = new History(user, bot, new ArrayList<>());
         history.setPromptValues(promptList.stream().map(

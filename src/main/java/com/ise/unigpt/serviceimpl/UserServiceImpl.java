@@ -56,6 +56,7 @@ public class UserServiceImpl implements UserService {
         repository.save(targetUser);
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
@@ -70,7 +71,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> usedBots = optionalUser.get().getUsedBots();
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -78,6 +79,7 @@ public class UserServiceImpl implements UserService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
         Optional<User> optionalUser = repository.findById(userid);
@@ -92,7 +94,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> starredBots = optionalUser.get().getStarBots();
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;
@@ -100,6 +102,9 @@ public class UserServiceImpl implements UserService {
         return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
+
+
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
         Optional<User> optionalUser = repository.findById(userid);
         if (optionalUser.isEmpty()) {
@@ -109,7 +114,7 @@ public class UserServiceImpl implements UserService {
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
         int start = page * pageSize;

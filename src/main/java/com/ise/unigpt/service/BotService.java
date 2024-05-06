@@ -19,9 +19,10 @@ public interface BotService {
     /**
      * @brief 获取机器人简要信息
      * @param id 机器人id
+     * @param token 用户token
      * @return 机器人简要信息
      */
-    BotBriefInfoDTO getBotBriefInfo(Integer id);
+    BotBriefInfoDTO getBotBriefInfo(Integer id, String token);
 
     /**
      * @brief 获取机器人详细信息
