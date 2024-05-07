@@ -206,6 +206,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+            // 将恢复内容存入history
+            chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {
