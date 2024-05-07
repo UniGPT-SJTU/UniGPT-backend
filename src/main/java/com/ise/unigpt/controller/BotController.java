@@ -119,6 +119,7 @@ public class BotController {
         }
     }
 
+    // TODO: controller层pageSize改成小写
     @GetMapping("/{id}/histories")
     public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token,
             @RequestParam Integer page, @RequestParam Integer pageSize) {

@@ -269,7 +269,7 @@ public class BotServiceImpl implements BotService {
         return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
     }
 
-    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList)
+    public CreateBotHistoryOkResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList)
             throws BadRequestException {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -298,7 +298,7 @@ public class BotServiceImpl implements BotService {
 
         user.getHistories().add(history);
         userRepository.save(user);
-        return new ResponseDTO(true, "Chat history created successfully");
+        return new CreateBotHistoryOkResponseDTO(true, token, history.getId());
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
