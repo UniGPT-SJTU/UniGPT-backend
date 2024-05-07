@@ -97,30 +97,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             handleFirstMessage(session, payLoad);
             System.out.println("handleFirstMessage done");
         } else {
-            // 这是第二种消息
-            try {
-                // 发送回复消息
-                System.out.println("Received second message: " + payLoad);
-                // session.sendMessage(new TextMessage("Your history id is: " +
-                // sessionHistory.get(session).getId()));
-                // 从history 获得promptList
-                History history = sessionHistory.get(session);
-                System.out.println("History: " + history);
-                Map<String, String> promptList = history.getPromptList();
-                System.out.println("PromptList: " + promptList);
-                Bot bot = history.getBot();
-                List<PromptChat> promptChatList = bot.getPromptChats();
-                System.out.println("PromptChatList: " + promptChatList);
-                List<Chat> chatList = history.getChats();
-                System.out.println("ChatList: " + chatList);
-                String replyMessage = llmService.generateResponse(promptChatList, promptList, chatList);
-                Map<String, String> replyMap = new HashMap<>();
-                replyMap.put("replyMessage", replyMessage);
-                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
-            } catch (Exception e) {
-                System.out.println("Error sending second reply message");
-                e.printStackTrace();
-            }
+            System.out.println("handleSecondMessage");
+            handleSecondMessage(session, payLoad);
+            System.out.println("handleSecondMessage done");
         }
 
     }
@@ -147,13 +126,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         // 保存session的history
         if (historyId == 0) {
-            System.out.println("Get historyId failed");
-            return;
+            try {
+                session.sendMessage(new TextMessage("Please provide a valid history id"));
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         History history = chatHistoryService.getHistory(historyId);
-        System.out.println("History: " + history);
+        System.out.println("History: " + history.getId());
         sessionHistory.put(session, history);
-        System.out.println("Save history: " + sessionHistory.get(session));
+        System.out.println("Save history: " + sessionHistory.get(session).getId());
 
         // 检查用户是否有权限访问history
         User user = authService.getUserByToken(sessionToken.get(session));
@@ -181,5 +164,57 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
         // 设置session的firstMessageSent为true
         sessionFirstMessageSent.put(session, true);
+    }
+
+    public void handleSecondMessage(WebSocketSession session, String payLoad) {
+        // 这是第二种消息
+        try {
+            // 发送回复消息
+            System.out.println("Received second message: " + payLoad);
+
+            History history = sessionHistory.get(session);
+
+            Bot bot = history.getBot();
+            System.out.println("Bot: " + bot.getId());
+            List<PromptChat> promptChatList = bot.getPromptChats();
+            System.out.println("PromptChatList: ");
+            if (promptChatList == null) {
+                System.out.println("PromptChatList is null");
+                promptChatList = new ArrayList<>();
+            }
+            for (PromptChat promptChat : promptChatList) {
+                System.out.println(promptChat.getContent());
+            }
+
+            Map<String, String> promptList = history.getPromptList();
+            if (promptList == null) {
+                System.out.println("PromptList is null");
+                promptList = new HashMap<>();
+            }
+            System.out.println("PromptList: ");
+            for (Map.Entry<String, String> entry : promptList.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+
+            List<Chat> chatList = history.getChats();
+            System.out.println("ChatList: ");
+            for (Chat chat : chatList) {
+                System.out.println(chat.getContent());
+            }
+
+            String replyMessage = llmService.generateResponse(promptChatList, promptList, chatList);
+            Map<String, String> replyMap = new HashMap<>();
+            replyMap.put("replyMessage", replyMessage);
+            session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+        } catch (Exception e) {
+            System.out.println("Error sending second reply message");
+            try {
+                System.out.println(e.getMessage());
+                session.sendMessage(new TextMessage("Error sending second reply message"));
+            } catch (Exception e2) {
+                System.out.println("Error sending error message");
+            }
+            e.printStackTrace();
+        }
     }
 }

@@ -40,7 +40,7 @@ public class Bot {
     @Column(name = "is_prompted")
     private boolean isPrompted;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<PromptChat> promptChats;
 
     @ElementCollection
@@ -82,6 +82,7 @@ public class Bot {
         this.creator = creator;
         this.comments = new ArrayList<>();
     }
+
     public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
@@ -93,6 +94,7 @@ public class Bot {
         this.isPrompted = dto.isPrompted();
         this.promptKeys = dto.getPromptKeys();
     }
+
     public Bot() {
         // not used
     }

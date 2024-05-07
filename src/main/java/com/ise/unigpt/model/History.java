@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
-
 @Data
 @Entity
 @Table(name = "history")
@@ -26,18 +24,20 @@ public class History {
     @JoinColumn(name = "bot_id")
     private Bot bot;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Chat> chats;
 
     // // TODO: 使用java.utils.Map存储
-    // @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
+    // @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval =
+    // true)
     // private List<PromptValue> promptValues;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> promptList;
 
     public History() {
         // not used
     }
+
     public History(User user, Bot bot, Map<String, String> promptList) {
         this.user = user;
         this.bot = bot;
