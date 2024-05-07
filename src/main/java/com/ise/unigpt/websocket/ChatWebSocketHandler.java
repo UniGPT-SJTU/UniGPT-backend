@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,100 +22,113 @@ import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.model.PromptChatType;
 import com.ise.unigpt.service.LLMService;
 import com.ise.unigpt.serviceimpl.OpenAIService;
+import com.ise.unigpt.service.AuthService;
+import com.ise.unigpt.model.User;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final LLMService llmService;
+    private final AuthService authService;
+    private final Map<WebSocketSession, Integer> sessionData;
+    private final Map<WebSocketSession, Boolean> sessionFirstMessageSent;
+    private final Map<WebSocketSession, String> sessionToken;
 
-    public ChatWebSocketHandler() {
+    public ChatWebSocketHandler(AuthService authService) {
         this.llmService = new OpenAIService();
+        this.sessionFirstMessageSent = new HashMap<>();
+        this.sessionData = new HashMap<>();
+        this.sessionToken = new HashMap<>();
+        this.authService = authService;
     }
 
-    /*
-     * @Override
-     * public void afterConnectionEstablished(WebSocketSession session) throws
-     * Exception {
-     * // 从 WebSocketSession 中获取 HttpHeaders
-     * HttpHeaders headers = session.getHandshakeHeaders();
-     * 
-     * // 从 HttpHeaders 中获取 Cookie
-     * String cookieHeader = headers.getFirst(HttpHeaders.COOKIE);
-     * if (cookieHeader != null) {
-     * Cookie[] cookies = parseCookies(cookieHeader);
-     * 
-     * // 查找身份验证 Cookie
-     * if (authCookie != null) {
-     * String authToken = authCookie.getValue();
-     * 
-     * // 验证用户身份
-     * boolean isAuthenticated = verifyUser(authToken);
-     * if (!isAuthenticated) {
-     * // 身份验证失败，关闭连接
-     * session.close(CloseStatus.FORBIDDEN.getReasonPhrase());
-     * return;
-     * }
-     * } else {
-     * // 未找到身份验证 Cookie，关闭连接
-     * session.close(CloseStatus.FORBIDDEN.getReasonPhrase());
-     * session.close(CloseStatus.FORBIDDEN);
-     * return;
-     * }
-     * } else {
-     * // 未找到 Cookie，关闭连接
-     * session.close(CloseStatus.FORBIDDEN);
-     * return;
-     * }
-     * 
-     * // 身份验证成功，继续处理 WebSocket 消息
-     * super.afterConnectionEstablished(session);
-     * }
-     * 
-     * private Cookie[] parseCookies(String cookieHeader) {
-     * // 将 Cookie 头解析为 Cookie 对象数组
-     * return Arrays.stream(cookieHeader.split(";"))
-     * .map(String::trim)
-     * .map(cookie -> {
-     * String[] parts = cookie.split("=");
-     * return new Cookie(parts[0], parts[1]);
-     * })
-     * .toArray(Cookie[]::new);
-     * }
-     * 
-     * private Cookie findCookie(Cookie[] cookies, String name) {
-     * // 查找特定名称的 Cookie
-     * return Arrays.stream(cookies)
-     * .filter(cookie -> cookie.getName().equals(name))
-     * .findFirst()
-     * .orElse(null);
-     * }
-     * 
-     * private boolean verifyUser(String authToken) {
-     * // 验证用户身份的逻辑
-     * // 例如，可以检查身份验证令牌是否有效
-     * // 返回 true 表示验证成功，返回 false 表示验证失败
-     * return true; // 示例中返回 true，请根据实际需求实现验证逻辑
-     * }
-     * 
-     * // 其他处理 WebSocket 消息的方法...
-     */
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        // 获取握手阶段的HTTP头
+        Map<String, List<String>> headers = session.getHandshakeHeaders();
+
+        // 获取Cookie头
+        List<String> cookies = headers.get("Cookie");
+
+        // 解析Cookie头以获取token的值
+        String token = null;
+        if (cookies != null) {
+            for (String cookie : cookies) {
+                String[] parts = cookie.split(";");
+                for (String part : parts) {
+                    part = part.trim();
+                    if (part.startsWith("token=")) {
+                        token = part.substring("token=".length());
+                        break;
+                    }
+                }
+                if (token != null) {
+                    break;
+                }
+            }
+        }
+
+        if (token != null) {
+            System.out.println("Token: " + token);
+            sessionToken.put(session, token);
+        } else {
+            System.out.println("No token found");
+        }
+
+        // ...
+    }
+
     @Override
     public void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) {
         // 获取消息的payload（body）
-        String payload = message.getPayload();
+        String payLoad = message.getPayload();
 
-        // 现在你可以根据需要处理payload
-        System.out.println("Received message: " + payload);
-        // TODO: 将payload转化成json对应的DTO对象
-        // 目前先用testChat()方法的返回值作为回复
-        String response = testChat();
-        System.out.println("Sending response: " + response);
-        try {
-            // 发送回复消息
-            session.sendMessage(new TextMessage(response));
-            session.close(CloseStatus.NORMAL);
-        } catch (Exception e) {
-            e.printStackTrace();
+        // 检查是否已经发送过第一种消息
+        Boolean firstMessageSent = sessionFirstMessageSent.get(session);
+        if (firstMessageSent == null || !firstMessageSent) {
+            System.out.println("Received first message: " + payLoad);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Integer historyId = 0;
+            try {
+                Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
+                String historyIdString = map.get("historyId");
+                historyId = Integer.parseInt(historyIdString);
+                sessionFirstMessageSent.put(session, true);
+                sessionData.put(session, historyId);
+                User = authService.getUserByToken(sessionToken.get(session));
+                try {
+                    // 发送回复消息
+                    String replyMessage = "Hello, I am a chatbot. How can I help you?";
+                    // 将replayMessage转化为json格式
+                    Map<String, String> replyMap = new HashMap<>();
+                    replyMap.put("message", replyMessage);
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(replyMap)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                String errorMessage = "Error parsing historyId";
+                try {
+                    session.sendMessage(new TextMessage(errorMessage));
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            }
+
+        } else {
+            // 这是第二种消息
+            // TODO: 处理第二种消息
+            try {
+                // 发送回复消息
+                System.out.println("Received second message: " + payLoad);
+                session.sendMessage(new TextMessage("Your history id is: " + sessionData.get(session)));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
     }
 
     String testChat() {
