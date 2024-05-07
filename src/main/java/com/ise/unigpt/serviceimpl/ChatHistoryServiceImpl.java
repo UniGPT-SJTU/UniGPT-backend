@@ -1,6 +1,5 @@
 package com.ise.unigpt.serviceimpl;
 
-
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
@@ -34,12 +33,13 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         this.authService = authService;
     }
 
-    public void createChat(Integer historyId, String content, ChatType type, String token) throws AuthenticationException {
+    public void createChat(Integer historyId, String content, ChatType type, String token)
+            throws AuthenticationException {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
 
         User requestUser = authService.getUserByToken(token);
-        if(!requestUser.equals(history.getUser())) {
+        if (!requestUser.equals(history.getUser())) {
             throw new AuthenticationException("User not authorized to access this history");
         }
 
@@ -59,7 +59,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
 
         User requestUser = authService.getUserByToken(token);
-        if(!requestUser.equals(history.getUser())) {
+        if (!requestUser.equals(history.getUser())) {
             throw new AuthenticationException("User not authorized to access this history");
         }
         List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
@@ -69,68 +69,61 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
     }
 
-    public List<PromptDTO> getPromptList(Integer historyid){
+    public List<PromptDTO> getPromptList(Integer historyid) {
         History history = historyRepository
-                            .findById(historyid)
-                            .orElseThrow(
-                                () -> 
-                                new NoSuchElementException(
-                                    "History not found for ID: " + historyid
-                                )
-                            );
+                .findById(historyid)
+                .orElseThrow(
+                        () -> new NoSuchElementException(
+                                "History not found for ID: " + historyid));
 
         List<PromptDTO> promptList = history
-                                        .getPromptList()
-                                        .entrySet()
-                                        .stream()
-                                        .map(
-                                            entry -> new PromptDTO(
-                                                entry.getKey(), 
-                                                entry.getValue()
-                                            )
-                                        )
-                                        .collect(Collectors.toList());
+                .getPromptList()
+                .entrySet()
+                .stream()
+                .map(
+                        entry -> new PromptDTO(
+                                entry.getKey(),
+                                entry.getValue()))
+                .collect(Collectors.toList());
         return promptList;
     }
 
-    public ResponseDTO updatePromptList(Integer historyid,  List<PromptDTO> promptList) throws BadRequestException{
+    public ResponseDTO updatePromptList(Integer historyid, List<PromptDTO> promptList) throws BadRequestException {
         History history = historyRepository
-                            .findById(historyid)
-                            .orElseThrow(
-                                () -> 
-                                new NoSuchElementException(
-                                    "History not found for ID: " + historyid
-                                )
-                            );
+                .findById(historyid)
+                .orElseThrow(
+                        () -> new NoSuchElementException(
+                                "History not found for ID: " + historyid));
 
         // 校验promptList与promptKeys的对应关系
         int promptListSize = promptList.size();
-        if(promptListSize != history.getPromptList().size()) {
+        if (promptListSize != history.getPromptList().size()) {
             throw new BadRequestException("Prompt list not match");
         }
-        for(int i = 0;i < promptListSize; ++i) {
+        for (int i = 0; i < promptListSize; ++i) {
             // TODO: 使用containsKey 效率较低
-            if(
-                !history
+            if (!history
                     .getPromptList()
-                    .containsKey(promptList.get(i).getPromptKey())
-                ) {
+                    .containsKey(promptList.get(i).getPromptKey())) {
                 throw new BadRequestException("Prompt list not match");
             }
         }
 
         history.setPromptList(
-            promptList
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        PromptDTO::getPromptKey, 
-                        PromptDTO::getPromptValue
-                    )
-                )
-        );
+                promptList
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        PromptDTO::getPromptKey,
+                                        PromptDTO::getPromptValue)));
         historyRepository.save(history);
 
         return new ResponseDTO(true, "Prompt list changed successfully");
+    }
+
+    public History getHistory(Integer historyId) {
+        History history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
+        return history;
     }
 }
