@@ -9,6 +9,8 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.utils.PaginationUtils;
+
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +47,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false))
                     .collect(Collectors.toList());
@@ -52,6 +55,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false))
                     .collect(Collectors.toList());
@@ -59,10 +63,7 @@ public class BotServiceImpl implements BotService {
             throw new IllegalArgumentException("Invalid order parameter");
         }
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        // TODO: 抽象分页逻辑
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
 
     public BotBriefInfoDTO getBotBriefInfo(Integer id, String token) {
@@ -243,9 +244,8 @@ public class BotServiceImpl implements BotService {
         User user = authService.getUserByToken(token);
         List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
                 .collect(Collectors.toList());
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, historyList.size());
-        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end) : new ArrayList<>());
+
+        return new GetBotHistoryOkResponseDTO(historyList.size(), PaginationUtils.paginate(historyList, page, pageSize));
     }
 
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
@@ -258,15 +258,7 @@ public class BotServiceImpl implements BotService {
                 .sorted(Comparator.comparing(CommentDTO::getTime, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
-        System.out.println("Number of comments: " + comments.size());
-        System.out.println("Page size: " + pageSize);
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, comments.size());
-
-        System.out.println("Start index: " + start);
-        System.out.println("End index: " + end);
-
-        return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
+        return new GetCommentsOkResponseDTO(comments.size(), PaginationUtils.paginate(comments, page, pageSize));
     }
 
     public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList)

@@ -7,11 +7,12 @@ import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.repository.ChatRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
+import com.ise.unigpt.utils.PaginationUtils;
+
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -62,9 +63,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         }
         List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, chats.size());
-        return new GetChatsOkResponseDTO(start < end ? chats.subList(start, end) : new ArrayList<>());
+        return new GetChatsOkResponseDTO(chats.size(), PaginationUtils.paginate(chats, page, pageSize));
     }
 
     public List<PromptDTO> getPromptList(Integer historyid){

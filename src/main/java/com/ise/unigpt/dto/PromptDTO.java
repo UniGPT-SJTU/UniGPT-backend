@@ -1,6 +1,4 @@
 package com.ise.unigpt.dto;
-
-import com.ise.unigpt.model.PromptValue;
 import lombok.Getter;
 
 @Getter
