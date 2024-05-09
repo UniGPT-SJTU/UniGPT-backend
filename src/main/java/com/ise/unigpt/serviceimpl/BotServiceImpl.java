@@ -283,14 +283,19 @@ public class BotServiceImpl implements BotService {
         user.getUsedBots().add(bot);
         userRepository.save(user);
 
-        History history = new History(user, bot, new ArrayList<>());
-        history.setPromptValues(promptList.stream().map(
-                promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
+        // 创建新的对话历史
+        History history = new History(
+                user,
+                bot,
+                promptList.stream()
+                        .collect(Collectors.toMap(
+                                PromptDTO::getPromptKey,
+                                PromptDTO::getPromptValue)));
         historyRepository.save(history);
 
         user.getHistories().add(history);
         userRepository.save(user);
-        return new CreateBotHistoryOkResponseDTO(true, token, history.getId());
+        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId());
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {

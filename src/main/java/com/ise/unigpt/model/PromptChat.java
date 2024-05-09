@@ -22,6 +22,10 @@ public class PromptChat {
         this.type = dto.getType();
         this.content = dto.getContent();
     }
+    public PromptChat(PromptChatType type, String content) {
+        this.type = type;
+        this.content = content;
+    }
     public PromptChat() {
         // not used
     }

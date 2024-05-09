@@ -24,16 +24,24 @@ public class Chat {
     @Column(name = "time")
     Date time;
 
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     public Chat() {
         // not used
     }
+
     public Chat(History history, ChatType type, String content) {
         this.history = history;
         this.type = type;
         this.time = new Date();
+        this.content = content;
+    }
+
+    public Chat(ChatType type, String content) {
+        // 只在测试使用
+        this.history = null;
+        this.type = type;
         this.content = content;
     }
 }

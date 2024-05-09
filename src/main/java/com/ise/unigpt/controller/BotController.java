@@ -122,9 +122,9 @@ public class BotController {
     // TODO: controller层pageSize改成小写
     @GetMapping("/{id}/histories")
     public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token,
-            @RequestParam Integer page, @RequestParam Integer pageSize) {
+            @RequestParam Integer page, @RequestParam Integer pagesize) {
         try {
-            return ResponseEntity.ok(service.getBotHistory(id, token, page, pageSize));
+            return ResponseEntity.ok(service.getBotHistory(id, token, page, pagesize));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
