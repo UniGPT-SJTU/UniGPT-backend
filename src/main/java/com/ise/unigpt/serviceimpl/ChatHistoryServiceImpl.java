@@ -39,7 +39,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
 
         User requestUser = authService.getUserByToken(token);
-        if (!requestUser.equals(history.getUser())) {
+
+        if (requestUser.getId() != history.getUser().getId()) {
             throw new AuthenticationException("User not authorized to access this history");
         }
 

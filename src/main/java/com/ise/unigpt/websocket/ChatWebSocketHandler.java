@@ -141,7 +141,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 检查用户是否有权限访问history
         User user = authService.getUserByToken(sessionToken.get(session));
         Integer userId = user.getId();
+        System.out.println("User: " + userId);
         Integer historyUserId = chatHistoryService.getHistory(historyId).getUser().getId();
+        System.out.println("History user: " + historyUserId);
         if (!userId.equals(historyUserId)) {
             try {
                 session.sendMessage(new TextMessage("You are not authorized to access this history"));
@@ -197,6 +199,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             List<Chat> chatList = history.getChats();
+
+            // 获取用户的消息
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
+            String userMessage = map.get("chatContent");
+            System.out.println("User message: " + userMessage);
+            Chat userChat = new Chat(history, ChatType.USER, userMessage);
+            chatList.add(userChat);
             System.out.println("ChatList: ");
             for (Chat chat : chatList) {
                 System.out.println(chat.getContent());
@@ -206,6 +216,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+            // 将用户的消息存入history
+            chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
+            System.out.println(replyMessage);
             // 将恢复内容存入history
             chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
         } catch (Exception e) {
