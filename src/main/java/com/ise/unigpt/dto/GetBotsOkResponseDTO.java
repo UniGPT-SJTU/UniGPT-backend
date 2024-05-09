@@ -9,8 +9,13 @@ public class GetBotsOkResponseDTO {
     private Integer total;
     private List<BotBriefInfoDTO> bots;
 
-    public GetBotsOkResponseDTO(List<BotBriefInfoDTO> bots) {
-        this.total = bots.size();
+    /**
+     * 
+     * @param total 总数
+     * @param bots 机器人列表
+     */
+    public GetBotsOkResponseDTO(int total, List<BotBriefInfoDTO> bots) {
+        this.total = total;
         this.bots = bots;
     }
 }

@@ -9,8 +9,8 @@ public class GetCommentsOkResponseDTO {
     private Integer total;
     private List<CommentDTO> comments;
 
-    public GetCommentsOkResponseDTO(List<CommentDTO> comments) {
-        this.total = comments.size();
+    public GetCommentsOkResponseDTO(Integer total, List<CommentDTO> comments) {
+        this.total = total;
         this.comments = comments;
     }
 }

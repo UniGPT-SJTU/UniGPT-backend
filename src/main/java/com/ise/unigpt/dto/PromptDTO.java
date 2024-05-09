@@ -1,5 +1,4 @@
 package com.ise.unigpt.dto;
-
 import lombok.Getter;
 
 @Getter

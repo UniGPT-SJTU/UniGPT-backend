@@ -12,8 +12,8 @@ public class GetBotHistoryOkResponseDTO {
     private Integer total;
     private List<HistoryItemDTO> histories;
 
-    public GetBotHistoryOkResponseDTO(List<History> histories) {
-        this.total = histories.size();
+    public GetBotHistoryOkResponseDTO(Integer total, List<History> histories) {
+        this.total = total;
         this.histories = histories.stream().map(HistoryItemDTO::new).collect(Collectors.toList());
     }
 }

@@ -7,6 +7,8 @@ import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
+import com.ise.unigpt.utils.PaginationUtils;
+
 import org.springframework.stereotype.Service;
 
 import javax.security.sasl.AuthenticationException;
@@ -14,7 +16,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.ArrayList;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -74,9 +75,7 @@ public class UserServiceImpl implements UserService {
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -97,9 +96,7 @@ public class UserServiceImpl implements UserService {
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
 
 
@@ -117,8 +114,7 @@ public class UserServiceImpl implements UserService {
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
                 .collect(Collectors.toList());
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
+
     }
 }

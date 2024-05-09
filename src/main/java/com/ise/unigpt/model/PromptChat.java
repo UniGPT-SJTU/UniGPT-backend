@@ -11,7 +11,11 @@ public class PromptChat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private int id;
+
+    @Column(name = "type")
     PromptChatType type;
+
+    @Column(name = "content") // TODO: length
     String content;
 
     public PromptChat(PromptChatDTO dto) {

@@ -9,8 +9,8 @@ public class GetChatsOkResponseDTO {
     private Integer total;
     private List<ChatDTO> chats;
 
-    public GetChatsOkResponseDTO(List<ChatDTO> chats) {
-        this.total = chats.size();
+    public GetChatsOkResponseDTO(Integer total, List<ChatDTO> chats) {
+        this.total = total;
         this.chats = chats;
     }
 }
