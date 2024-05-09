@@ -13,4 +13,9 @@ public class GetBotsOkResponseDTO {
         this.total = bots.size();
         this.bots = bots;
     }
+
+    public GetBotsOkResponseDTO(int total, List<BotBriefInfoDTO> bots) {
+        this.total = total;
+        this.bots = bots;
+    }
 }

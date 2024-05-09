@@ -45,6 +45,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false))
                     .collect(Collectors.toList());
@@ -52,17 +53,18 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
+                    .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
         }
-
+        int total = bots.size();
         int start = page * pageSize;
         int end = Math.min(start + pageSize, bots.size());
         // TODO: 抽象分页逻辑
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(total, start < end ? bots.subList(start, end) : new ArrayList<>());
     }
 
     public BotBriefInfoDTO getBotBriefInfo(Integer id, String token) {
