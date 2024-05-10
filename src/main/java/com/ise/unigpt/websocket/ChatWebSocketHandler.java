@@ -5,6 +5,10 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.http.Cookie;
@@ -30,6 +34,8 @@ import com.ise.unigpt.model.Bot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@EnableWebSocketMessageBroker
+@CrossOrigin(origins = "http://localhost:3000")
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final LLMService llmService;
@@ -54,6 +60,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 获取握手阶段的HTTP头
         Map<String, List<String>> headers = session.getHandshakeHeaders();
 
+        System.out.println("Headers: ");
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
         // 获取Cookie头
         List<String> cookies = headers.get("Cookie");
 
@@ -158,7 +168,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         try {
             String replyMessage = "Hello, I am a chatbot. How can I help you?";
             Map<String, String> replyMap = new HashMap<>();
-            replyMap.put("message", replyMessage);
+            replyMap.put("replyMessage", replyMessage);
             ObjectMapper objectMapper = new ObjectMapper();
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(replyMap)));
         } catch (Exception e) {
@@ -225,7 +235,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             System.out.println("Error sending second reply message");
             try {
                 System.out.println(e.getMessage());
-                session.sendMessage(new TextMessage("Error sending second reply message"));
+                String replyMessage = "Error sending second reply message";
+                Map<String, String> replyMap = new HashMap<>();
+                replyMap.put("replyMessage", replyMessage);
+                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
             } catch (Exception e2) {
                 System.out.println("Error sending error message");
             }
