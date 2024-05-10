@@ -156,7 +156,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("History user: " + historyUserId);
         if (!userId.equals(historyUserId)) {
             try {
-                session.sendMessage(new TextMessage("You are not authorized to access this history"));
+                String replyMessage = "You are not authorized to access this history";
+                Map<String, String> replyMap = new HashMap<>();
+                replyMap.put("replyMessage", replyMessage);
+                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
