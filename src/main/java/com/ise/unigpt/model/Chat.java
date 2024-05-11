@@ -24,7 +24,7 @@ public class Chat {
     @Column(name = "time")
     Date time;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "LONGTEXT")
     private String content;
 
     public Chat() {

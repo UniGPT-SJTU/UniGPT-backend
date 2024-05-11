@@ -15,7 +15,7 @@ public class PromptChat {
     @Column(name = "type")
     PromptChatType type;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "LONGTEXT")
     String content;
 
     public PromptChat(PromptChatDTO dto) {

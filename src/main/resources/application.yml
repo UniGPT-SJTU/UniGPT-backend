@@ -2,7 +2,7 @@ spring:
   application:
     name: unigpt
   datasource:
-    url: ${DB_URL}
+    url: jdbc:mysql://10.119.12.131:3306/unigpt
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
