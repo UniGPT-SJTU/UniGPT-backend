@@ -15,17 +15,19 @@ public class PromptChat {
     @Column(name = "type")
     PromptChatType type;
 
-    @Column(name = "content") // TODO: length
+    @Column(name = "content", columnDefinition = "LONGTEXT")
     String content;
 
     public PromptChat(PromptChatDTO dto) {
         this.type = dto.getType();
         this.content = dto.getContent();
     }
+
     public PromptChat(PromptChatType type, String content) {
         this.type = type;
         this.content = content;
     }
+
     public PromptChat() {
         // not used
     }
