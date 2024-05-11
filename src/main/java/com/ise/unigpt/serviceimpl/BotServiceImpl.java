@@ -124,7 +124,9 @@ public class BotServiceImpl implements BotService {
         creatorUser.getCreateBots().add(newBot);
         userRepository.save(creatorUser);
 
-        return new ResponseDTO(true, "Bot created successfully");
+        String botId = String.valueOf(newBot.getId());
+
+        return new ResponseDTO(true, botId);
     }
 
     public ResponseDTO updateBot(Integer id, BotEditInfoDTO dto, String token) {
