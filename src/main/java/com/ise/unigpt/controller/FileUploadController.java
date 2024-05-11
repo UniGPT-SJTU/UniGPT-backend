@@ -1,10 +1,12 @@
 package com.ise.unigpt.controller;
 
+import com.google.gson.Gson;
+import com.ise.unigpt.dto.FileUploadOkResponseDTO;
 import com.ise.unigpt.dto.ResponseDTO;
-import com.ise.unigpt.model.User;
-import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.service.UserService;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/file")
@@ -35,62 +33,35 @@ public class FileUploadController {
                                                   @RequestParam("file") MultipartFile file
     ) {
         try {
-            String secondPath = "";
-            User user = authService.getUserByToken(token);
-            int userId = user.getId();
-            secondPath = "user" + userId + "/";
+            File tempFile = File.createTempFile("upload", null);
+            file.transferTo(tempFile);
 
             logger.info("Uploading file: " + file.getOriginalFilename());
+            
+            // 使用Unirest发送请求给图片服务器
+            Unirest.setTimeouts(0, 0);
+            HttpResponse<String> response = Unirest.post("http://10.119.12.131:10339/upload")
+            .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+            .header("Content-Type", "multipart/form-data")
+            .field("file", tempFile)
+            .asString();
 
-            File directory = new File("src/main/resources/static/images/" + secondPath);
-            if (!directory.exists()){
-                directory.mkdir();
+            if(response.getStatus() != 200) {
+                throw new Exception("Failed to upload file");
             }
 
-            String filePath = "src/main/resources/static/images/" + secondPath + file.getOriginalFilename();
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(filePath));
-            stream.write(file.getBytes());
-            stream.close();
+            System.out.println(response.getBody());
 
-            String imageUrl = "http://localhost:8080/images/" + secondPath + file.getOriginalFilename();
+            Gson gson = new Gson();
+            FileUploadOkResponseDTO dto = gson.fromJson(response.getBody(), FileUploadOkResponseDTO.class);
 
-            // 发送文件到服务器
-//            String serverURL = "http://139.224.10.154:10339";
-//            URL url = new URL(serverURL);
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setDoOutput(true);
-//            connection.setRequestMethod("POST");
-
-            // 将文件内容发送到服务器
-//            BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(filePath));
-//            OutputStream outputStream = connection.getOutputStream();
-//            byte[] buffer = new byte[4096];
-//            int bytesRead;
-//            while ((bytesRead = inputStream.read(buffer)) != -1) {
-//                outputStream.write(buffer, 0, bytesRead);
-//            }
-//            outputStream.flush();
-
-//            logger.info("File uploaded successfully");
-//
-//            // 获取服务器返回的图片URL
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//            String imageUrl = reader.readLine();
-//
-//            // 关闭连接和资源
-//            reader.close();
-//            outputStream.close();
-//            inputStream.close();
-//            connection.disconnect();
+            String imageUrl = dto.getUrl();
 
             // 返回图片URL给前端
             return ResponseEntity.ok(new ResponseDTO(true, imageUrl));
 
-        } catch (IOException e) {
-
-            logger.error("Failed to upload file", e);
+        } catch(Exception e) {
             return ResponseEntity.badRequest().body(new ResponseDTO(false, "Failed to upload file"));
-
         }
     }
 }

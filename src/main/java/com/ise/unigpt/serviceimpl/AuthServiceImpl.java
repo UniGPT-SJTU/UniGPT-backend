@@ -107,11 +107,10 @@ public class AuthServiceImpl implements AuthService {
         } catch (JSONException e) {
             throw new AuthenticationException("Request access token failed");
         }
-        String accessToken ;
-        try{
+        String accessToken;
+        try {
             accessToken = responseBody.getString("access_token");
-        }
-        catch (JSONException e){
+        } catch (JSONException e) {
             throw new AuthenticationException("Request access token failed");
         }
         return accessToken;

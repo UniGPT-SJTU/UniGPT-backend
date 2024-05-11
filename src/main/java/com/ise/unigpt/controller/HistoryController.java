@@ -3,6 +3,7 @@ package com.ise.unigpt.controller;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,13 +39,13 @@ public class HistoryController {
         }
     }
 
-    @PostMapping("/{id}/chats")
+    @PostMapping("/{historyid}/chats")
     public ResponseEntity<ResponseDTO> createChat(
-            @PathVariable Integer id,
+            @PathVariable Integer historyid,
             @CookieValue(value = "token") String token,
             @RequestBody CreateChatRequestDTO dto) {
         try {
-            service.createChat(id, dto.getContent(), ChatType.USER, token);
+            service.createChat(historyid, dto.getContent(), ChatType.USER, token);
             return ResponseEntity.ok(new ResponseDTO(true, "Chat created"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -72,8 +73,11 @@ public class HistoryController {
         try {
             service.updatePromptList(historyid, promptList);
             return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }

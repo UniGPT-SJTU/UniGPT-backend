@@ -9,6 +9,8 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.utils.PaginationUtils;
+
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
@@ -38,35 +40,44 @@ public class BotServiceImpl implements BotService {
         this.historyRepository = historyRepository;
     }
 
+    // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getBots(String q, String order, Integer page, Integer pageSize) {
         List<BotBriefInfoDTO> bots;
         if (order.equals("latest")) {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                    .filter(bot -> bot.isPublished())
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                            false))
                     .collect(Collectors.toList());
         } else if (order.equals("star")) {
             bots = botRepository.findAllByOrderByStarNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar()))
+                    .filter(bot -> bot.isPublished())
+                    .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                            false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
         }
 
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, bots.size());
-        // TODO: 抽象分页逻辑
-        return new GetBotsOkResponseDTO(start < end ? bots.subList(start, end) : new ArrayList<>());
+        return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
 
-    public BotBriefInfoDTO getBotBriefInfo(Integer id) {
+    public BotBriefInfoDTO getBotBriefInfo(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription());
+        User user = authService.getUserByToken(token);
+
+        if (!bot.isPublished() && bot.getCreator() != user) {
+            // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
+            throw new NoSuchElementException("Bot not published for ID: " + id);
+        }
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(),
+                bot.getCreator().equals(user));
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
@@ -233,9 +244,8 @@ public class BotServiceImpl implements BotService {
         User user = authService.getUserByToken(token);
         List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
                 .collect(Collectors.toList());
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, historyList.size());
-        return new GetBotHistoryOkResponseDTO(start < end ? historyList.subList(start, end) : new ArrayList<>());
+
+        return new GetBotHistoryOkResponseDTO(historyList.size(), PaginationUtils.paginate(historyList, page, pageSize));
     }
 
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
@@ -245,45 +255,48 @@ public class BotServiceImpl implements BotService {
         List<CommentDTO> comments = bot.getComments()
                 .stream()
                 .map(comment -> new CommentDTO(comment))
+                .sorted(Comparator.comparing(CommentDTO::getTime, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
-        System.out.println("Number of comments: " + comments.size());
-        System.out.println("Page size: " + pageSize);
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, comments.size());
-
-        System.out.println("Start index: " + start);
-        System.out.println("End index: " + end);
-
-        return new GetCommentsOkResponseDTO(start < end ? comments.subList(start, end) : new ArrayList<>());
+        return new GetCommentsOkResponseDTO(comments.size(), PaginationUtils.paginate(comments, page, pageSize));
     }
 
-    public ResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException {
+    public CreateBotHistoryOkResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList)
+            throws BadRequestException {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         // 校验promptList与bot.promptKeys的对应关系
         int promptListSize = promptList.size();
-        if(promptListSize != bot.getPromptKeys().size()) {
+        if (promptListSize != bot.getPromptKeys().size()) {
             throw new BadRequestException("Prompt list not match");
         }
-        for(int i = 0;i < promptListSize; ++i) {
-            if(!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
+        for (int i = 0; i < promptListSize; ++i) {
+            if (!promptList.get(i).getPromptKey().equals(bot.getPromptKeys().get(i))) {
                 throw new BadRequestException("Prompt list not match");
             }
         }
 
         User user = authService.getUserByToken(token);
 
-        History history = new History(user, bot, new ArrayList<>());
-        history.setPromptValues(promptList.stream().map(
-                promptDTO -> new PromptValue(history, promptDTO.getPromptValue())).collect(Collectors.toList()));
+        // 将对应 bot 加入用户的 usedBots 列表
+        user.getUsedBots().add(bot);
+        userRepository.save(user);
+
+        // 创建新的对话历史
+        History history = new History(
+                user,
+                bot,
+                promptList.stream()
+                        .collect(Collectors.toMap(
+                                PromptDTO::getPromptKey,
+                                PromptDTO::getPromptValue)));
         historyRepository.save(history);
 
         user.getHistories().add(history);
         userRepository.save(user);
-        return new ResponseDTO(true, "Chat history created successfully");
-}
+        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId());
+    }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
         Bot bot = botRepository.findById(id)
