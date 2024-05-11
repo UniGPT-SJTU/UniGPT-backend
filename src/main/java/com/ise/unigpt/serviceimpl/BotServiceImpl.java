@@ -76,7 +76,7 @@ public class BotServiceImpl implements BotService {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(),
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), 
                 bot.getCreator().equals(user));
     }
 
