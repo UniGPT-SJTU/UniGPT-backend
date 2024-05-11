@@ -7,6 +7,7 @@ import com.ise.unigpt.service.AuthService;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
+import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +34,13 @@ public class FileUploadController {
                                                   @RequestParam("file") MultipartFile file
     ) {
         try {
-            File tempFile = File.createTempFile("upload", null);
-            file.transferTo(tempFile);
-
             logger.info("Uploading file: " + file.getOriginalFilename());
+            String originalFilename = file.getOriginalFilename();
+            String filenameWithoutExtension = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
+            String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+            File tempFile = File.createTempFile(filenameWithoutExtension + "-", extension);
+
+            file.transferTo(tempFile);
             
             // 使用Unirest发送请求给图片服务器
             Unirest.setTimeouts(0, 0);
