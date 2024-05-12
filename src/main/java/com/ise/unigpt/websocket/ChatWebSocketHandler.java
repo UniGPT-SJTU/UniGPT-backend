@@ -167,16 +167,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        // 发送回复消息
-        try {
-            String replyMessage = "Hello, I am a chatbot. How can I help you?";
-            Map<String, String> replyMap = new HashMap<>();
-            replyMap.put("replyMessage", replyMessage);
-            ObjectMapper objectMapper = new ObjectMapper();
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(replyMap)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        /*
+         * // 发送回复消息
+         * try {
+         * String replyMessage = "Hello, I am a chatbot. How can I help you?";
+         * Map<String, String> replyMap = new HashMap<>();
+         * replyMap.put("replyMessage", replyMessage);
+         * ObjectMapper objectMapper = new ObjectMapper();
+         * session.sendMessage(new
+         * TextMessage(objectMapper.writeValueAsString(replyMap)));
+         * } catch (Exception e) {
+         * e.printStackTrace();
+         * }
+         */
         // 设置session的firstMessageSent为true
         sessionFirstMessageSent.put(session, true);
     }
