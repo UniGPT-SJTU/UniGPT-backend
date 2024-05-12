@@ -282,7 +282,9 @@ public class BotServiceImpl implements BotService {
         User user = authService.getUserByToken(token);
 
         // 将对应 bot 加入用户的 usedBots 列表
-        user.getUsedBots().add(bot);
+        if (!user.getUsedBots().contains(bot)) {
+            user.getUsedBots().add(bot);
+        }
         userRepository.save(user);
 
         // 创建新的对话历史
