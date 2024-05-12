@@ -247,6 +247,9 @@ public class BotServiceImpl implements BotService {
         List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
                 .collect(Collectors.toList());
 
+        // 按 history 的 chats 中最新一条 chat 的时间倒序排序
+        Collections.sort(historyList, Comparator.comparing(History::getLatestChatTime).reversed());
+
         return new GetBotHistoryOkResponseDTO(historyList.size(), PaginationUtils.paginate(historyList, page, pageSize));
     }
 
