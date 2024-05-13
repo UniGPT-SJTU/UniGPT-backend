@@ -1,12 +1,15 @@
 package com.ise.unigpt.controller;
 
+
 import com.ise.unigpt.dto.LoginOkResponseDTO;
 import com.ise.unigpt.dto.LoginRequestDTO;
 import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.AuthService;
-import jakarta.servlet.http.Cookie;
+import com.ise.unigpt.utils.CookieUtils;
+
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,11 +35,7 @@ public class AuthController {
         try {
             // 更新Cookies
             String token = service.login(loginDTO);
-            Cookie cookie = new Cookie("token", token);
-            cookie.setMaxAge(24 * 60 * 60);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-
+            CookieUtils.set(response, "token", token, 24 * 60 * 60);
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -57,10 +56,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Object> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", "");
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        CookieUtils.set(response, "token", "", 0);
         return ResponseEntity.ok(new ResponseDTO(true, ""));
     }
 
@@ -73,11 +69,7 @@ public class AuthController {
         try {
             // 更新Cookies
             String token = service.jaccountLogin(code);
-            Cookie cookie = new Cookie("token", token);
-            cookie.setMaxAge(24 * 60 * 60);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-
+            CookieUtils.set(response, "token", token, 24 * 60 * 60);
             return ResponseEntity.ok(new LoginOkResponseDTO(true, token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
