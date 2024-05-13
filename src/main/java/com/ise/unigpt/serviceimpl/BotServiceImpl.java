@@ -76,7 +76,7 @@ public class BotServiceImpl implements BotService {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getAvatar(), bot.getDescription(),
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), 
                 bot.getCreator().equals(user));
     }
 
@@ -124,7 +124,9 @@ public class BotServiceImpl implements BotService {
         creatorUser.getCreateBots().add(newBot);
         userRepository.save(creatorUser);
 
-        return new ResponseDTO(true, "Bot created successfully");
+        String botId = String.valueOf(newBot.getId());
+
+        return new ResponseDTO(true, botId);
     }
 
     public ResponseDTO updateBot(Integer id, BotEditInfoDTO dto, String token) {
@@ -245,6 +247,9 @@ public class BotServiceImpl implements BotService {
         List<History> historyList = user.getHistories().stream().filter(history -> history.getBot() == bot)
                 .collect(Collectors.toList());
 
+        // 按 history 的 chats 中最新一条 chat 的时间倒序排序
+        Collections.sort(historyList, Comparator.comparing(History::getLatestChatTime).reversed());
+
         return new GetBotHistoryOkResponseDTO(historyList.size(), PaginationUtils.paginate(historyList, page, pageSize));
     }
 
@@ -280,7 +285,9 @@ public class BotServiceImpl implements BotService {
         User user = authService.getUserByToken(token);
 
         // 将对应 bot 加入用户的 usedBots 列表
-        user.getUsedBots().add(bot);
+        if (!user.getUsedBots().contains(bot)) {
+            user.getUsedBots().add(bot);
+        }
         userRepository.save(user);
 
         // 创建新的对话历史

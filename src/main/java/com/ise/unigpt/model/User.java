@@ -32,7 +32,7 @@ public class User {
     @Column(name = "account")
     private String account;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
     @ManyToMany
