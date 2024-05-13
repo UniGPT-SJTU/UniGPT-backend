@@ -119,24 +119,36 @@ public class BotController {
         }
     }
 
-    // TODO: controller层pageSize改成小写
-    @GetMapping("/{id}/histories")
-    public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token,
-            @RequestParam Integer page, @RequestParam Integer pagesize) {
-        try {
-            return ResponseEntity.ok(service.getBotHistory(id, token, page, pagesize));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO(false, e.getMessage()));
-        }
-    }
-
     @GetMapping("/{botid}/comments")
     public ResponseEntity<Object> getComments(@PathVariable Integer botid,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "100") Integer pagesize) {
         try {
             return ResponseEntity.ok(service.getComments(botid, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{botid}/comments")
+    public ResponseEntity<Object> createComment(@PathVariable Integer botid,
+                                     @CookieValue("token") String token,
+                                     @RequestBody CommentRequestDTO request) {
+        try {
+            return ResponseEntity.ok(service.createComment(botid, token, request.getContent()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    // TODO: controller层pageSize改成小写
+    @GetMapping("/{id}/histories")
+    public ResponseEntity<Object> getBotHistory(@PathVariable Integer id, @CookieValue("token") String token,
+                                                @RequestParam Integer page, @RequestParam Integer pagesize) {
+        try {
+            return ResponseEntity.ok(service.getBotHistory(id, token, page, pagesize));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
@@ -156,15 +168,4 @@ public class BotController {
         }
     }
 
-    @PostMapping("/{botid}/comments")
-    public ResponseEntity<Object> createComment(@PathVariable Integer botid,
-                                     @CookieValue("token") String token,
-                                     @RequestBody CommentRequestDTO request) {
-        try {
-            return ResponseEntity.ok(service.createComment(botid, token, request.getContent()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO(false, e.getMessage()));
-        }
-    }
 }
