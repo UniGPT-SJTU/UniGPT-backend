@@ -29,7 +29,7 @@ public class BotController {
             @RequestParam(defaultValue = "") String q,
             @RequestParam(defaultValue = "latest") String order,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "100") Integer pagesize) {
+            @RequestParam(defaultValue = "20") Integer pagesize) {
         try {
             return ResponseEntity.ok(service.getBots(q, order, page, pagesize));
         } catch (Exception e) {
