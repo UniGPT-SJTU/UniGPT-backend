@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,14 @@ public class History {
         this.bot = bot;
         this.chats = new ArrayList<>();
         this.promptList = promptList;
+    }
+
+    public Date getLatestChatTime() {
+        if (chats.isEmpty()) {
+            return new Date(); // 或者你可以定义一个默认的时间
+        } else {
+            return chats.get(chats.size() - 1).getTime();
+        }
     }
 
 }

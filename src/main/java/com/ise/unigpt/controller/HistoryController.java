@@ -26,7 +26,7 @@ public class HistoryController {
     public ResponseEntity<Object> getChats(
             @PathVariable Integer id,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer pagesize,
+            @RequestParam(defaultValue = "100") Integer pagesize,
             @CookieValue(value = "token") String token) {
         try {
             return ResponseEntity.ok(service.getChats(id, page, pagesize, token));

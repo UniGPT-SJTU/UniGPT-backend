@@ -134,7 +134,7 @@ public class BotController {
     @GetMapping("/{botid}/comments")
     public ResponseEntity<Object> getComments(@PathVariable Integer botid,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer pagesize) {
+            @RequestParam(defaultValue = "100") Integer pagesize) {
         try {
             return ResponseEntity.ok(service.getComments(botid, page, pagesize));
         } catch (Exception e) {
