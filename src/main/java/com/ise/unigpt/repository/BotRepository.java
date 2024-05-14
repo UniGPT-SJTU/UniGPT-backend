@@ -9,5 +9,8 @@ import java.util.List;
 @Repository
 public interface BotRepository extends JpaRepository<Bot, Integer> {
     List<Bot> findAllByOrderByStarNumberDesc();
+
+    List<Bot> findAllByOrderByLikeNumberDesc();
+
     List<Bot> findAllByOrderByIdDesc();
 }
