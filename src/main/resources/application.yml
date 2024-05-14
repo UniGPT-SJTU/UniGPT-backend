@@ -21,3 +21,11 @@ spring:
 logging:
   level:
     org.springframework.web.socket: DEBUG
+
+server:
+   port: 8080
+   ssl:
+      key-store: keystore.p12
+      key-store-password: unigpt
+      keyStoreType: PKCS12
+      keyAlias: tomcat

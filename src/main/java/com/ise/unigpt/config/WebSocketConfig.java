@@ -32,6 +32,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(new ChatWebSocketHandler(authService, chatHistoryService), "/chat")
-                .setAllowedOrigins("http://localhost:3000");
+                .setAllowedOrigins("*");
     }
 }
