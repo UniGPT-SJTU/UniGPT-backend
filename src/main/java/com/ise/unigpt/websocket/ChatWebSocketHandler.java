@@ -167,19 +167,55 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
+        Bot bot = history.getBot();
+        System.out.println("Bot: " + bot.getId());
+        List<PromptChat> promptChatList = bot.getPromptChats();
+        System.out.println("PromptChatList: ");
+        if (promptChatList == null) {
+            // System.out.println("PromptChatList is null");
+            promptChatList = new ArrayList<>();
+        }
         /*
-         * // 发送回复消息
-         * try {
-         * String replyMessage = "Hello, I am a chatbot. How can I help you?";
-         * Map<String, String> replyMap = new HashMap<>();
-         * replyMap.put("replyMessage", replyMessage);
-         * ObjectMapper objectMapper = new ObjectMapper();
-         * session.sendMessage(new
-         * TextMessage(objectMapper.writeValueAsString(replyMap)));
-         * } catch (Exception e) {
-         * e.printStackTrace();
+         * for (PromptChat promptChat : promptChatList) {
+         * System.out.println(promptChat.getContent());
          * }
          */
+
+        Map<String, String> promptList = history.getPromptList();
+        if (promptList == null) {
+            // System.out.println("PromptList is null");
+            promptList = new HashMap<>();
+        }
+        // System.out.println("PromptList: ");
+        for (Map.Entry<String, String> entry : promptList.entrySet()) {
+            // System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+
+        List<Chat> chatList = history.getChats();
+
+        // 获取userAsk内容
+        String userMessage = bot.getPromptChats().get(bot.getPromptChats().size() - 1).getContent();
+        // System.out.println("User message: " + userMessage);
+        Chat userChat = new Chat(history, ChatType.USER, userMessage);
+        chatList.add(userChat);
+        System.out.println("ChatList: ");
+        /*
+         * for (Chat chat : chatList) {
+         * System.out.println(chat.getContent());
+         * }
+         */
+
+        // 发送回复消息
+        try {
+            String replyMessage = llmService.generateResponse(promptChatList, promptList, chatList);
+            Map<String, String> replyMap = new HashMap<>();
+            replyMap.put("replyMessage", replyMessage);
+            ObjectMapper objectMapper = new ObjectMapper();
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(replyMap)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 设置session的firstMessageSent为true
         sessionFirstMessageSent.put(session, true);
     }
