@@ -76,7 +76,7 @@ public class BotServiceImpl implements BotService {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
-        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), 
+        return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                 bot.getCreator().equals(user));
     }
 
@@ -250,7 +250,8 @@ public class BotServiceImpl implements BotService {
         // 按 history 的 chats 中最新一条 chat 的时间倒序排序
         Collections.sort(historyList, Comparator.comparing(History::getLatestChatTime).reversed());
 
-        return new GetBotHistoryOkResponseDTO(historyList.size(), PaginationUtils.paginate(historyList, page, pageSize));
+        return new GetBotHistoryOkResponseDTO(historyList.size(),
+                PaginationUtils.paginate(historyList, page, pageSize));
     }
 
     public GetCommentsOkResponseDTO getComments(Integer id, Integer page, Integer pageSize) {
@@ -302,7 +303,9 @@ public class BotServiceImpl implements BotService {
 
         user.getHistories().add(history);
         userRepository.save(user);
-        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId());
+
+        String userAsk = bot.getPromptChats().get(bot.getPromptChats().size() - 1).getContent();
+        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId(), userAsk);
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
