@@ -136,7 +136,16 @@ public class UserServiceImpl implements UserService {
         List<UserBriefInfoDTO> userBriefInfoDTOS;
         System.out.println("type: " + type + " q: " + q);
         if (type.equals("id")) {
-            Integer id = Integer.parseInt(q);
+            Integer id;
+            try {
+                id = Integer.parseInt(q);
+            } catch (NumberFormatException e) {
+                userBriefInfoDTOS = users.stream()
+                        .map(UserBriefInfoDTO::new)
+                        .collect(Collectors.toList());
+                return new GetUsersOkResponseDTO(userBriefInfoDTOS.size(),
+                        PaginationUtils.paginate(userBriefInfoDTOS, page, pagesize));
+            }
             userBriefInfoDTOS = users.stream()
                     .filter(user -> user.getId() == id)
                     .map(UserBriefInfoDTO::new)

@@ -111,7 +111,7 @@ public class UserController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer pagesize,
             @RequestParam(defaultValue = "keyword") String type,
-            @RequestParam(defaultValue = "") String q,
+            @RequestParam(defaultValue = "", required = false) String q,
             @CookieValue(value = "token") String token) {
         try {
             return ResponseEntity.ok(service.getUsers(page, pagesize, token, type, q));
