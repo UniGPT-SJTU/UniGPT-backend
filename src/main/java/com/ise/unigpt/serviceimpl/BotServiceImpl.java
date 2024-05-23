@@ -86,7 +86,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (!bot.isPublished() && bot.getCreator() != user) {
+        if (!bot.isPublished() && bot.getCreator() != user && !user.isAsAdmin()) {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
@@ -100,7 +100,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (bot.getCreator().getId() != user.getId()) {
+        if ((bot.getCreator().getId() != user.getId()) && !user.isAsAdmin()) {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -137,7 +137,7 @@ public class BotServiceImpl implements BotService {
 
         // 根据token获取用户, 并检查用户是否有权限更新bot
         User requestUser = authService.getUserByToken(token);
-        if (updatedBot.getCreator().getId() != requestUser.getId()) {
+        if (updatedBot.getCreator().getId() != requestUser.getId() && !requestUser.isAsAdmin()) {
             throw new IllegalArgumentException("User not authorized to update bot");
         }
 

@@ -53,6 +53,9 @@ public class User {
     @OneToMany
     private List<History> histories;
 
+    @Column(name = "is_admin")
+    private boolean asAdmin = false;
+
     public User(RegisterRequestDTO dto) {
 
         this.name = dto.getUsername();
@@ -67,6 +70,7 @@ public class User {
         this.createBots = new ArrayList<>();
 
         this.histories = new ArrayList<>();
+        this.asAdmin = false;
     }
 
     public User(JaccountUserDTO dto) {
@@ -75,6 +79,7 @@ public class User {
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
         this.account = dto.getAccount();
+        this.asAdmin = false;
     }
 
     public User() {
