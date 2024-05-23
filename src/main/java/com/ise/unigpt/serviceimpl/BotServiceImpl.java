@@ -49,7 +49,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false))
+                            false, false))
                     .collect(Collectors.toList());
         } else if (order.equals("like")) {
             bots = botRepository.findAllByOrderByLikeNumberDesc()
@@ -57,7 +57,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false))
+                            false, false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
@@ -77,7 +77,7 @@ public class BotServiceImpl implements BotService {
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
         return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                bot.getCreator().equals(user));
+                bot.getCreator().equals(user), user.isAsAdmin());
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {

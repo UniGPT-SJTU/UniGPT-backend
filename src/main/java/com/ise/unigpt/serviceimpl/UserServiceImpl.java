@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        false))
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        false))
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -106,12 +106,12 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
-
+        User user = optionalUser.get();
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        false))
+                        bot.getCreator().equals(user), user.isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
