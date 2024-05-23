@@ -1,5 +1,9 @@
 package com.ise.unigpt.model;
 
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,7 +23,8 @@ public class Comment {
     private String content;
 
     @Column(name = "time")
-    private String time;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date time;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -32,7 +37,7 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(String content, String time, User user, Bot bot) {
+    public Comment(String content, Date time, User user, Bot bot) {
         this.content = content;
         this.time = time;
         this.user = user;

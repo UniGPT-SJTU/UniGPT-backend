@@ -312,9 +312,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-        Comment newComment = new Comment(content, time, user, bot);
+        Comment newComment = new Comment(content, new Date(), user, bot);
         bot.getComments().add(newComment);
         botRepository.save(bot);
 
