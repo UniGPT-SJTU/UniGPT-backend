@@ -4,7 +4,6 @@ import com.ise.unigpt.dto.GetChatsOkResponseDTO;
 import com.ise.unigpt.dto.PromptDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.*;
-import com.ise.unigpt.dto.GetHistoryDTO;
 
 import javax.naming.AuthenticationException;
 
@@ -55,4 +54,13 @@ public interface ChatHistoryService {
      * @return 历史类 GetHistoryDTO
      */
     History getHistory(Integer historyId);
+
+
+    /**
+     * @brief 删除对话历史
+     * @param token 用户token
+     * @param historyId 删除的历史id
+     * @throws Exception
+     */
+    void deleteHistory(String token, Integer historyId) throws Exception;
 }

@@ -3,15 +3,14 @@ package com.ise.unigpt.serviceimpl;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
-import com.ise.unigpt.repository.ChatRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import org.apache.coyote.BadRequestException;
 import com.ise.unigpt.utils.PaginationUtils;
+
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -19,16 +18,12 @@ import java.util.stream.Collectors;
 @Service
 public class ChatHistoryServiceImpl implements ChatHistoryService {
 
-    private final ChatRepository chatRepository;
-
     private final HistoryRepository historyRepository;
     private final AuthService authService;
 
     public ChatHistoryServiceImpl(
-            ChatRepository chatRepository,
             HistoryRepository historyRepository,
             AuthService authService) {
-        this.chatRepository = chatRepository;
         this.historyRepository = historyRepository;
         this.authService = authService;
     }
@@ -45,7 +40,6 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         }
 
         Chat chat = new Chat(history, type, content);
-        chatRepository.save(chat);
 
         history.getChats().add(chat);
         historyRepository.save(history);
@@ -124,5 +118,24 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
         return history;
+    }
+
+    public void deleteHistory(String token, Integer historyId) throws Exception {
+        User user;
+        try {
+            user = authService.getUserByToken(token);
+        } catch(Exception e) {
+            throw new AuthenticationException("unauthorized");
+        }
+        History targetHistory = historyRepository.findById(historyId)
+                                    .orElseThrow(() -> new NoSuchElementException("History not found"));
+        if(!targetHistory.getUser().equals(user)) {
+            throw new AuthenticationException("unauthorized");
+        }
+
+        // 删除关联表中的记录
+        user.getHistories().remove(targetHistory);
+        // 删除History对象
+        historyRepository.deleteById(historyId);
     }
 }
