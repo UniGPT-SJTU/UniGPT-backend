@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.NoSuchElementException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/users")
@@ -102,6 +100,21 @@ public class UserController {
         try {
             // 使用userid和token
             return ResponseEntity.ok(service.getCreatedBots(userid, token, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<Object> getUsers(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize,
+            @RequestParam(defaultValue = "keyword") String type,
+            @RequestParam(defaultValue = "") String q,
+            @CookieValue(value = "token") String token) {
+        try {
+            return ResponseEntity.ok(service.getUsers(page, pagesize, token, type, q));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

@@ -72,7 +72,8 @@ public class UserServiceImpl implements UserService {
         List<Bot> usedBots = optionalUser.get().getUsedBots();
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        false))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -93,13 +94,12 @@ public class UserServiceImpl implements UserService {
         List<Bot> starredBots = optionalUser.get().getStarBots();
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        false))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
-
-
 
     // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
@@ -111,10 +111,45 @@ public class UserServiceImpl implements UserService {
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        false))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
 
+    }
+
+    // type : id || name
+    // q: keyword
+    public GetUsersOkResponseDTO getUsers(Integer page, Integer pagesize, String token, String type, String q)
+            throws AuthenticationException {
+
+        // check if the user is authenticated
+        User requestUser = authService.getUserByToken(token);
+        if (requestUser == null) {
+            throw new AuthenticationException("Unauthorized to get users");
+        }
+        if (requestUser.isAsAdmin() == false) {
+            throw new AuthenticationException("Unauthorized to get users");
+        }
+        List<User> users = repository.findAll();
+
+        List<UserBriefInfoDTO> userBriefInfoDTOS;
+        System.out.println("type: " + type + " q: " + q);
+        if (type.equals("id")) {
+            Integer id = Integer.parseInt(q);
+            userBriefInfoDTOS = users.stream()
+                    .filter(user -> user.getId() == id)
+                    .map(UserBriefInfoDTO::new)
+                    .collect(Collectors.toList());
+        } else {
+            userBriefInfoDTOS = users.stream()
+                    .filter(user -> user.getName().contains(q))
+                    .map(UserBriefInfoDTO::new)
+                    .collect(Collectors.toList());
+        }
+
+        return new GetUsersOkResponseDTO(userBriefInfoDTOS.size(),
+                PaginationUtils.paginate(userBriefInfoDTOS, page, pagesize));
     }
 }
