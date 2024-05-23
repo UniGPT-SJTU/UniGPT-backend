@@ -120,4 +120,17 @@ public class UserController {
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+
+    // 禁用/解除禁用用户
+    @PutMapping("/{id}/ban")
+    public ResponseEntity<Object> disableUser(@PathVariable Integer id, @CookieValue(value = "token") String token,
+            @RequestParam(defaultValue = "false") Boolean disable) {
+        try {
+            service.setBanUser(id, token, disable);
+            return ResponseEntity.ok(new ResponseDTO(true, "Disable/Undisable user successfully"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }

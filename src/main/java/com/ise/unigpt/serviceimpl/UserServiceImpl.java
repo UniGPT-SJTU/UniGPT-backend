@@ -1,6 +1,5 @@
 package com.ise.unigpt.serviceimpl;
 
-import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.Bot;
@@ -151,5 +150,22 @@ public class UserServiceImpl implements UserService {
 
         return new GetUsersOkResponseDTO(userBriefInfoDTOS.size(),
                 PaginationUtils.paginate(userBriefInfoDTOS, page, pagesize));
+    }
+
+    public void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException {
+        User requestUser = authService.getUserByToken(token);
+        if (requestUser == null) {
+            throw new AuthenticationException("Unauthorized to ban user");
+        }
+        if (requestUser.isAsAdmin() == false) {
+            throw new AuthenticationException("Unauthorized to ban user");
+        }
+        Optional<User> optionalUser = repository.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new NoSuchElementException("User with id " + id + " not found");
+        }
+        User targetUser = optionalUser.get();
+        targetUser.setDisabled(state);
+        repository.save(targetUser);
     }
 }

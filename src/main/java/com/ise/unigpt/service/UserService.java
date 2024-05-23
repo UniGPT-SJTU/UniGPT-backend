@@ -64,4 +64,12 @@ public interface UserService {
          */
         GetUsersOkResponseDTO getUsers(Integer page, Integer pagesize, String token, String type, String q)
                         throws AuthenticationException;
+
+        /**
+         * @brief 禁用/解除禁用用户
+         * @param id    用户id
+         * @param token 用户token
+         * @param state 状态
+         */
+        void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException;
 }

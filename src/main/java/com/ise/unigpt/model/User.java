@@ -56,6 +56,9 @@ public class User {
     @Column(name = "is_admin")
     private boolean asAdmin = false;
 
+    @Column(name = "is_disabled")
+    private boolean disabled = false;
+
     public User(RegisterRequestDTO dto) {
 
         this.name = dto.getUsername();
