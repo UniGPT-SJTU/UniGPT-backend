@@ -25,13 +25,9 @@ public class History {
     @JoinColumn(name = "bot_id")
     private Bot bot;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Chat> chats;
 
-    // // TODO: 使用java.utils.Map存储
-    // @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval =
-    // true)
-    // private List<PromptValue> promptValues;
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> promptList;
 

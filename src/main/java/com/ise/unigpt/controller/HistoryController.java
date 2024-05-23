@@ -81,4 +81,21 @@ public class HistoryController {
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{historyid}")
+    public ResponseEntity<Object> deleteHistory(@CookieValue String token, @PathVariable Integer historyid) {
+        try {
+            service.deleteHistory(token, historyid);
+            return ResponseEntity.ok().body(new ResponseDTO(true, "History deleted"));
+        } catch(NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }
