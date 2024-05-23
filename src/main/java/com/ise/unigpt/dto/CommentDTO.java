@@ -1,6 +1,9 @@
 package com.ise.unigpt.dto;
 
 import lombok.Data;
+
+import java.util.Date;
+
 import com.ise.unigpt.model.Comment;
 
 @Data
@@ -8,7 +11,7 @@ public class CommentDTO {
     
     private Integer id;
     private String content;
-    private String time;
+    private Date time;
     private String avatar;
     private String userName;
     private Integer botId;
@@ -24,7 +27,7 @@ public class CommentDTO {
         this.userId = comment.getUser().getId();
     }
 
-    public CommentDTO(Integer id, String content, String time, String avatar, String name, Integer botId, Integer userId) {
+    public CommentDTO(Integer id, String content, Date time, String avatar, String name, Integer botId, Integer userId) {
         this.id = id;
         this.content = content;
         this.time = time;
