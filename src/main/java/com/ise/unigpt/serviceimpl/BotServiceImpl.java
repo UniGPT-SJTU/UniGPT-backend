@@ -1,6 +1,7 @@
 package com.ise.unigpt.serviceimpl;
 
 import com.ise.unigpt.dto.*;
+import com.ise.unigpt.exception.UserDisabledException;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.PromptChatRepository;
@@ -49,7 +50,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false))
+                            false, false))
                     .collect(Collectors.toList());
         } else if (order.equals("like")) {
             bots = botRepository.findAllByOrderByLikeNumberDesc()
@@ -57,7 +58,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.isPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false))
+                            false, false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
@@ -70,24 +71,44 @@ public class BotServiceImpl implements BotService {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        User user = authService.getUserByToken(token);
+        User user;
+        try {
+            user = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                    false, false);
+        } catch (UserDisabledException e) {
+            return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                    false, false);
+        } catch (Exception e) {
+            return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                    false, false);
+        }
 
         if (!bot.isPublished() && bot.getCreator() != user) {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
         return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                bot.getCreator().equals(user));
+                bot.getCreator().equals(user), user.isAsAdmin());
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        User user = authService.getUserByToken(token);
+        User user;
+        try {
+            user = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            return new BotDetailInfoDTO(bot, null);
+        }
 
-        if (!bot.isPublished() && bot.getCreator() != user) {
-            // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
+        if (!bot.isPublished() && bot.getCreator() != user && !user.isAsAdmin()) {
+            // 以下三种情况任意一种满足时，可以查看bot的详细信息
+            // 1. bot已发布
+            // 2. 请求用户是bot的创建者
+            // 3. 请求用户是管理员
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -98,9 +119,17 @@ public class BotServiceImpl implements BotService {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
-        User user = authService.getUserByToken(token);
+        User user;
+        try {
+            user = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("User not found");
+        }
 
-        if (bot.getCreator().getId() != user.getId()) {
+        if ((bot.getCreator().getId() != user.getId()) && !user.isAsAdmin()) {
+            // 以下两种情况任意一种满足时，可以获取bot的编辑信息
+            // 1. 请求用户是bot的创建者
+            // 2. 请求用户是管理员
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -109,7 +138,12 @@ public class BotServiceImpl implements BotService {
 
     public ResponseDTO createBot(BotEditInfoDTO dto, String token) {
         // 根据token获取用户
-        User creatorUser = authService.getUserByToken(token);
+        User creatorUser;
+        try {
+            creatorUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("User not found");
+        }
 
         // 创建promptChats列表并保存到数据库
         List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
@@ -136,8 +170,17 @@ public class BotServiceImpl implements BotService {
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
 
         // 根据token获取用户, 并检查用户是否有权限更新bot
-        User requestUser = authService.getUserByToken(token);
-        if (updatedBot.getCreator().getId() != requestUser.getId()) {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("User not found");
+
+        }
+        if (updatedBot.getCreator().getId() != requestUser.getId() && !requestUser.isAsAdmin()) {
+            // 以下两种情况任意一种满足时，可以更新bot
+            // 1. 请求用户是bot的创建者
+            // 2. 请求用户是管理员
             throw new IllegalArgumentException("User not authorized to update bot");
         }
 

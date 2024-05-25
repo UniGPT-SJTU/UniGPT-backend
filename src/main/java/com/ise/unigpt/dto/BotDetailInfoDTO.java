@@ -23,9 +23,10 @@ public class BotDetailInfoDTO {
     private boolean liked;
     private boolean starred;
     private boolean asCreator;
+    private boolean asAdmin;
     private List<String> promptKeys;
 
-    public BotDetailInfoDTO(Bot bot, User user){
+    public BotDetailInfoDTO(Bot bot, User user) {
         this.id = bot.getId();
         this.name = bot.getName();
         this.creator = bot.getCreator().getName();
@@ -41,5 +42,6 @@ public class BotDetailInfoDTO {
         this.starred = bot.getStarUsers().contains(user);
         this.asCreator = bot.getCreator().equals(user);
         this.promptKeys = bot.getPromptKeys();
+        this.asAdmin = user.isAsAdmin();
     }
 }

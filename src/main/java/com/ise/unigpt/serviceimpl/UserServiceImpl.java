@@ -1,6 +1,5 @@
 package com.ise.unigpt.serviceimpl;
 
-import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.Bot;
@@ -72,7 +71,8 @@ public class UserServiceImpl implements UserService {
         List<Bot> usedBots = optionalUser.get().getUsedBots();
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -93,13 +93,12 @@ public class UserServiceImpl implements UserService {
         List<Bot> starredBots = optionalUser.get().getStarBots();
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
-
-
 
     // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
@@ -107,14 +106,97 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + userid + " not found");
         }
-
+        User user = optionalUser.get();
         List<Bot> createdBots = optionalUser.get().getCreateBots();
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
-                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(), false))
+                .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
+                        bot.getCreator().equals(user), user.isAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
 
+    }
+
+    // type : id || name
+    // q: keyword
+    public GetUsersOkResponseDTO getUsers(Integer page, Integer pagesize, String token, String type, String q)
+            throws AuthenticationException {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new AuthenticationException("Unauthorized to get users");
+        }
+
+        if (!requestUser.isAsAdmin()) {
+            throw new AuthenticationException("Unauthorized to get users");
+        }
+
+        List<User> users = repository.findAll();
+        List<UserBriefInfoDTO> userBriefInfoDTOs;
+        System.out.println("type: " + type + " q: " + q);
+        if (type.equals("id")) {
+            Integer id;
+            try {
+                id = Integer.parseInt(q);
+            } catch (NumberFormatException e) {
+                userBriefInfoDTOs = users.stream()
+                        .map(UserBriefInfoDTO::new)
+                        .collect(Collectors.toList());
+                return new GetUsersOkResponseDTO(userBriefInfoDTOs.size(),
+                        PaginationUtils.paginate(userBriefInfoDTOs, page, pagesize));
+            }
+            userBriefInfoDTOs = users.stream()
+                    .filter(user -> user.getId() == id)
+                    .map(UserBriefInfoDTO::new)
+                    .collect(Collectors.toList());
+        } else {
+            userBriefInfoDTOs = users.stream()
+                    .filter(user -> user.getName().contains(q))
+                    .map(UserBriefInfoDTO::new)
+                    .collect(Collectors.toList());
+        }
+
+        return new GetUsersOkResponseDTO(userBriefInfoDTOs.size(),
+                PaginationUtils.paginate(userBriefInfoDTOs, page, pagesize));
+    }
+
+    public void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new AuthenticationException("Unauthorized to ban user");
+        }
+
+        if (!requestUser.isAsAdmin()) {
+            throw new AuthenticationException("Unauthorized to ban user");
+        }
+        Optional<User> optionalUser = repository.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new NoSuchElementException("User with id " + id + " not found");
+        }
+        User targetUser = optionalUser.get();
+        targetUser.setDisabled(state);
+        repository.save(targetUser);
+    }
+
+    public Boolean getBanState(Integer id, String token) throws AuthenticationException {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new AuthenticationException("Unauthorized to get ban state");
+        }
+        if (!requestUser.isAsAdmin()) {
+            throw new AuthenticationException("Unauthorized to get ban state");
+        }
+
+        Optional<User> optionalUser = repository.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new NoSuchElementException("User with id " + id + " not found");
+        }
+        return optionalUser.get().isDisabled();
     }
 }
