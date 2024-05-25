@@ -122,51 +122,55 @@ public class UserServiceImpl implements UserService {
     // q: keyword
     public GetUsersOkResponseDTO getUsers(Integer page, Integer pagesize, String token, String type, String q)
             throws AuthenticationException {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
+            throw new AuthenticationException("Unauthorized to get users");
+        }
 
-        // check if the user is authenticated
-        User requestUser = authService.getUserByToken(token);
-        if (requestUser == null) {
+        if (!requestUser.isAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get users");
         }
-        if (requestUser.isAsAdmin() == false) {
-            throw new AuthenticationException("Unauthorized to get users");
-        }
+
         List<User> users = repository.findAll();
-
-        List<UserBriefInfoDTO> userBriefInfoDTOS;
+        List<UserBriefInfoDTO> userBriefInfoDTOs;
         System.out.println("type: " + type + " q: " + q);
         if (type.equals("id")) {
             Integer id;
             try {
                 id = Integer.parseInt(q);
             } catch (NumberFormatException e) {
-                userBriefInfoDTOS = users.stream()
+                userBriefInfoDTOs = users.stream()
                         .map(UserBriefInfoDTO::new)
                         .collect(Collectors.toList());
-                return new GetUsersOkResponseDTO(userBriefInfoDTOS.size(),
-                        PaginationUtils.paginate(userBriefInfoDTOS, page, pagesize));
+                return new GetUsersOkResponseDTO(userBriefInfoDTOs.size(),
+                        PaginationUtils.paginate(userBriefInfoDTOs, page, pagesize));
             }
-            userBriefInfoDTOS = users.stream()
+            userBriefInfoDTOs = users.stream()
                     .filter(user -> user.getId() == id)
                     .map(UserBriefInfoDTO::new)
                     .collect(Collectors.toList());
         } else {
-            userBriefInfoDTOS = users.stream()
+            userBriefInfoDTOs = users.stream()
                     .filter(user -> user.getName().contains(q))
                     .map(UserBriefInfoDTO::new)
                     .collect(Collectors.toList());
         }
 
-        return new GetUsersOkResponseDTO(userBriefInfoDTOS.size(),
-                PaginationUtils.paginate(userBriefInfoDTOS, page, pagesize));
+        return new GetUsersOkResponseDTO(userBriefInfoDTOs.size(),
+                PaginationUtils.paginate(userBriefInfoDTOs, page, pagesize));
     }
 
     public void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException {
-        User requestUser = authService.getUserByToken(token);
-        if (requestUser == null) {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
             throw new AuthenticationException("Unauthorized to ban user");
         }
-        if (requestUser.isAsAdmin() == false) {
+
+        if (!requestUser.isAsAdmin()) {
             throw new AuthenticationException("Unauthorized to ban user");
         }
         Optional<User> optionalUser = repository.findById(id);
@@ -179,13 +183,16 @@ public class UserServiceImpl implements UserService {
     }
 
     public Boolean getBanState(Integer id, String token) throws AuthenticationException {
-        User requestUser = authService.getUserByToken(token);
-        if (requestUser == null) {
+        User requestUser;
+        try {
+            requestUser = authService.getUserByToken(token);
+        } catch (NoSuchElementException e) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
-        if (requestUser.isAsAdmin() == false) {
+        if (!requestUser.isAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
+
         Optional<User> optionalUser = repository.findById(id);
         if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + id + " not found");

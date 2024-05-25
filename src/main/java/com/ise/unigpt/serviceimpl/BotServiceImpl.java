@@ -105,7 +105,10 @@ public class BotServiceImpl implements BotService {
         }
 
         if (!bot.isPublished() && bot.getCreator() != user && !user.isAsAdmin()) {
-            // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
+            // 以下三种情况任意一种满足时，可以查看bot的详细信息
+            // 1. bot已发布
+            // 2. 请求用户是bot的创建者
+            // 3. 请求用户是管理员
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -124,6 +127,9 @@ public class BotServiceImpl implements BotService {
         }
 
         if ((bot.getCreator().getId() != user.getId()) && !user.isAsAdmin()) {
+            // 以下两种情况任意一种满足时，可以获取bot的编辑信息
+            // 1. 请求用户是bot的创建者
+            // 2. 请求用户是管理员
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -172,6 +178,9 @@ public class BotServiceImpl implements BotService {
 
         }
         if (updatedBot.getCreator().getId() != requestUser.getId() && !requestUser.isAsAdmin()) {
+            // 以下两种情况任意一种满足时，可以更新bot
+            // 1. 请求用户是bot的创建者
+            // 2. 请求用户是管理员
             throw new IllegalArgumentException("User not authorized to update bot");
         }
 
