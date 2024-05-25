@@ -1,5 +1,8 @@
 package com.ise.unigpt.websocket;
 
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import com.ise.unigpt.dto.CanvasEventDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -13,6 +16,13 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.http.Cookie;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -200,6 +210,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println("PromptChatList is null");
                 promptChatList = new ArrayList<>();
             }
+            preHandle(session, bot.getId(), promptChatList);
             for (PromptChat promptChat : promptChatList) {
                 System.out.println(promptChat.getContent());
             }
@@ -249,6 +260,59 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println("Error sending error message");
             }
             e.printStackTrace();
+        }
+    }
+
+    public void preHandle(WebSocketSession session, int botId, List<PromptChat> promptChatList) {
+        if (botId == 22){
+//            User user = authService.getUserByToken(sessionToken.get(session));
+            String canvasEventList = getCanvasEventList();
+            promptChatList.add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas events:" + canvasEventList));
+        }
+    }
+
+    public String getCanvasEventList() {
+        try {
+
+            String url = "https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics";
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            String icsData = response.body();
+            ICalendar ical = Biweekly.parse(icsData).first();
+
+            List<CanvasEventDTO> eventList = new ArrayList<>();
+            LocalDateTime now = LocalDateTime.now();
+
+            return ical.getEvents().stream()
+                    .filter(event -> event.getDateStart() != null)
+                    .filter(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(), ZoneOffset.UTC);
+                        return endDate.isAfter(now);
+                    })
+                    .map(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(), ZoneOffset.UTC);
+                        endDate = endDate.plusHours(8);
+                        if (endDate.getHour() == 0) {
+                            endDate = endDate.plusDays(1);
+                        }
+                        Instant ddlTime = endDate.toInstant(ZoneOffset.UTC);
+                        return new CanvasEventDTO(
+                                event.getSummary().getValue(),
+                                event.getDescription().getValue(),
+                                ddlTime
+                        );
+                    })
+                    .toList().toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
         }
     }
 }
