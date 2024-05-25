@@ -216,20 +216,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             List<Chat> chatList = history.getChats();
 
+            // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
-            String userMessage = (String) map.get("chatContent");
+            Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
+            String userMessage = map.get("chatContent");
             System.out.println("User message: " + userMessage);
             Chat userChat = new Chat(history, ChatType.USER, userMessage);
             chatList.add(userChat);
-
-            boolean cover = map.containsKey("cover") && (boolean) map.get("cover");
-            if (cover) {
-                // remove last 2 chats
-                chatList = chatList.subList(0, chatList.size() - 2);
-                // delete in db
-                chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
-            }
             System.out.println("ChatList: ");
             for (Chat chat : chatList) {
                 System.out.println(chat.getContent());
