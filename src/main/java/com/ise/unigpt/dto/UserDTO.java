@@ -11,7 +11,8 @@ public class UserDTO {
     private String description;
     private String account;
     private String canvasUrl;
-
+    private Boolean asAdmin;
+  
     public UserDTO(User user) {
         this.id = user.getId();
         this.name = user.getName();
@@ -19,5 +20,6 @@ public class UserDTO {
         this.description = user.getDescription();
         this.account = user.getAccount();
         this.canvasUrl = user.getCanvasUrl();
+        this.asAdmin = user.isAsAdmin();
     }
 }
