@@ -10,6 +10,7 @@ public class UserDTO {
     private String avatar;
     private String description;
     private String account;
+    private String canvasUrl;
 
     public UserDTO(User user) {
         this.id = user.getId();
@@ -17,5 +18,6 @@ public class UserDTO {
         this.avatar = user.getAvatar();
         this.description = user.getDescription();
         this.account = user.getAccount();
+        this.canvasUrl = user.getCanvasUrl();
     }
 }

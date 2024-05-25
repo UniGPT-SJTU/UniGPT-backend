@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
         targetUser.setName(updateUserInfoRequestDTO.getName());
         targetUser.setAvatar(updateUserInfoRequestDTO.getAvatar());
         targetUser.setDescription(updateUserInfoRequestDTO.getDescription());
+        targetUser.setCanvasUrl(updateUserInfoRequestDTO.getCanvasUrl());
 
         repository.save(targetUser);
     }
