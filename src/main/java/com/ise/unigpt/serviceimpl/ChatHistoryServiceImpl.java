@@ -28,6 +28,27 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         this.authService = authService;
     }
 
+    public void deleteChats(Integer historyId, Integer n, String token)
+            throws AuthenticationException{
+        History history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
+        User requestUser = authService.getUserByToken(token);
+
+        if (requestUser.getId() != history.getUser().getId()) {
+            throw new AuthenticationException("User not authorized to access this history");
+        }
+
+        List<Chat> chats = history.getChats();
+        int size = chats.size();
+        if (n > size) {
+            n = size;
+        }
+        for (int i = 0; i < n; i++) {
+            chats.remove(size - 1 - i);
+        }
+        historyRepository.save(history);
+    }
+
     public void createChat(Integer historyId, String content, ChatType type, String token)
             throws AuthenticationException {
         History history = historyRepository.findById(historyId)
