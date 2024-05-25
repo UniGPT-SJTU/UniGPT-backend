@@ -220,8 +220,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
             String userMessage = map.get("chatContent");
+            boolean coverLastChat = Boolean.parseBoolean(map.get("cover"));
             System.out.println("User message: " + userMessage);
             Chat userChat = new Chat(history, ChatType.USER, userMessage);
+            if (coverLastChat) {
+                chatList.remove(chatList.size() - 1);
+            }
             chatList.add(userChat);
             System.out.println("ChatList: ");
             for (Chat chat : chatList) {
