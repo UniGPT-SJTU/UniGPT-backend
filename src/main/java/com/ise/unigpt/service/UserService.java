@@ -72,4 +72,13 @@ public interface UserService {
          * @param state 状态
          */
         void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException;
+
+        /**
+         * @brief 查看当前用户禁用状态
+         * @param id    用户id
+         * @param token 用户token
+         * @return 禁用状态
+         * @throws AuthenticationException
+         */
+        Boolean getBanState(Integer id, String token) throws AuthenticationException;
 }

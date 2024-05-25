@@ -177,4 +177,19 @@ public class UserServiceImpl implements UserService {
         targetUser.setDisabled(state);
         repository.save(targetUser);
     }
+
+    public Boolean getBanState(Integer id, String token) throws AuthenticationException {
+        User requestUser = authService.getUserByToken(token);
+        if (requestUser == null) {
+            throw new AuthenticationException("Unauthorized to get ban state");
+        }
+        if (requestUser.isAsAdmin() == false) {
+            throw new AuthenticationException("Unauthorized to get ban state");
+        }
+        Optional<User> optionalUser = repository.findById(id);
+        if (optionalUser.isEmpty()) {
+            throw new NoSuchElementException("User with id " + id + " not found");
+        }
+        return optionalUser.get().isDisabled();
+    }
 }

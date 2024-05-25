@@ -8,6 +8,7 @@ import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.dto.JaccountResponseDTO;
+import com.ise.unigpt.exception.UserDisabledException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -76,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
         User user = auth.getUser();
         if (user.isDisabled()) {
-            throw new NoSuchElementException("User is disabled");
+            throw new UserDisabledException("User is disabled");
         }
         return user;
     }
