@@ -265,17 +265,29 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     public void preHandle(WebSocketSession session, int botId, List<PromptChat> promptChatList) {
         if (botId == 22){
-//            User user = authService.getUserByToken(sessionToken.get(session));
-            String canvasEventList = getCanvasEventList();
+            User user = authService.getUserByToken(sessionToken.get(session));
+            String url = user.getCanvasUrl();
+            if (url == null || url.isEmpty()) {
+                System.out.println("Canvas URL is empty");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
+                        "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
+            // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
+            if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") || !url.endsWith(".ics")) {
+                System.out.println("Canvas URL is invalid");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
+                        "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            String canvasEventList = getCanvasEventList(url);
             promptChatList.add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas events:" + canvasEventList));
         }
     }
 
-    public String getCanvasEventList() {
+    public String getCanvasEventList(String url) {
         try {
-
-            String url = "https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics";
-
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -284,6 +296,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             String icsData = response.body();
+//            System.out.println(icsData);
+            if (Biweekly.parse(icsData).first() == null) {
+                return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。" +
+                        "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
+            }
             ICalendar ical = Biweekly.parse(icsData).first();
 
             List<CanvasEventDTO> eventList = new ArrayList<>();
@@ -302,6 +319,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                             endDate = endDate.plusDays(1);
                         }
                         Instant ddlTime = endDate.toInstant(ZoneOffset.UTC);
+                        if (event.getDescription() == null) {
+                            return new CanvasEventDTO(event.getSummary().getValue(), "No description", ddlTime);
+                        }
                         return new CanvasEventDTO(
                                 event.getSummary().getValue(),
                                 event.getDescription().getValue(),
