@@ -222,7 +222,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
             // 如果cover为true，则删除末尾的两个对话
             boolean cover = (boolean) map.get("cover");
-            if(cover) chatList = chatList.subList(0, chatList.size() - 2);
+            if(cover){
+                if(chatList.size() < 2){
+                    chatList = new ArrayList<>();
+                } else {
+                    chatList = chatList.subList(0, chatList.size() - 2);
+                }
+            }
             // 获取用户的消息
             String userMessage = (String) map.get("chatContent");
             System.out.println("User message: " + userMessage);
