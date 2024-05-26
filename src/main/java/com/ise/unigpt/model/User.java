@@ -32,6 +32,9 @@ public class User {
     @Column(name = "account")
     private String account;
 
+    @Column(name = "canvas")
+    private String canvasUrl;
+
     @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
