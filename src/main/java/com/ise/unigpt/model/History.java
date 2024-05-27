@@ -38,7 +38,7 @@ public class History {
      * @brief 存储机器人的promptKey和用户填写的promptValue的映射关系
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "history_prompt_key_value_pair")
+    @CollectionTable(name = "history_prompt_key_value_pairs")
     @MapKeyColumn(name = "prompt_key")
     @Column(name = "prompt_value")
     private Map<String, String> promptKeyValuePairs;
