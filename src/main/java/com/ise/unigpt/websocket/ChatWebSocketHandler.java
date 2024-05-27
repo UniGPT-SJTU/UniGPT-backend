@@ -3,6 +3,8 @@ package com.ise.unigpt.websocket;
 import biweekly.Biweekly;
 import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
+import com.ise.unigpt.dto.ChatDTO;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -229,11 +231,22 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
-            String userMessage = map.get("chatContent");
+            Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
+            // 如果cover为true，则删除末尾的两个对话
+            boolean cover = (boolean) map.get("cover");
+            if(cover){
+                if(chatList.size() < 2){
+                    chatList = new ArrayList<>();
+                } else {
+                    chatList = chatList.subList(0, chatList.size() - 2);
+                }
+            }
+            // 获取用户的消息
+            String userMessage = (String) map.get("chatContent");
             System.out.println("User message: " + userMessage);
             Chat userChat = new Chat(history, ChatType.USER, userMessage);
             chatList.add(userChat);
+            // 打印chatList
             System.out.println("ChatList: ");
             for (Chat chat : chatList) {
                 System.out.println(chat.getContent());
@@ -243,11 +256,21 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+            // 如果cover为true，则删除末尾的两个对话
+            if(cover) chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
             // 将用户的消息存入history
             chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
             System.out.println(replyMessage);
             // 将恢复内容存入history
             chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
+
+
+            // 打印数据库中的chatList
+            List<ChatDTO> chatListFromDB = chatHistoryService.getChats(history.getId(), 1, 100, sessionToken.get(session)).getChats();
+            System.out.println("ChatList from DB: ");
+            for (ChatDTO chat : chatListFromDB) {
+                System.out.println(chat.getContent());
+            }
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {

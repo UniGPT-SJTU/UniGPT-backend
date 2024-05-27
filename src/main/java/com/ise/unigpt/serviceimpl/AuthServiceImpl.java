@@ -8,6 +8,7 @@ import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.dto.JaccountResponseDTO;
+import com.ise.unigpt.exception.UserDisabledException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -74,7 +75,11 @@ public class AuthServiceImpl implements AuthService {
         // TODO: 登录请求应该抛出401(未授权)异常
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
-        return auth.getUser();
+        User user = auth.getUser();
+        if (user.isDisabled()) {
+            throw new UserDisabledException("User is disabled");
+        }
+        return user;
     }
 
     public String requestAccessToken(String code) throws AuthenticationException {

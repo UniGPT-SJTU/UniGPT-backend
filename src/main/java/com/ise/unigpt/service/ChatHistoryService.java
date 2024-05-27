@@ -13,6 +13,15 @@ import java.util.List;
 
 public interface ChatHistoryService {
 
+
+    /**
+     * @brief 删除末尾的若干个对话
+     * @param historyId 历史id
+     * @param n         删除数量
+     * @param token     用户token
+     */
+    void deleteChats(Integer historyId, Integer n, String token) throws AuthenticationException;
+
     /**
      * @brief 在指定历史中加入对话
      * @param historyId 历史id

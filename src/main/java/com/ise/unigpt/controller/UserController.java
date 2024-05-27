@@ -3,16 +3,16 @@ package com.ise.unigpt.controller;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.dto.UserDTO;
+import com.ise.unigpt.model.User;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
+import com.ise.unigpt.exception.UserDisabledException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.NoSuchElementException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,6 +42,12 @@ public class UserController {
             return ResponseEntity.ok(new UserDTO(authService.getUserByToken(token)));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (UserDisabledException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
@@ -102,6 +108,52 @@ public class UserController {
         try {
             // 使用userid和token
             return ResponseEntity.ok(service.getCreatedBots(userid, token, page, pagesize));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<Object> getUsers(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer pagesize,
+            @RequestParam(defaultValue = "keyword") String type,
+            @RequestParam(defaultValue = "", required = false) String q,
+            @CookieValue(value = "token") String token) {
+        try {
+            return ResponseEntity.ok(service.getUsers(page, pagesize, token, type, q));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    // 禁用/解除禁用用户
+    @PutMapping("/{id}/ban")
+    public ResponseEntity<Object> disableUser(@PathVariable Integer id, @CookieValue(value = "token") String token,
+            @RequestParam(defaultValue = "false") Boolean disable) {
+        try {
+            service.setBanUser(id, token, disable);
+            return ResponseEntity.ok(new ResponseDTO(true, "Disable/Undisable user successfully"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/ban")
+    public ResponseEntity<Object> isUserDisabled(@PathVariable Integer id, @CookieValue(value = "token") String token) {
+        try {
+            Boolean banState = service.getBanState(id, token);
+            if (banState == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ResponseDTO(false, "User not found"));
+            } else if (banState) {
+                return ResponseEntity.ok(new ResponseDTO(true, "true"));
+            } else {
+                return ResponseEntity.ok(new ResponseDTO(true, "false"));
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
