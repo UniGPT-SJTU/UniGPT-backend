@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -66,21 +65,21 @@ public class HistoryController {
         }
     }
 
-    @PostMapping("/{historyid}/promptlist")
-    public ResponseEntity<ResponseDTO> createPrompt(
-            @PathVariable Integer historyid,
-            @RequestBody List<PromptDTO> promptList) {
-        try {
-            service.updatePromptList(historyid, promptList);
-            return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO(false, e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ResponseDTO(false, e.getMessage()));
-        }
-    }
+    // @PostMapping("/{historyid}/promptlist")
+    // public ResponseEntity<ResponseDTO> createPrompt(
+    //         @PathVariable Integer historyid,
+    //         @RequestBody List<PromptDTO> promptList) {
+    //     try {
+    //         service.updatePromptList(historyid, promptList);
+    //         return ResponseEntity.ok(new ResponseDTO(true, "Prompt changed"));
+    //     } catch (NoSuchElementException e) {
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(new ResponseDTO(false, e.getMessage()));
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    //                 .body(new ResponseDTO(false, e.getMessage()));
+    //     }
+    // }
 
     @DeleteMapping("/{historyid}")
     public ResponseEntity<Object> deleteHistory(@CookieValue String token, @PathVariable Integer historyid) {

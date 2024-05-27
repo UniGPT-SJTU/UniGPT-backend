@@ -2,12 +2,10 @@ package com.ise.unigpt.service;
 
 import com.ise.unigpt.dto.GetChatsOkResponseDTO;
 import com.ise.unigpt.dto.PromptDTO;
-import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.*;
 
 import javax.naming.AuthenticationException;
 
-import org.apache.coyote.BadRequestException;
 
 import java.util.List;
 
@@ -49,13 +47,13 @@ public interface ChatHistoryService {
      */
     List<PromptDTO> getPromptList(Integer historyid);
 
-    /**
-     * @brief 修改指定历史的提示列表
-     * @param historyid  历史id
-     * @param promptList 提示列表
-     * @return 修改结果
-     */
-    ResponseDTO updatePromptList(Integer historyid, List<PromptDTO> promptList) throws BadRequestException;
+    // /**
+    //  * @brief 修改指定历史的提示列表
+    //  * @param historyid  历史id
+    //  * @param promptList 提示列表
+    //  * @return 修改结果
+    //  */
+    // ResponseDTO updatePromptList(Integer historyid, List<PromptDTO> promptList) throws BadRequestException;
 
     /**
      * @brief 获取指定历史的历史类

@@ -11,14 +11,13 @@ import com.ise.unigpt.repository.HistoryRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.utils.PaginationUtils;
+import com.ise.unigpt.utils.StringTemplateParser;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class BotServiceImpl implements BotService {
@@ -334,19 +333,41 @@ public class BotServiceImpl implements BotService {
         }
         userRepository.save(user);
 
+        // 將提示词列表转换为 key-value 对
+        Map<String, String> promptKeyValuePairs = promptList.stream()
+                .collect(Collectors.toMap(PromptDTO::getPromptKey, PromptDTO::getPromptValue));
+
+        // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
+        // 并保存到数据库
+        List<PromptChat> interpolatedPromptChats = bot.getPromptChats()
+            .stream()
+            .map(
+                promptChat -> new PromptChat(
+                    promptChat.getType(), 
+                    StringTemplateParser.interpolate(
+                        promptChat.getContent(), 
+                        promptKeyValuePairs
+                    )
+                )
+            )
+            .collect(Collectors.toList());
+        promptChatRepository.saveAll(interpolatedPromptChats);
+
         // 创建新的对话历史
         History history = new History(
-                user,
-                bot,
-                promptList.stream()
-                        .collect(Collectors.toMap(
-                                PromptDTO::getPromptKey,
-                                PromptDTO::getPromptValue)));
+            user,
+            bot,
+            promptKeyValuePairs,
+            interpolatedPromptChats
+        );
         historyRepository.save(history);
 
         user.getHistories().add(history);
         userRepository.save(user);
-        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId());
+        return new CreateBotHistoryOkResponseDTO(
+            true, "Chat history created successfully", 
+            history.getId()
+        );
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {

@@ -5,18 +5,13 @@ import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
 import com.ise.unigpt.dto.ChatDTO;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 import io.micrometer.common.lang.NonNull;
-import jakarta.servlet.http.Cookie;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,11 +21,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.ChatType;
@@ -206,25 +199,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             Bot bot = history.getBot();
             System.out.println("Bot: " + bot.getId());
-            List<PromptChat> promptChatList = bot.getPromptChats();
+            List<PromptChat> promptChatList = history.getPromptChats();
             System.out.println("PromptChatList: ");
             if (promptChatList == null) {
+                // TODO: promptChatList是否可能为空？
                 System.out.println("PromptChatList is null");
                 promptChatList = new ArrayList<>();
             }
             preHandle(session, bot.getId(), promptChatList);
             for (PromptChat promptChat : promptChatList) {
                 System.out.println(promptChat.getContent());
-            }
-
-            Map<String, String> promptList = history.getPromptList();
-            if (promptList == null) {
-                System.out.println("PromptList is null");
-                promptList = new HashMap<>();
-            }
-            System.out.println("PromptList: ");
-            for (Map.Entry<String, String> entry : promptList.entrySet()) {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
             }
 
             List<Chat> chatList = history.getChats();
@@ -252,7 +236,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println(chat.getContent());
             }
 
-            String replyMessage = llmService.generateResponse(promptChatList, promptList, chatList);
+            String replyMessage = llmService.generateResponse(promptChatList, chatList);
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
