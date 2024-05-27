@@ -1,6 +1,10 @@
 package com.ise.unigpt.websocket;
 
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import com.ise.unigpt.dto.CanvasEventDTO;
 import com.ise.unigpt.dto.ChatDTO;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -14,6 +18,13 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.http.Cookie;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -201,6 +212,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println("PromptChatList is null");
                 promptChatList = new ArrayList<>();
             }
+            preHandle(session, bot.getId(), promptChatList);
             for (PromptChat promptChat : promptChatList) {
                 System.out.println(promptChat.getContent());
             }
@@ -271,6 +283,79 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println("Error sending error message");
             }
             e.printStackTrace();
+        }
+    }
+
+    public void preHandle(WebSocketSession session, int botId, List<PromptChat> promptChatList) {
+        if (botId == 22){
+            User user = authService.getUserByToken(sessionToken.get(session));
+            String url = user.getCanvasUrl();
+            if (url == null || url.isEmpty()) {
+                System.out.println("Canvas URL is empty");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
+                        "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
+            // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
+            if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") || !url.endsWith(".ics")) {
+                System.out.println("Canvas URL is invalid");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
+                        "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            String canvasEventList = getCanvasEventList(url);
+            promptChatList.add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas events:" + canvasEventList));
+        }
+    }
+
+    public String getCanvasEventList(String url) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            String icsData = response.body();
+//            System.out.println(icsData);
+            if (Biweekly.parse(icsData).first() == null) {
+                return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。" +
+                        "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
+            }
+            ICalendar ical = Biweekly.parse(icsData).first();
+
+            List<CanvasEventDTO> eventList = new ArrayList<>();
+            LocalDateTime now = LocalDateTime.now();
+
+            return ical.getEvents().stream()
+                    .filter(event -> event.getDateStart() != null)
+                    .filter(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(), ZoneOffset.UTC);
+                        return endDate.isAfter(now);
+                    })
+                    .map(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(), ZoneOffset.UTC);
+                        endDate = endDate.plusHours(8);
+                        if (endDate.getHour() == 0) {
+                            endDate = endDate.plusDays(1);
+                        }
+                        Instant ddlTime = endDate.toInstant(ZoneOffset.UTC);
+                        if (event.getDescription() == null) {
+                            return new CanvasEventDTO(event.getSummary().getValue(), "No description", ddlTime);
+                        }
+                        return new CanvasEventDTO(
+                                event.getSummary().getValue(),
+                                event.getDescription().getValue(),
+                                ddlTime
+                        );
+                    })
+                    .toList().toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
         }
     }
 }
