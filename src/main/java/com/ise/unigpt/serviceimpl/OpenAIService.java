@@ -3,7 +3,6 @@ package com.ise.unigpt.serviceimpl;
 import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -14,7 +13,6 @@ import com.ise.unigpt.dto.OpenAIRequestDTO;
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.LLMService;
-import com.ise.unigpt.utils.StringTemplateParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
@@ -25,17 +23,16 @@ import com.mashape.unirest.http.Unirest;
 public class OpenAIService implements LLMService {
 
         @Override
-        public String generateResponse(List<PromptChat> promptChats, Map<String, String> promptList, List<Chat> chats)
+        public String generateResponse(List<PromptChat> promptChats, List<Chat> chats)
                         throws Exception {
                 Unirest.setTimeouts(0, 0);
                 List<OpenAIMessageDTO> messages = new ArrayList<>();
                 messages.addAll(
-                                promptChats.stream().map(
-                                                promptChat -> new OpenAIMessageDTO(
-                                                                promptChat.getType().toString(),
-                                                                StringTemplateParser.interpolate(
-                                                                                promptChat.getContent(), promptList)))
-                                                .collect(Collectors.toList()));
+                                promptChats
+                                                .stream()
+                                                .map(promptChat -> new OpenAIMessageDTO(promptChat.getType().toString(),
+                                                                promptChat.getContent()))
+                                                .toList());
                 messages.addAll(
                                 chats.stream().map(
                                                 chat -> new OpenAIMessageDTO(chat.getType().toString(),
