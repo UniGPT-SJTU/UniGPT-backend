@@ -334,7 +334,7 @@ public class BotServiceImpl implements BotService {
         userRepository.save(user);
 
         // 將提示词列表转换为 key-value 对
-        Map<String, String> promptKeyValuePair = promptList.stream()
+        Map<String, String> promptKeyValuePairs = promptList.stream()
                 .collect(Collectors.toMap(PromptDTO::getPromptKey, PromptDTO::getPromptValue));
 
         // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
@@ -346,7 +346,7 @@ public class BotServiceImpl implements BotService {
                     promptChat.getType(), 
                     StringTemplateParser.interpolate(
                         promptChat.getContent(), 
-                        promptKeyValuePair
+                        promptKeyValuePairs
                     )
                 )
             )
@@ -357,7 +357,7 @@ public class BotServiceImpl implements BotService {
         History history = new History(
             user,
             bot,
-            promptKeyValuePair,
+            promptKeyValuePairs,
             interpolatedPromptChats
         );
         historyRepository.save(history);

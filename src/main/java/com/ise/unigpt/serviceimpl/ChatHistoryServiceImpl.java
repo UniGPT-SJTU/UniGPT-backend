@@ -95,7 +95,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                                 "History not found for ID: " + historyid));
 
         List<PromptDTO> promptList = history
-                .getPromptKeyValuePair()
+                .getPromptKeyValuePairs()
                 .entrySet()
                 .stream()
                 .map(

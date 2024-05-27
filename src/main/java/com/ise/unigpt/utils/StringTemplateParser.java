@@ -7,10 +7,10 @@ public class StringTemplateParser {
     /**
      * @brief 替换字符串中的占位符
      * @param input       输入字符串
-     * @param keyValuePair  占位符和值的映射
+     * @param keyValuePairs  占位符和值的映射
      * @return
      */
-    public static String interpolate(String input, Map<String, String> keyValuePair) {
+    public static String interpolate(String input, Map<String, String> keyValuePairs) {
         // 定义正则表达式模式以匹配占位符++{}
         String regexPattern = "\\+\\+\\{(.*?)\\}";
         StringBuilder result = new StringBuilder();
@@ -28,7 +28,7 @@ public class StringTemplateParser {
             String placeholder = matcher.group(1);
             
             // 查找变量映射中的值
-            String replacement = keyValuePair.getOrDefault(placeholder, "");
+            String replacement = keyValuePairs.getOrDefault(placeholder, "");
             
             // 追加替换后的值
             result.append(replacement);
@@ -41,7 +41,7 @@ public class StringTemplateParser {
         result.append(input.substring(lastMatchEnd));
 
         System.out.println("template: " + input);
-        System.out.println("promptList: " + keyValuePair.toString());
+        System.out.println("promptList: " + keyValuePairs.toString());
         System.out.println("result: " + result.toString());
 
         

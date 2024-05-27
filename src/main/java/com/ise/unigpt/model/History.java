@@ -38,7 +38,10 @@ public class History {
      * @brief 存储机器人的promptKey和用户填写的promptValue的映射关系
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> promptKeyValuePair;
+    @CollectionTable(name = "history_prompt_key_value_pair")
+    @MapKeyColumn(name = "prompt_key")
+    @Column(name = "prompt_value")
+    private Map<String, String> promptKeyValuePairs;
     
     /**
      * @brief 存储用户和机器人的对话
@@ -53,11 +56,11 @@ public class History {
         // not used
     }
 
-    public History(User user, Bot bot, Map<String, String> promptKeyValuePair, List<PromptChat> promptChats) {
+    public History(User user, Bot bot, Map<String, String> promptKeyValuePairs, List<PromptChat> promptChats) {
         this.user = user;
         this.bot = bot;
         this.chats = new ArrayList<>();
-        this.promptKeyValuePair = promptKeyValuePair;
+        this.promptKeyValuePairs = promptKeyValuePairs;
         this.promptChats = promptChats;
     }
 
