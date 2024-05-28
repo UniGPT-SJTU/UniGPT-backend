@@ -10,6 +10,7 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
 import com.ise.unigpt.utils.StringTemplateParser;
 
@@ -27,17 +28,20 @@ public class BotServiceImpl implements BotService {
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
+    private final ChatHistoryService chatHistoryService;
 
     public BotServiceImpl(BotRepository botRepository,
             UserRepository userRepository,
             HistoryRepository historyRepository,
             PromptChatRepository promptChatRepository,
-            AuthService authService) {
+            AuthService authService,
+            ChatHistoryService chatHistoryService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
         this.historyRepository = historyRepository;
+        this.chatHistoryService = chatHistoryService;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -340,34 +344,50 @@ public class BotServiceImpl implements BotService {
         // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
         // 并保存到数据库
         List<PromptChat> interpolatedPromptChats = bot.getPromptChats()
-            .stream()
-            .map(
-                promptChat -> new PromptChat(
-                    promptChat.getType(), 
-                    StringTemplateParser.interpolate(
-                        promptChat.getContent(), 
-                        promptKeyValuePairs
-                    )
-                )
-            )
-            .collect(Collectors.toList());
-        promptChatRepository.saveAll(interpolatedPromptChats);
+                .stream()
+                .map(
+                        promptChat -> new PromptChat(
+                                promptChat.getType(),
+                                StringTemplateParser.interpolate(
+                                        promptChat.getContent(),
+                                        promptKeyValuePairs)))
+                .collect(Collectors.toList());
 
         // 创建新的对话历史
         History history = new History(
-            user,
-            bot,
-            promptKeyValuePairs,
-            interpolatedPromptChats
-        );
+                user,
+                bot,
+                promptKeyValuePairs,
+                interpolatedPromptChats);
         historyRepository.save(history);
 
+        // 读取最后一条对话
+        PromptChat lastPromptChat = interpolatedPromptChats.get(interpolatedPromptChats.size() - 1);
+        String lastPromptChatContent = lastPromptChat.getContent();
+        PromptChatType lastPromptChatType = lastPromptChat.getType();
+        if (lastPromptChatType != PromptChatType.USER) {
+            throw new RuntimeException("Last prompt chat is not of type USER");
+        }
+
+        // 删除PromptChatList中的最后一条对话
+        interpolatedPromptChats.remove(interpolatedPromptChats.size() - 1);
+        promptChatRepository.saveAll(interpolatedPromptChats);
+
+        // 将对话历史加入用户的 histories 列表
+        try {
+            chatHistoryService.createChat(history.getId(), lastPromptChatContent, ChatType.USER,
+                    token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 将对话历史加入用户的 histories 列表
         user.getHistories().add(history);
         userRepository.save(user);
         return new CreateBotHistoryOkResponseDTO(
-            true, "Chat history created successfully", 
-            history.getId()
-        );
+                true, "Chat history created successfully",
+                history.getId(),
+                lastPromptChatContent);
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
