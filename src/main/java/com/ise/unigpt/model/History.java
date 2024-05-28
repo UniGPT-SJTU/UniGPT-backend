@@ -24,16 +24,15 @@ public class History {
     @ManyToOne
     @JoinColumn(name = "bot_id")
     private Bot bot;
-    
+
     // TODO@creeper: 将Bot.promptChats和History.promptChats隔离开
-    
+
     /**
      * @brief 对话历史的提示对话（已经嵌入了用户填写的表单）
      */
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<PromptChat> promptChats;
-    
-    
+
     /**
      * @brief 存储机器人的promptKey和用户填写的promptValue的映射关系
      */
@@ -42,15 +41,12 @@ public class History {
     @MapKeyColumn(name = "prompt_key")
     @Column(name = "prompt_value")
     private Map<String, String> promptKeyValuePairs;
-    
+
     /**
      * @brief 存储用户和机器人的对话
      */
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Chat> chats;
-    
-    
-
 
     public History() {
         // not used

@@ -176,26 +176,46 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 判断历史chat是否为空
         List<Chat> chatList = history.getChats();
         if (chatList != null && chatList.size() > 0) {
-
             return;
         }
         Bot bot = history.getBot();
         System.out.println("Bot: " + bot.getId());
         List<PromptChat> promptChatList = history.getPromptChats();
+        // 读取最后一条对话
+
         System.out.println("PromptChatList: ");
         if (promptChatList == null) {
             // TODO: promptChatList是否可能为空？
             System.out.println("PromptChatList is null");
             promptChatList = new ArrayList<>();
         }
+        PromptChat lastPromptChat = promptChatList.get(promptChatList.size() - 1);
+        String lastPromptChatContent = lastPromptChat.getContent();
+        PromptChatType lastPromptChatType = lastPromptChat.getType();
+        if (lastPromptChatType != PromptChatType.USER) {
+            throw new RuntimeException("Last prompt chat is not of type USER");
+        }
+        // 将最后一条对话加入chatList
+        Chat lastChat = new Chat(history, ChatType.USER, lastPromptChatContent);
+        chatList.add(lastChat);
+        // 删除PromptChatList中的最后一条对话
+        promptChatList.remove(promptChatList.size() - 1);
         preHandle(session, bot.getId(), promptChatList);
+        try {
+            chatHistoryService.createChat(history.getId(), lastPromptChatContent, ChatType.USER,
+                    sessionToken.get(session));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try {
             String replyMessage = llmService.generateResponse(promptChatList, chatList);
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
             /* System.out.println(replyMessage); */
-            // 将恢复内容存入history
+            // 将回复内容存入history
+
             chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
         } catch (Exception e) {
             System.out.println("Error sending first reply message");
@@ -205,6 +225,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 Map<String, String> replyMap = new HashMap<>();
                 replyMap.put("replyMessage", replyMessage);
                 session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+
             } catch (Exception e2) {
                 System.out.println("Error sending error message");
             }
