@@ -204,10 +204,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println("objectMapper: " + objectMapper);
             Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
             // 如果cover为true，则删除末尾的两个对话
             boolean cover = (boolean) map.get("cover");
-            boolean isUserAsk = (boolean) map.get("UserAsk");
+            boolean isUserAsk = (boolean) map.get("userAsk");
             if (cover) {
                 if (chatList.size() < 2) {
                     chatList = new ArrayList<>();
