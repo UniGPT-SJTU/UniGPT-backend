@@ -361,7 +361,7 @@ public class BotServiceImpl implements BotService {
                 interpolatedPromptChats);
         historyRepository.save(history);
 
-        // 读取最后一条对话
+        // 读取最后一条对话，并保证其为USER类型
         PromptChat lastPromptChat = interpolatedPromptChats.get(interpolatedPromptChats.size() - 1);
         String lastPromptChatContent = lastPromptChat.getContent();
         PromptChatType lastPromptChatType = lastPromptChat.getType();
@@ -369,9 +369,9 @@ public class BotServiceImpl implements BotService {
             throw new RuntimeException("Last prompt chat is not of type USER");
         }
 
-        // 删除PromptChatList中的最后一条对话
+        // 删除PromptChatList中的最后一条对话（userAsk）
         interpolatedPromptChats.remove(interpolatedPromptChats.size() - 1);
-        promptChatRepository.saveAll(interpolatedPromptChats);
+        promptChatRepository.delete(lastPromptChat);
 
         // 将对话历史加入用户的 histories 列表
         try {
