@@ -15,6 +15,8 @@ export DB_USERNAME="xxx"
 export DB_PASSWORD="xxx"
 export OPENAI_API_BASE_URL="https://api.chatgptid.net"
 export OPENAI_API_KEY="sk-OhenOiFqJC5rjzCI5793C1B0B7804bF3967eB776847809E2"
+export CLAUDE_API_BASE_URL="https://api.claude-Plus.top"
+export CLAUDE_API_KEY="sk-JAuS27IqZB15lJST6a76A0111e2d4eEb9d7aD0Bd34F20271"
 ```
 ## 运行
 Linux 和 MacOS:
