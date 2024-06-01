@@ -3,9 +3,9 @@ package com.ise.unigpt.websocket;
 import biweekly.Biweekly;
 import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
-import com.ise.unigpt.dto.ChatDTO;
 
-import com.ise.unigpt.serviceimpl.ClaudeService;
+import com.ise.unigpt.serviceimpl.BaseModelType;
+import com.ise.unigpt.serviceimpl.LLMServiceImpl;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -32,7 +32,6 @@ import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.model.PromptChatType;
 import com.ise.unigpt.service.LLMService;
-import com.ise.unigpt.serviceimpl.OpenAIService;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.model.User;
@@ -52,9 +51,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final Map<WebSocketSession, String> sessionToken;
     private final Map<WebSocketSession, History> sessionHistory;
 
-    public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService) {
-//        this.llmService = new OpenAIService();
-        this.llmService = new ClaudeService();
+    public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService, BaseModelType type) {
+        this.llmService = new LLMServiceImpl(type);
         this.sessionFirstMessageSent = new HashMap<>();
         this.sessionHistory = new HashMap<>();
         this.sessionToken = new HashMap<>();
