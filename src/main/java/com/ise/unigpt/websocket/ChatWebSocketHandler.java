@@ -5,6 +5,7 @@ import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
 import com.ise.unigpt.dto.ChatDTO;
 
+import com.ise.unigpt.serviceimpl.ClaudeService;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -52,7 +53,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final Map<WebSocketSession, History> sessionHistory;
 
     public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService) {
-        this.llmService = new OpenAIService();
+//        this.llmService = new OpenAIService();
+        this.llmService = new ClaudeService();
         this.sessionFirstMessageSent = new HashMap<>();
         this.sessionHistory = new HashMap<>();
         this.sessionToken = new HashMap<>();
