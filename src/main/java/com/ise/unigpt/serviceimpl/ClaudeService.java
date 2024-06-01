@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// TODO: 考虑与OpenAIService合并
 public class ClaudeService implements LLMService {
 
     @Override
@@ -44,7 +45,7 @@ public class ClaudeService implements LLMService {
                 .header("Authorization", "Bearer " + System.getenv("CLAUDE_API_KEY"))
                 .body(new Gson().toJson(dto)).asString();
         if (response.getStatus() != 200) {
-            throw new ServerException("openai service error");
+            throw new ServerException("claude service error");
         }
         JsonObject responseJsonObject = JsonParser.parseString(response.getBody()).getAsJsonObject();
         String responseContent = responseJsonObject
