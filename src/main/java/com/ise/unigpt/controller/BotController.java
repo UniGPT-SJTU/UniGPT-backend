@@ -51,6 +51,7 @@ public class BotController {
                         .body(new ResponseDTO(false, "Invalid info parameter"));
             };
         } catch (Exception e) {
+            System.out.println("In getBotProfile" + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }

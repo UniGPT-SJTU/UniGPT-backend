@@ -112,6 +112,12 @@ public class BotServiceImpl implements BotService {
             // 1. bot已发布
             // 2. 请求用户是bot的创建者
             // 3. 请求用户是管理员
+
+            //如果均不是，检查是否是 bot 是否在用户的 usedBots 列表中，如有则删除
+            if (user.getUsedBots().contains(bot)) {
+                user.getUsedBots().remove(bot);
+                userRepository.save(user);
+            }
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
