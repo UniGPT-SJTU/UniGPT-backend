@@ -70,7 +70,7 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.valueOf(dto.getBaseModelAPI());
+        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -88,7 +88,7 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.valueOf(dto.getBaseModelAPI());
+        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
