@@ -1,4 +1,4 @@
-package com.ise.unigpt.serviceimpl;
+package com.ise.unigpt.model;
 
 
 import com.fasterxml.jackson.annotation.JsonValue;

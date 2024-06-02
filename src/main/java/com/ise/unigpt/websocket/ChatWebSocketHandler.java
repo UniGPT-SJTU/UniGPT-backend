@@ -4,7 +4,7 @@ import biweekly.Biweekly;
 import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
 
-import com.ise.unigpt.serviceimpl.BaseModelType;
+import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.serviceimpl.LLMServiceImpl;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -51,13 +51,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final Map<WebSocketSession, String> sessionToken;
     private final Map<WebSocketSession, History> sessionHistory;
 
-    public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService, BaseModelType type) {
-        this.llmService = new LLMServiceImpl(type);
+    public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService) {
         this.sessionFirstMessageSent = new HashMap<>();
         this.sessionHistory = new HashMap<>();
         this.sessionToken = new HashMap<>();
         this.chatHistoryService = chatHistoryService;
         this.authService = authService;
+        this.llmService = new LLMServiceImpl(BaseModelType.GPT);
     }
 
     @Override
@@ -174,6 +174,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 设置session的firstMessageSent为true
         sessionFirstMessageSent.put(session, true);
 
+        // 设置 LLMServiceImpl
+        BaseModelType baseModelType = history.getBot().getBaseModelAPI();
     }
 
     public void handleSecondMessage(WebSocketSession session, String payLoad) {

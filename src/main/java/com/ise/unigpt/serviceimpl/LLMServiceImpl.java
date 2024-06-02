@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ise.unigpt.dto.OpenAIMessageDTO;
 import com.ise.unigpt.dto.OpenAIRequestDTO;
+import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.LLMService;
