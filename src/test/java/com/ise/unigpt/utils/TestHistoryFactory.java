@@ -12,7 +12,6 @@ public class TestHistoryFactory {
         history.setId(1);
         history.setBot(TestBotFactory.createBot());
         history.setUser(TestUserFactory.createUser());
-        history.setPromptList(Map.of("prompt1", "response1"));
         history.setChats(new ArrayList<>());
         return history;
 

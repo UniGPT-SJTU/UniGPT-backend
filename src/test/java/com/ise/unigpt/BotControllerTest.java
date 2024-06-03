@@ -53,10 +53,9 @@ class BotControllerTest {
     @Test
     void testGetBots() {
         List<BotBriefInfoDTO> bots = Arrays.asList(
-            TestBotFactory.createBotBriefInfoDTO(),
-            TestBotFactory.createBotBriefInfoDTO2(),
-            TestBotFactory.createBotBriefInfoDTO3()
-        );
+                TestBotFactory.createBotBriefInfoDTO(),
+                TestBotFactory.createBotBriefInfoDTO2(),
+                TestBotFactory.createBotBriefInfoDTO3());
         when(service.getBots("", "latest", 0, 20)).thenReturn(new GetBotsOkResponseDTO(bots.size(), bots));
         ResponseEntity<Object> response = controller.getBots("", "latest", 0, 20);
 
@@ -162,10 +161,9 @@ class BotControllerTest {
     @Test
     void testGetComments() {
         List<CommentDTO> comments = Arrays.asList(
-            new CommentDTO(1, "Hello", new Date(), "avatar1", "creeper", 2, 1),
-            new CommentDTO(2, "World", new Date(), "avatar2", "awman", 3, 2),
-            new CommentDTO(3, "Test", new Date(), "avatar3", "so we back in the mine", 4, 3)
-        );
+                new CommentDTO(1, "Hello", new Date(), "avatar1", "creeper", 2, 1),
+                new CommentDTO(2, "World", new Date(), "avatar2", "awman", 3, 2),
+                new CommentDTO(3, "Test", new Date(), "avatar3", "so we back in the mine", 4, 3));
         when(service.getComments(1, 0, 100)).thenReturn(new GetCommentsOkResponseDTO(comments.size(), comments));
 
         ResponseEntity<Object> response = controller.getComments(1, 0, 100);
@@ -187,10 +185,10 @@ class BotControllerTest {
     @Test
     void testGetBotHistory() {
         List<History> historyList = Arrays.asList(
-            TestHistoryFactory.CreateHistory(),
-            TestHistoryFactory.CreateHistory()
-        );
-        when(service.getBotHistory(1, "token", 0, 20)).thenReturn(new GetBotHistoryOkResponseDTO(historyList.size(), historyList));
+                TestHistoryFactory.CreateHistory(),
+                TestHistoryFactory.CreateHistory());
+        when(service.getBotHistory(1, "token", 0, 20))
+                .thenReturn(new GetBotHistoryOkResponseDTO(historyList.size(), historyList));
 
         ResponseEntity<Object> response = controller.getBotHistory(1, "token", 0, 20);
 
@@ -200,10 +198,10 @@ class BotControllerTest {
     @Test
     void testCreateBotHistory() throws BadRequestException {
         List<PromptDTO> promptList = Arrays.asList(
-            new PromptDTO("key1", "value1"), 
-            new PromptDTO("key2", "value2")
-        );
-        when(service.createBotHistory(1, "token", promptList)).thenReturn(new CreateBotHistoryOkResponseDTO(true, "Success", 1));
+                new PromptDTO("key1", "value1"),
+                new PromptDTO("key2", "value2"));
+        when(service.createBotHistory(1, "token", promptList))
+                .thenReturn(new CreateBotHistoryOkResponseDTO(true, "Success", 1, "userAsk"));
 
         ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
 
@@ -213,9 +211,8 @@ class BotControllerTest {
     @Test
     void testCreateBotHistory_NoSuchElementException() throws BadRequestException {
         List<PromptDTO> promptList = Arrays.asList(
-            new PromptDTO("key1", "value1"), 
-            new PromptDTO("key2", "value2")
-        );
+                new PromptDTO("key1", "value1"),
+                new PromptDTO("key2", "value2"));
         when(service.createBotHistory(1, "token", promptList)).thenThrow(new NoSuchElementException("Not found"));
 
         ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
@@ -227,9 +224,8 @@ class BotControllerTest {
     @Test
     void testCreateBotHistory_BadRequestException() throws BadRequestException {
         List<PromptDTO> promptList = Arrays.asList(
-            new PromptDTO("key1", "value1"), 
-            new PromptDTO("key2", "value2")
-        );
+                new PromptDTO("key1", "value1"),
+                new PromptDTO("key2", "value2"));
         when(service.createBotHistory(1, "token", promptList)).thenThrow(new BadRequestException("Bad request"));
 
         ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
