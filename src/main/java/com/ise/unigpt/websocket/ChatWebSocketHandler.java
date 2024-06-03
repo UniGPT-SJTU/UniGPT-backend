@@ -5,7 +5,6 @@ import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
 
 import com.ise.unigpt.model.BaseModelType;
-import com.ise.unigpt.serviceimpl.LLMServiceImpl;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -31,7 +30,7 @@ import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.model.PromptChatType;
-import com.ise.unigpt.service.LLMService;
+import com.ise.unigpt.service.LLMServiceFactory;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.model.User;
@@ -43,21 +42,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
-    private final LLMService llmService;
     private final AuthService authService;
     private final ChatHistoryService chatHistoryService;
 
     private final Map<WebSocketSession, Boolean> sessionFirstMessageSent;
     private final Map<WebSocketSession, String> sessionToken;
     private final Map<WebSocketSession, History> sessionHistory;
+    private final Map<WebSocketSession, BaseModelType> sessionBaseModelType;
 
-    public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService) {
+    private final LLMServiceFactory llmServiceFactory;
+
+    public ChatWebSocketHandler(
+        AuthService authService, 
+        ChatHistoryService chatHistoryService,
+        LLMServiceFactory llmServiceFactory
+    ) {
+        this.authService = authService;
+        this.chatHistoryService = chatHistoryService;
+
         this.sessionFirstMessageSent = new HashMap<>();
         this.sessionHistory = new HashMap<>();
         this.sessionToken = new HashMap<>();
-        this.chatHistoryService = chatHistoryService;
-        this.authService = authService;
-        this.llmService = new LLMServiceImpl(BaseModelType.GPT);
+        this.sessionBaseModelType = new HashMap<>();
+
+        this.llmServiceFactory = llmServiceFactory;
     }
 
     @Override
@@ -134,7 +142,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(errorMessage));
                 return;
-            } catch (Exception e2) {
+            } catch (Exception e2) { 
                 e2.printStackTrace();
             }
         }
@@ -176,6 +184,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         // 设置 LLMServiceImpl
         BaseModelType baseModelType = history.getBot().getBaseModelAPI();
+        sessionBaseModelType.put(session, baseModelType);
     }
 
     public void handleSecondMessage(WebSocketSession session, String payLoad) {
@@ -232,7 +241,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println(chat.getContent());
             }
 
-            String replyMessage = llmService.generateResponse(promptChatList, chatList);
+            String replyMessage = llmServiceFactory
+                                    .getLLMService(sessionBaseModelType.get(session))
+                                    .generateResponse(promptChatList, chatList);
+
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
