@@ -203,7 +203,7 @@ class BotControllerTest {
             new PromptDTO("key1", "value1"), 
             new PromptDTO("key2", "value2")
         );
-        when(service.createBotHistory(1, "token", promptList)).thenReturn(new CreateBotHistoryOkResponseDTO(true, "Success", 1));
+        when(service.createBotHistory(1, "token", promptList)).thenReturn(new CreateBotHistoryOkResponseDTO(true, "Success", 1, "userAsk"));
 
         ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
 
