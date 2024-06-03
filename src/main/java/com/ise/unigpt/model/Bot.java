@@ -98,5 +98,8 @@ public class Bot {
 
     public Bot() {
         // not used
+        this.likeUsers = new ArrayList<>();
+        this.starUsers = new ArrayList<>();
+        this.comments = new ArrayList<>();
     }
 }
