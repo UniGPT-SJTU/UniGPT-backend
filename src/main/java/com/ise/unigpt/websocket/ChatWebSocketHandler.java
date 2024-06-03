@@ -1,25 +1,30 @@
 package com.ise.unigpt.websocket;
 
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import com.ise.unigpt.dto.CanvasEventDTO;
 import com.ise.unigpt.dto.ChatDTO;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.CloseStatus;
+
+import com.ise.unigpt.serviceimpl.ClaudeService;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 import io.micrometer.common.lang.NonNull;
-import jakarta.servlet.http.Cookie;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.ChatType;
@@ -48,7 +53,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final Map<WebSocketSession, History> sessionHistory;
 
     public ChatWebSocketHandler(AuthService authService, ChatHistoryService chatHistoryService) {
-        this.llmService = new OpenAIService();
+//        this.llmService = new OpenAIService();
+        this.llmService = new ClaudeService();
         this.sessionFirstMessageSent = new HashMap<>();
         this.sessionHistory = new HashMap<>();
         this.sessionToken = new HashMap<>();
@@ -167,22 +173,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
             return;
         }
-
-        /*
-         * // 发送回复消息
-         * try {
-         * String replyMessage = "Hello, I am a chatbot. How can I help you?";
-         * Map<String, String> replyMap = new HashMap<>();
-         * replyMap.put("replyMessage", replyMessage);
-         * ObjectMapper objectMapper = new ObjectMapper();
-         * session.sendMessage(new
-         * TextMessage(objectMapper.writeValueAsString(replyMap)));
-         * } catch (Exception e) {
-         * e.printStackTrace();
-         * }
-         */
         // 设置session的firstMessageSent为true
         sessionFirstMessageSent.put(session, true);
+
     }
 
     public void handleSecondMessage(WebSocketSession session, String payLoad) {
@@ -195,35 +188,31 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             Bot bot = history.getBot();
             System.out.println("Bot: " + bot.getId());
-            List<PromptChat> promptChatList = bot.getPromptChats();
+            List<PromptChat> promptChatList = history.getPromptChats();
             System.out.println("PromptChatList: ");
             if (promptChatList == null) {
+                // TODO: promptChatList是否可能为空？
                 System.out.println("PromptChatList is null");
                 promptChatList = new ArrayList<>();
             }
-            for (PromptChat promptChat : promptChatList) {
-                System.out.println(promptChat.getContent());
-            }
-
-            Map<String, String> promptList = history.getPromptList();
-            if (promptList == null) {
-                System.out.println("PromptList is null");
-                promptList = new HashMap<>();
-            }
-            System.out.println("PromptList: ");
-            for (Map.Entry<String, String> entry : promptList.entrySet()) {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
+            preHandle(session, bot.getId(), promptChatList);
+            /*
+             * for (PromptChat promptChat : promptChatList) {
+             * System.out.println(promptChat.getContent());
+             * }
+             */
 
             List<Chat> chatList = history.getChats();
 
             // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println("objectMapper: " + objectMapper);
             Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
             // 如果cover为true，则删除末尾的两个对话
             boolean cover = (boolean) map.get("cover");
-            if(cover){
-                if(chatList.size() < 2){
+            boolean isUserAsk = (boolean) map.get("userAsk");
+            if (cover) {
+                if (chatList.size() < 2) {
                     chatList = new ArrayList<>();
                 } else {
                     chatList = chatList.subList(0, chatList.size() - 2);
@@ -233,32 +222,39 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String userMessage = (String) map.get("chatContent");
             System.out.println("User message: " + userMessage);
             Chat userChat = new Chat(history, ChatType.USER, userMessage);
-            chatList.add(userChat);
+            if (!isUserAsk) {
+                chatList.add(userChat);
+            }
+
             // 打印chatList
             System.out.println("ChatList: ");
             for (Chat chat : chatList) {
                 System.out.println(chat.getContent());
             }
 
-            String replyMessage = llmService.generateResponse(promptChatList, promptList, chatList);
+            String replyMessage = llmService.generateResponse(promptChatList, chatList);
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
             // 如果cover为true，则删除末尾的两个对话
-            if(cover) chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
+            if (cover)
+                chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
             // 将用户的消息存入history
-            chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
-            System.out.println(replyMessage);
+            if (!isUserAsk)
+                chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
+            /* System.out.println(replyMessage); */
             // 将恢复内容存入history
             chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
 
-
-            // 打印数据库中的chatList
-            List<ChatDTO> chatListFromDB = chatHistoryService.getChats(history.getId(), 1, 100, sessionToken.get(session)).getChats();
-            System.out.println("ChatList from DB: ");
-            for (ChatDTO chat : chatListFromDB) {
-                System.out.println(chat.getContent());
-            }
+            /*
+             * // 打印数据库中的chatList
+             * List<ChatDTO> chatListFromDB = chatHistoryService
+             * .getChats(history.getId(), 1, 100, sessionToken.get(session)).getChats();
+             * System.out.println("ChatList from DB: ");
+             * for (ChatDTO chat : chatListFromDB) {
+             * System.out.println(chat.getContent());
+             * }
+             */
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {
@@ -271,6 +267,81 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println("Error sending error message");
             }
             e.printStackTrace();
+        }
+    }
+
+    public void preHandle(WebSocketSession session, int botId, List<PromptChat> promptChatList) {
+        if (botId == 22) {
+            User user = authService.getUserByToken(sessionToken.get(session));
+            String url = user.getCanvasUrl();
+            if (url == null || url.isEmpty()) {
+                System.out.println("Canvas URL is empty");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
+                        "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
+            // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
+            if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") || !url.endsWith(".ics")) {
+                System.out.println("Canvas URL is invalid");
+                promptChatList.add(new PromptChat(PromptChatType.USER, "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
+                        "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+                return;
+            }
+            String canvasEventList = getCanvasEventList(url);
+            promptChatList
+                    .add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas events:" + canvasEventList));
+        }
+    }
+
+    public String getCanvasEventList(String url) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            String icsData = response.body();
+            // System.out.println(icsData);
+            if (Biweekly.parse(icsData).first() == null) {
+                return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。" +
+                        "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
+            }
+            ICalendar ical = Biweekly.parse(icsData).first();
+
+            List<CanvasEventDTO> eventList = new ArrayList<>();
+            LocalDateTime now = LocalDateTime.now();
+
+            return ical.getEvents().stream()
+                    .filter(event -> event.getDateStart() != null)
+                    .filter(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(),
+                                ZoneOffset.UTC);
+                        return endDate.isAfter(now);
+                    })
+                    .map(event -> {
+                        LocalDateTime endDate = LocalDateTime.ofInstant(event.getDateStart().getValue().toInstant(),
+                                ZoneOffset.UTC);
+                        endDate = endDate.plusHours(8);
+                        if (endDate.getHour() == 0) {
+                            endDate = endDate.plusDays(1);
+                        }
+                        Instant ddlTime = endDate.toInstant(ZoneOffset.UTC);
+                        if (event.getDescription() == null) {
+                            return new CanvasEventDTO(event.getSummary().getValue(), "No description", ddlTime);
+                        }
+                        return new CanvasEventDTO(
+                                event.getSummary().getValue(),
+                                event.getDescription().getValue(),
+                                ddlTime);
+                    })
+                    .toList().toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
         }
     }
 }

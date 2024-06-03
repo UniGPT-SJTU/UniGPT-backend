@@ -10,15 +10,15 @@ import com.ise.unigpt.repository.HistoryRepository;
 
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
+import com.ise.unigpt.utils.StringTemplateParser;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class BotServiceImpl implements BotService {
@@ -28,17 +28,20 @@ public class BotServiceImpl implements BotService {
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
+    private final ChatHistoryService chatHistoryService;
 
     public BotServiceImpl(BotRepository botRepository,
             UserRepository userRepository,
             HistoryRepository historyRepository,
             PromptChatRepository promptChatRepository,
-            AuthService authService) {
+            AuthService authService,
+            ChatHistoryService chatHistoryService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
         this.historyRepository = historyRepository;
+        this.chatHistoryService = chatHistoryService;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -109,6 +112,12 @@ public class BotServiceImpl implements BotService {
             // 1. bot已发布
             // 2. 请求用户是bot的创建者
             // 3. 请求用户是管理员
+
+            //如果均不是，检查是否是 bot 是否在用户的 usedBots 列表中，如有则删除
+            if (user.getUsedBots().contains(bot)) {
+                user.getUsedBots().remove(bot);
+                userRepository.save(user);
+            }
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -334,19 +343,57 @@ public class BotServiceImpl implements BotService {
         }
         userRepository.save(user);
 
+        // 將提示词列表转换为 key-value 对
+        Map<String, String> promptKeyValuePairs = promptList.stream()
+                .collect(Collectors.toMap(PromptDTO::getPromptKey, PromptDTO::getPromptValue));
+
+        // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
+        // 并保存到数据库
+        List<PromptChat> interpolatedPromptChats = bot.getPromptChats()
+                .stream()
+                .map(
+                        promptChat -> new PromptChat(
+                                promptChat.getType(),
+                                StringTemplateParser.interpolate(
+                                        promptChat.getContent(),
+                                        promptKeyValuePairs)))
+                .collect(Collectors.toList());
+
         // 创建新的对话历史
         History history = new History(
                 user,
                 bot,
-                promptList.stream()
-                        .collect(Collectors.toMap(
-                                PromptDTO::getPromptKey,
-                                PromptDTO::getPromptValue)));
+                promptKeyValuePairs,
+                interpolatedPromptChats);
         historyRepository.save(history);
 
+        // 读取最后一条对话，并保证其为USER类型
+        PromptChat lastPromptChat = interpolatedPromptChats.get(interpolatedPromptChats.size() - 1);
+        String lastPromptChatContent = lastPromptChat.getContent();
+        PromptChatType lastPromptChatType = lastPromptChat.getType();
+        if (lastPromptChatType != PromptChatType.USER) {
+            throw new RuntimeException("Last prompt chat is not of type USER");
+        }
+
+        // 删除PromptChatList中的最后一条对话（userAsk）
+        interpolatedPromptChats.remove(interpolatedPromptChats.size() - 1);
+        promptChatRepository.delete(lastPromptChat);
+
+        // 将对话历史加入用户的 histories 列表
+        try {
+            chatHistoryService.createChat(history.getId(), lastPromptChatContent, ChatType.USER,
+                    token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 将对话历史加入用户的 histories 列表
         user.getHistories().add(history);
         userRepository.save(user);
-        return new CreateBotHistoryOkResponseDTO(true, "Chat history created successfully", history.getId());
+        return new CreateBotHistoryOkResponseDTO(
+                true, "Chat history created successfully",
+                history.getId(),
+                lastPromptChatContent);
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {
