@@ -2,6 +2,7 @@ package com.ise.unigpt.utils;
 
 import com.ise.unigpt.dto.LoginRequestDTO;
 import com.ise.unigpt.model.Auth;
+import com.ise.unigpt.model.User;
 
 public class TestAuthFactory {
     static public LoginRequestDTO createLoginRequestDTO() {
@@ -11,9 +12,10 @@ public class TestAuthFactory {
         return loginRequestDTO;
     }
 
-    static public Auth createAuth() {
+    static public Auth createAuth(User user) {
         Auth auth = new Auth();
         auth.setToken("test");
+        auth.setUser(user);
         return auth;
     }
 }

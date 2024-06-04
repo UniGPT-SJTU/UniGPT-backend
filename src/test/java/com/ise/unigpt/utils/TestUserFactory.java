@@ -13,6 +13,7 @@ public class TestUserFactory {
         user.setEmail("creeper@hellomail");
         user.setAvatar("avatar1");
         user.setAsAdmin(false);
+        user.setDisabled(false);
         return user;
     }
 
