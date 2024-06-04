@@ -10,6 +10,7 @@ import com.ise.unigpt.dto.BotEditInfoDTO;
 import com.ise.unigpt.dto.PromptChatDTO;
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
+import com.ise.unigpt.model.BaseModelType;
 
 public class TestBotFactory {
     public static Bot createBot() {
@@ -18,13 +19,13 @@ public class TestBotFactory {
         bot.setName("bot1");
         bot.setAvatar("avatar1");
         bot.setDescription("description1");
-        bot.setBaseModelAPI("baseModelAPI1");
+        bot.setBaseModelAPI(BaseModelType.fromValue(0));
         bot.setPublished(true);
         bot.setDetail("detail1");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
         bot.setPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
-                TestPromptChatFactory.createBotPromptChat(),TestPromptChatFactory.createUserPromptChat())));
+                TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
         bot.setLikeNumber(1);
         bot.setStarNumber(1);
@@ -41,13 +42,13 @@ public class TestBotFactory {
         bot.setName("bot2");
         bot.setAvatar("avatar2");
         bot.setDescription("description2");
-        bot.setBaseModelAPI("baseModelAPI2");
+        bot.setBaseModelAPI(BaseModelType.fromValue(1));
         bot.setPublished(true);
         bot.setDetail("detail2");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
         bot.setPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
-                TestPromptChatFactory.createBotPromptChat(),TestPromptChatFactory.createUserPromptChat())));
+                TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
         bot.setLikeNumber(1);
         bot.setStarNumber(1);
@@ -64,13 +65,13 @@ public class TestBotFactory {
         bot.setName("bot3");
         bot.setAvatar("avatar3");
         bot.setDescription("description3");
-        bot.setBaseModelAPI("baseModelAPI3");
+        bot.setBaseModelAPI(BaseModelType.fromValue(2));
         bot.setPublished(true);
         bot.setDetail("detail3");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
         bot.setPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
-                TestPromptChatFactory.createBotPromptChat(),TestPromptChatFactory.createUserPromptChat())));
+                TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
         bot.setLikeNumber(1);
         bot.setStarNumber(1);
@@ -84,9 +85,11 @@ public class TestBotFactory {
     public static BotBriefInfoDTO createBotBriefInfoDTO() {
         return new BotBriefInfoDTO(1, "bot1", "description1", "avatar1", false, false);
     }
+
     public static BotBriefInfoDTO createBotBriefInfoDTO2() {
         return new BotBriefInfoDTO(2, "bot2", "description2", "avatar2", false, false);
     }
+
     public static BotBriefInfoDTO createBotBriefInfoDTO3() {
         return new BotBriefInfoDTO(3, "bot3", "description3", "avatar3", false, false);
     }
@@ -123,7 +126,7 @@ public class TestBotFactory {
         dto.setName("bot1");
         dto.setAvatar("avatar1");
         dto.setDescription("description1");
-        dto.setBaseModelAPI("baseModelAPI1");
+        dto.setBaseModelAPI(0);
         dto.setPublished(true);
         dto.setDetail("detail1");
         dto.setPhotos(Arrays.asList("photo1", "photo2"));
