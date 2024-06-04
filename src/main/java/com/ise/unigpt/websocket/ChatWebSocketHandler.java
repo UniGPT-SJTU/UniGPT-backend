@@ -46,17 +46,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final ChatHistoryService chatHistoryService;
 
     private final Map<WebSocketSession, Boolean> sessionFirstMessageSent;
-    private final Map<WebSocketSession, String> sessionToken;
+    public final Map<WebSocketSession, String> sessionToken;
     private final Map<WebSocketSession, History> sessionHistory;
     private final Map<WebSocketSession, BaseModelType> sessionBaseModelType;
 
     private final LLMServiceFactory llmServiceFactory;
 
     public ChatWebSocketHandler(
-        AuthService authService, 
-        ChatHistoryService chatHistoryService,
-        LLMServiceFactory llmServiceFactory
-    ) {
+            AuthService authService,
+            ChatHistoryService chatHistoryService,
+            LLMServiceFactory llmServiceFactory) {
         this.authService = authService;
         this.chatHistoryService = chatHistoryService;
 
@@ -142,7 +141,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(errorMessage));
                 return;
-            } catch (Exception e2) { 
+            } catch (Exception e2) {
                 e2.printStackTrace();
             }
         }
@@ -242,8 +241,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             String replyMessage = llmServiceFactory
-                                    .getLLMService(sessionBaseModelType.get(session))
-                                    .generateResponse(promptChatList, chatList);
+                    .getLLMService(sessionBaseModelType.get(session))
+                    .generateResponse(promptChatList, chatList);
 
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
