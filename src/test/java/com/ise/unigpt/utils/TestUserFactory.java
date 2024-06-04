@@ -46,4 +46,14 @@ public class TestUserFactory {
         user.setAsAdmin(false);
         return user;
     }
+
+    public static User createAdminUser() {
+        User user = new User();
+        user.setId(4);
+        user.setName("admin");
+        user.setEmail("admin@hellomail");
+        user.setAvatar("avatar4");
+        user.setAsAdmin(true);
+        return user;
+    }
 }
