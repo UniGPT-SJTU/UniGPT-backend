@@ -57,34 +57,30 @@ class BotServiceTest {
     @Test
     void testGetBots_latest() {
         List<Bot> bots = Arrays.asList(
-            TestBotFactory.createBot(),
-            TestBotFactory.createBot2(),
-            TestBotFactory.createBot3()
-        );
+                TestBotFactory.createBot(),
+                TestBotFactory.createBot2(),
+                TestBotFactory.createBot3());
         List<BotBriefInfoDTO> botBriefInfoDTOs = Arrays.asList(
-            TestBotFactory.createBotBriefInfoDTO(),
-            TestBotFactory.createBotBriefInfoDTO2(),
-            TestBotFactory.createBotBriefInfoDTO3()
-        );
+                TestBotFactory.createBotBriefInfoDTO(),
+                TestBotFactory.createBotBriefInfoDTO2(),
+                TestBotFactory.createBotBriefInfoDTO3());
         when(botRepository.findAllByOrderByIdDesc()).thenReturn(bots);
         GetBotsOkResponseDTO response = botService.getBots("", "latest", 0, 20);
 
-        assertEquals(3, response.getTotal() );
+        assertEquals(3, response.getTotal());
         assertEquals(botBriefInfoDTOs, response.getBots());
     }
 
     @Test
     void testGetBots_like() {
         List<Bot> bots = Arrays.asList(
-            TestBotFactory.createBot(),
-            TestBotFactory.createBot2(),
-            TestBotFactory.createBot3()
-        );
+                TestBotFactory.createBot(),
+                TestBotFactory.createBot2(),
+                TestBotFactory.createBot3());
         List<BotBriefInfoDTO> botBriefInfoDTOs = Arrays.asList(
-            TestBotFactory.createBotBriefInfoDTO(),
-            TestBotFactory.createBotBriefInfoDTO2(),
-            TestBotFactory.createBotBriefInfoDTO3()
-        );
+                TestBotFactory.createBotBriefInfoDTO(),
+                TestBotFactory.createBotBriefInfoDTO2(),
+                TestBotFactory.createBotBriefInfoDTO3());
         when(botRepository.findAllByOrderByLikeNumberDesc()).thenReturn(bots);
         GetBotsOkResponseDTO response = botService.getBots("", "like", 0, 20);
 
@@ -97,11 +93,9 @@ class BotServiceTest {
         List<Bot> bots = Arrays.asList(
                 TestBotFactory.createBot(),
                 TestBotFactory.createBot2(),
-                TestBotFactory.createBot3()
-        );
+                TestBotFactory.createBot3());
         List<BotBriefInfoDTO> botBriefInfoDTOs = List.of(
-                TestBotFactory.createBotBriefInfoDTO2()
-        );
+                TestBotFactory.createBotBriefInfoDTO2());
         when(botRepository.findAllByOrderByLikeNumberDesc()).thenReturn(bots);
         GetBotsOkResponseDTO response = botService.getBots("2", "like", 0, 20);
 
@@ -116,7 +110,7 @@ class BotServiceTest {
         BotBriefInfoDTO botBriefInfoDTO = TestBotFactory.createBotBriefInfoDTO_asCreator();
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
         when(authService.getUserByToken("token")).thenReturn(user);
-        BotBriefInfoDTO response = botService.getBotBriefInfo(1,"token");
+        BotBriefInfoDTO response = botService.getBotBriefInfo(1, "token");
 
         assertEquals(botBriefInfoDTO, response);
     }
@@ -128,7 +122,7 @@ class BotServiceTest {
         BotDetailInfoDTO botDetailInfoDTO = TestBotFactory.createBotDetailInfoDTO();
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
         when(authService.getUserByToken("token")).thenReturn(user);
-        BotDetailInfoDTO response = botService.getBotDetailInfo(1,"token");
+        BotDetailInfoDTO response = botService.getBotDetailInfo(1, "token");
 
         assertEquals(botDetailInfoDTO, response);
     }
@@ -140,7 +134,7 @@ class BotServiceTest {
         BotEditInfoDTO botEditInfoDTO = TestBotFactory.createBotEditInfoDTO();
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
         when(authService.getUserByToken("token")).thenReturn(user);
-        BotEditInfoDTO response = botService.getBotEditInfo(1,"token");
+        BotEditInfoDTO response = botService.getBotEditInfo(1, "token");
 
         assertEquals(botEditInfoDTO, response);
     }
@@ -152,8 +146,8 @@ class BotServiceTest {
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
         when(authService.getUserByToken("token")).thenReturn(user);
 
-        try{
-            botService.getBotEditInfo(1,"token");
+        try {
+            botService.getBotEditInfo(1, "token");
         } catch (Exception e) {
             assertEquals("Bot not published for ID: 1", e.getMessage());
         }
@@ -166,7 +160,7 @@ class BotServiceTest {
         BotEditInfoDTO botEditInfoDTO = TestBotFactory.createBotEditInfoDTO();
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
         when(authService.getUserByToken("token")).thenReturn(user);
-        BotEditInfoDTO response = botService.getBotEditInfo(1,"token");
+        BotEditInfoDTO response = botService.getBotEditInfo(1, "token");
 
         assertEquals(botEditInfoDTO, response);
     }
@@ -262,7 +256,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testLikeAlreadyLikeBot(){
+    void testLikeAlreadyLikeBot() {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
 
@@ -277,8 +271,7 @@ class BotServiceTest {
     @Test
     void testGetBotHistory() {
         List<History> histories = new ArrayList<>(
-                List.of(TestHistoryFactory.CreateHistory())
-        );
+                List.of(TestHistoryFactory.CreateHistory()));
         Bot bot = TestBotFactory.createBot();
         histories.get(0).setBot(bot);
         User user = TestUserFactory.createUser();
@@ -296,8 +289,7 @@ class BotServiceTest {
         User user = TestUserFactory.createUser();
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("prompt1", "response1"),
-                new PromptDTO("prompt2", "response2")
-        );
+                new PromptDTO("prompt2", "response2"));
         when(authService.getUserByToken("token")).thenReturn(user);
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
 
@@ -313,8 +305,7 @@ class BotServiceTest {
     @Test
     void testGetComments() {
         List<Comment> comments = List.of(
-                TestCommentFactory.createComment(TestUserFactory.createUser(), TestBotFactory.createBot())
-        );
+                TestCommentFactory.createComment(TestUserFactory.createUser(), TestBotFactory.createBot()));
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(TestBotFactory.createBot()));
         GetCommentsOkResponseDTO response = botService.getComments(1, 0, 100);
 
@@ -331,6 +322,5 @@ class BotServiceTest {
 
         assertEquals(true, response.getOk());
     }
-
 
 }

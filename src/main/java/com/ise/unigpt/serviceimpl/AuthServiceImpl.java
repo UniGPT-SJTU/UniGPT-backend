@@ -37,25 +37,27 @@ public class AuthServiceImpl implements AuthService {
         this.userRepository = userRepository;
     }
 
-    public String login(LoginRequestDTO dto) throws AuthenticationException {
-        Optional<User> optionalUser = userRepository.findByName(dto.getUsername());
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (user.getPassword().equals(dto.getPassword())) {
-                return generateAuthToken(user);
-            }
-        }
-        throw new AuthenticationException("Invalid username or password");
-    }
+    /*
+     * public String login(LoginRequestDTO dto) throws AuthenticationException {
+     * Optional<User> optionalUser = userRepository.findByName(dto.getUsername());
+     * if (optionalUser.isPresent()) {
+     * User user = optionalUser.get();
+     * if (user.getPassword().equals(dto.getPassword())) {
+     * return generateAuthToken(user);
+     * }
+     * }
+     * throw new AuthenticationException("Invalid username or password");
+     * }
+     * 
+     * public void register(RegisterRequestDTO dto) {
+     * if (userRepository.findByName(dto.getUsername()).isPresent()) {
+     * throw new IllegalArgumentException("Username already exists");
+     * }
+     * userRepository.save(new User(dto));
+     * }
+     */
 
-    public void register(RegisterRequestDTO dto) {
-        if (userRepository.findByName(dto.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
-        }
-        userRepository.save(new User(dto));
-    }
-
-    private String generateAuthToken(User user) {
+    public String generateAuthToken(User user) {
         Optional<Auth> optionalAuth = authRepository.findByUser(user);
         Auth auth;
         if (optionalAuth.isPresent()) {
@@ -142,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
         return token;
     }
 
-    private User sendGetRequest(String urlStr) throws AuthenticationException {
+    public User sendGetRequest(String urlStr) throws AuthenticationException {
         try {
             // System.out.println("urlStr: " + urlStr);
             Unirest.setTimeouts(300, 3000);
