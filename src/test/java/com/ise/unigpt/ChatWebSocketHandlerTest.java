@@ -55,7 +55,6 @@ public class ChatWebSocketHandlerTest {
 
         chatWebSocketHandler.handleTextMessage(session, message);
 
-        // Add your assertions here to verify the behavior of handleTextMessage
     }
 
     @Test
