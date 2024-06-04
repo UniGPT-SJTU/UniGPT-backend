@@ -11,7 +11,7 @@ public class BotEditInfoDTO {
     private String name;
     private String avatar;
     private String description;
-    private String baseModelAPI;
+    private int baseModelAPI;
     private boolean isPublished;
     private String detail;
     private List<String> photos;
@@ -23,7 +23,7 @@ public class BotEditInfoDTO {
         this.name = bot.getName();
         this.avatar = bot.getAvatar();
         this.description = bot.getDescription();
-        this.baseModelAPI = bot.getBaseModelAPI();
+        this.baseModelAPI = bot.getBaseModelAPI().getValue();
         this.isPublished = bot.isPublished();
         this.detail = bot.getDetail();
         this.photos = bot.getPhotos();
