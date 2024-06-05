@@ -108,7 +108,7 @@ public class TestBotFactory {
         dto.setPhotos(Arrays.asList("photo1", "photo2"));
         dto.setDetail("detail1");
         dto.setAvatar("avatar1");
-        dto.setBaseModelAPI("baseModelAPI1");
+        dto.setBaseModelAPI(BaseModelType.fromValue(0).toString());
         dto.setLikeNumber(1);
         dto.setStarNumber(1);
         dto.setLiked(false);
