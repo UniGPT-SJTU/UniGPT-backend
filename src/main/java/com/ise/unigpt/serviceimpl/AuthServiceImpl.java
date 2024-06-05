@@ -1,7 +1,5 @@
 package com.ise.unigpt.serviceimpl;
 
-import com.ise.unigpt.dto.LoginRequestDTO;
-import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.AuthRepository;

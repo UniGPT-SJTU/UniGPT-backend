@@ -3,7 +3,6 @@ package com.ise.unigpt.controller;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.dto.UserDTO;
-import com.ise.unigpt.model.User;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
 import com.ise.unigpt.exception.UserDisabledException;

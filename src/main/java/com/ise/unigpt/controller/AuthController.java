@@ -1,8 +1,6 @@
 package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.LoginOkResponseDTO;
-import com.ise.unigpt.dto.LoginRequestDTO;
-import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.utils.CookieUtils;

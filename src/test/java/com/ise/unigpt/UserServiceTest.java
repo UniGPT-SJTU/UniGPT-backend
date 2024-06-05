@@ -1,9 +1,18 @@
 package com.ise.unigpt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import javax.security.sasl.AuthenticationException;
 
@@ -14,7 +23,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.ise.unigpt.dto.GetBotsOkResponseDTO;
 import com.ise.unigpt.dto.GetUsersOkResponseDTO;
+import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
+import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
@@ -24,7 +37,7 @@ import com.ise.unigpt.utils.TestUserFactory;
 public class UserServiceTest {
 
     @Mock
-    private UserRepository repository;
+    private UserRepository userRepository;
 
     @Mock
     private AuthService authService;
@@ -179,6 +192,206 @@ public class UserServiceTest {
             // assert
             assertEquals("Unauthorized to get ban state", e.getMessage());
         }
+    }
+
+    @Test
+    public void testFindUserById_UserExists() {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+        User user = new User();
+        user.setId(1);
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+
+        User foundUser = userService.findUserById(1);
+
+        assertNotNull(foundUser);
+        assertEquals(1, foundUser.getId());
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    public void testFindUserById_UserNotExists() {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+        when(userRepository.findById(1)).thenReturn(Optional.empty());
+
+        NoSuchElementException thrown = assertThrows(
+                NoSuchElementException.class,
+                () -> userService.findUserById(1),
+                "Expected findUserById to throw, but it didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("User not found for ID: 1"));
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    public void testUpdateUserInfo_Success() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+        User user = new User();
+        user.setId(1);
+        user.setName("Old Name");
+
+        UpdateUserInfoRequestDTO dto = new UpdateUserInfoRequestDTO();
+        dto.setName("New Name");
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        userService.updateUserInfo(1, dto, "token");
+
+        assertEquals("New Name", user.getName());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testUpdateUserInfo_Unauthorized() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+
+        User user = new User();
+        user.setId(1);
+
+        User differentUser = new User();
+        differentUser.setId(2);
+
+        UpdateUserInfoRequestDTO dto = new UpdateUserInfoRequestDTO();
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(differentUser);
+
+        AuthenticationException thrown = assertThrows(
+                AuthenticationException.class,
+                () -> userService.updateUserInfo(1, dto, "token"),
+                "Expected updateUserInfo to throw, but it didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("Unauthorized to update user info"));
+        verify(userRepository, never()).save(user);
+    }
+
+    @Test
+    public void testGetUsedBots_Success() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+
+        User user = new User();
+        user.setId(1);
+        Bot bot1 = new Bot();
+        bot1.setId(1);
+        Bot bot2 = new Bot();
+        bot2.setId(2);
+        user.setUsedBots(Arrays.asList(bot1, bot2));
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        GetBotsOkResponseDTO response = userService.getUsedBots(1, "token", 0, 10);
+
+        assertNotNull(response);
+        assertEquals(Integer.valueOf(2), response.getTotal());
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    public void testGetUsedBots_Unauthorized() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+        User user = new User();
+        user.setId(1);
+
+        User differentUser = new User();
+        differentUser.setId(2);
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(differentUser);
+
+        AuthenticationException thrown = assertThrows(
+                AuthenticationException.class,
+                () -> userService.getUsedBots(1, "token", 0, 10),
+                "Expected getUsedBots to throw, but it didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("Unauthorized to get used bots"));
+    }
+
+    @Test
+    public void testGetStarredBots_Success() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+
+        User user = new User();
+        user.setId(1);
+        Bot bot1 = new Bot();
+        bot1.setId(1);
+        Bot bot2 = new Bot();
+        bot2.setId(2);
+        user.setStarBots(Arrays.asList(bot1, bot2));
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        GetBotsOkResponseDTO response = userService.getStarredBots(1, "token", 0, 10);
+
+        assertNotNull(response);
+        assertEquals(Integer.valueOf(2), response.getTotal());
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    public void testGetStarredBots_Unauthorized() throws AuthenticationException {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+
+        User user = new User();
+        user.setId(1);
+
+        User differentUser = new User();
+        differentUser.setId(2);
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(differentUser);
+
+        AuthenticationException thrown = assertThrows(
+                AuthenticationException.class,
+                () -> userService.getStarredBots(1, "token", 0, 10),
+                "Expected getStarredBots to throw, but it didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("Unauthorized to get used bots"));
+    }
+
+    @Test
+    public void testGetCreatedBots_Success() {
+        userRepository = Mockito.mock(UserRepository.class);
+        authService = Mockito.mock(AuthService.class);
+        userService = new UserServiceImpl(userRepository, authService);
+        
+        User user = new User();
+        user.setId(1);
+        Bot bot1 = new Bot();
+        bot1.setId(1);
+        Bot bot2 = new Bot();
+        bot2.setId(2);
+        user.setCreateBots(Arrays.asList(bot1, bot2));
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        GetBotsOkResponseDTO response = userService.getCreatedBots(1, "token", 0, 10);
+
+        assertNotNull(response);
+        assertEquals((Integer) 2, response.getTotal()); // Cast the expected value to Integer
+        verify(userRepository, times(1)).findById(1);
     }
 
 }

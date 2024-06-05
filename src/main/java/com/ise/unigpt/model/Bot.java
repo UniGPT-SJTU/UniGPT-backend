@@ -101,5 +101,6 @@ public class Bot {
         this.likeUsers = new ArrayList<>();
         this.starUsers = new ArrayList<>();
         this.comments = new ArrayList<>();
+        this.creator = new User();
     }
 }

@@ -1,7 +1,5 @@
 package com.ise.unigpt.service;
 
-import com.ise.unigpt.dto.LoginRequestDTO;
-import com.ise.unigpt.dto.RegisterRequestDTO;
 import com.ise.unigpt.model.User;
 
 import javax.naming.AuthenticationException;
