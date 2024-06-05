@@ -13,13 +13,13 @@ public interface AuthService {
      * @return 若登录成功，返回更新后的token
      * @throws AuthenticationException 登录异常
      */
-    String login(LoginRequestDTO dto) throws AuthenticationException;
+    /* String login(LoginRequestDTO dto) throws AuthenticationException; */
 
     /**
      * @brief 用户注册函数
      * @param dto 注册请求
      */
-    void register(RegisterRequestDTO dto);
+    /* void register(RegisterRequestDTO dto); */
 
     /**
      * @brief 根据token获取用户

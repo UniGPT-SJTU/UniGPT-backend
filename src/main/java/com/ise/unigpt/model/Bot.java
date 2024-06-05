@@ -26,7 +26,7 @@ public class Bot {
     private String description;
 
     @Column(name = "base_model_api")
-    private String baseModelAPI;
+    private BaseModelType baseModelAPI;
 
     @Column(name = "is_published")
     private boolean isPublished;
@@ -70,7 +70,7 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = dto.getBaseModelAPI();
+        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -88,7 +88,7 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = dto.getBaseModelAPI();
+        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -98,5 +98,8 @@ public class Bot {
 
     public Bot() {
         // not used
+        this.likeUsers = new ArrayList<>();
+        this.starUsers = new ArrayList<>();
+        this.comments = new ArrayList<>();
     }
 }
