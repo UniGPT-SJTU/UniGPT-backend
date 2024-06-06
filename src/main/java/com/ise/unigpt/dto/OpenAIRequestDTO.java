@@ -8,10 +8,12 @@ import lombok.Data;
 public class OpenAIRequestDTO {
     private String model;
     private List<OpenAIMessageDTO> messages;
-
-    public OpenAIRequestDTO(String model, List<OpenAIMessageDTO> messages) {
+    private double temperature;
+    
+    public OpenAIRequestDTO(String model, List<OpenAIMessageDTO> messages, double temperature) {
         this.model = model;
         this.messages = messages;
+        this.temperature = temperature;
     }
 
 }

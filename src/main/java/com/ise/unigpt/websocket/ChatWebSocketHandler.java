@@ -241,9 +241,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 System.out.println(chat.getContent());
             }
 
+            double temperature = bot.getTemperature();
+            if (bot.getBaseModelAPI() == BaseModelType.GPT) {
+                temperature = temperature * 2;
+            }
+
             String replyMessage = llmServiceFactory
                                     .getLLMService(sessionBaseModelType.get(session))
-                                    .generateResponse(promptChatList, chatList);
+                                    .generateResponse(promptChatList, chatList, temperature);
 
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);

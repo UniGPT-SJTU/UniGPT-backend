@@ -18,12 +18,14 @@ public class BotEditInfoDTO {
     private boolean isPrompted;
     private List<PromptChatDTO> promptChats;
     private List<String> promptKeys;
+    private double temperature;
 
     public BotEditInfoDTO(Bot bot){
         this.name = bot.getName();
         this.avatar = bot.getAvatar();
         this.description = bot.getDescription();
         this.baseModelAPI = bot.getBaseModelAPI().getValue();
+        this.temperature = bot.getTemperature();
         this.isPublished = bot.isPublished();
         this.detail = bot.getDetail();
         this.photos = bot.getPhotos();

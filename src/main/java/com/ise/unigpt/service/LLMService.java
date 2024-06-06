@@ -20,5 +20,5 @@ public interface LLMService {
      * @return LLM基于对话补全生成的回复内容
      * @throws Exception 抛出异常
      */
-    public String generateResponse(List<PromptChat> promptChats, List<Chat> chats) throws Exception;
+    public String generateResponse(List<PromptChat> promptChats, List<Chat> chats, double temperature) throws Exception;
 }

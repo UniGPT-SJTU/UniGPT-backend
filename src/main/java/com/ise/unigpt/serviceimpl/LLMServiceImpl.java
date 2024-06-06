@@ -3,6 +3,7 @@ package com.ise.unigpt.serviceimpl;
 import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -48,7 +49,7 @@ public class LLMServiceImpl implements LLMService{
         }
     }
 
-    public String generateResponse(List<PromptChat> promptChats, List<Chat> chats)
+    public String generateResponse(List<PromptChat> promptChats, List<Chat> chats, double temperature)
             throws Exception {
         Unirest.setTimeouts(0, 0);
         List<OpenAIMessageDTO> messages = new ArrayList<>();
@@ -63,8 +64,7 @@ public class LLMServiceImpl implements LLMService{
                                 chat -> new OpenAIMessageDTO(chat.getType().toString(),
                                         chat.getContent()))
                         .collect(Collectors.toList()));
-
-        OpenAIRequestDTO dto = new OpenAIRequestDTO(MODEL_NAME, messages);
+        OpenAIRequestDTO dto = new OpenAIRequestDTO(MODEL_NAME, messages, temperature);
         HttpResponse<String> response = Unirest
                 .post(BASE_URL + "/v1/chat/completions")
                 .header("Accept", "application/json")
