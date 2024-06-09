@@ -28,6 +28,9 @@ public class Bot {
     @Column(name = "base_model_api")
     private BaseModelType baseModelAPI;
 
+    @Column(name = "temperature")
+    private Double temperature;
+
     @Column(name = "is_published")
     private boolean isPublished;
 
@@ -71,6 +74,7 @@ public class Bot {
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
         this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
+        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -89,6 +93,7 @@ public class Bot {
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
         this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
+        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
