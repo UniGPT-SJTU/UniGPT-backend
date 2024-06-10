@@ -96,7 +96,11 @@ public class UserController {
         try {
             // 使用userid和token
             return ResponseEntity.ok(service.getStarredBots(userid, token, page, pagesize));
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
