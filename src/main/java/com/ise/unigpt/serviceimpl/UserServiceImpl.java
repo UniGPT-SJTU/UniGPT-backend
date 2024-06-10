@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
         return optionalUser.get();
     }
 
-    public void updateUserInfo(
+    public boolean updateUserInfo(
             Integer id,
             UpdateUserInfoRequestDTO updateUserInfoRequestDTO,
             String token) throws AuthenticationException {
@@ -51,6 +51,7 @@ public class UserServiceImpl implements UserService {
         targetUser.setCanvasUrl(updateUserInfoRequestDTO.getCanvasUrl());
 
         repository.save(targetUser);
+        return true;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
