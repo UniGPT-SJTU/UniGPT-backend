@@ -130,8 +130,8 @@ public class UserController {
             @CookieValue(value = "token") String token) {
         try {
             return ResponseEntity.ok(service.getUsers(page, pagesize, token, type, q));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }

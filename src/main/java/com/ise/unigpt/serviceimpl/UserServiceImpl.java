@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService {
                 PaginationUtils.paginate(userBriefInfoDTOs, page, pagesize));
     }
 
-    public void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException {
+    public boolean setBanUser(Integer id, String token, Boolean state) throws AuthenticationException {
         User requestUser;
         try {
             requestUser = authService.getUserByToken(token);
@@ -165,6 +165,7 @@ public class UserServiceImpl implements UserService {
         User targetUser = findUserById(id);
         targetUser.setDisabled(state);
         repository.save(targetUser);
+        return true;
     }
 
     public Boolean getBanState(Integer id, String token) throws AuthenticationException {
