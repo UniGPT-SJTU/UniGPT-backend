@@ -3,6 +3,7 @@ package com.ise.unigpt.controller;
 import com.google.gson.Gson;
 import com.ise.unigpt.dto.FileUploadOkResponseDTO;
 import com.ise.unigpt.dto.ResponseDTO;
+import com.ise.unigpt.model.User;
 import com.ise.unigpt.service.AuthService;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -18,11 +19,7 @@ import java.io.*;
 @RestController
 @RequestMapping("/api/file")
 public class FileUploadController {
-
-    private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
-
     private final AuthService authService;
-
 
     public FileUploadController(AuthService authService) {
         this.authService = authService;
@@ -33,7 +30,11 @@ public class FileUploadController {
                                                   @RequestParam("file") MultipartFile file
     ) {
         try {
-            logger.info("Uploading file: " + file.getOriginalFilename());
+            User user = authService.getUserByToken(token);
+            if (user == null) {
+                throw new Exception("User not found");
+            }
+
             String originalFilename = file.getOriginalFilename();
             String filenameWithoutExtension = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
             String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
@@ -52,8 +53,6 @@ public class FileUploadController {
             if(response.getStatus() != 200) {
                 throw new Exception("Failed to upload file");
             }
-
-            System.out.println(response.getBody());
 
             Gson gson = new Gson();
             FileUploadOkResponseDTO dto = gson.fromJson(response.getBody(), FileUploadOkResponseDTO.class);
