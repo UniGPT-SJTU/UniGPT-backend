@@ -19,6 +19,9 @@ import com.mashape.unirest.http.Unirest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.mockito.Mockito.*;
 
@@ -52,6 +55,38 @@ public class LLMServiceTest {
         assert result != null;
         // 判断result是否为字符串
         assert result instanceof String;
+    }
+
+    @Test
+    public void testOpenAIGenerateResponseConcurrently() throws Exception {
+        ExecutorService executorService = Executors.newFixedThreadPool(10); // 创建一个固定大小的线程池
+        List<Future<String>> futures = new ArrayList<>(); // 创建一个Future列表来存储每个任务的结果
+
+        for (int i = 0; i < 200; i++) { // 在一个循环中，提交每个任务到线程池
+            futures.add(executorService.submit(() -> {
+                List<PromptChat> promptChats = new ArrayList<>();
+                llmService = new LLMServiceImpl(BaseModelType.fromValue(0));
+                promptChats.add(TestPromptChatFactory.createUserPromptChat());
+                promptChats.add(TestPromptChatFactory.createBotPromptChat());
+                List<Chat> chats = new ArrayList<>();
+                ChatType userChatType = ChatType.USER;
+                ChatType botChatType = ChatType.BOT;
+                chats.add(new Chat(userChatType, "Hello"));
+                chats.add(new Chat(botChatType, "Hi"));
+                chats.add(new Chat(userChatType, "How are you?"));
+
+                return llmService.generateResponse(promptChats, chats);
+            }));
+        }
+
+        for (Future<String> future : futures) { // 在另一个循环中，遍历Future列表并获取每个任务的结果
+            String result = future.get(); // 使用Future.get()方法可以获取任务的结果，如果任务还没有完成，这个方法会阻塞直到任务完成
+            System.out.println(result);
+            assert result != null;
+            assert result instanceof String;
+        }
+
+        executorService.shutdown(); // 关闭线程池
     }
 
     @Test
