@@ -100,8 +100,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         if (token != null) {
             System.out.println("Token: " + token);
             sessionToken.put(session, token);
-        } else {
-            System.out.println("No token found");
         }
 
         // ...
@@ -168,11 +166,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("History user: " + historyUserId);
         if (!userId.equals(historyUserId)) {
             try {
-                String replyMessage = "You are not authorized to access this history";
-                Map<String, String> replyMap = new HashMap<>();
-                replyMap.put("replyMessage", replyMessage);
-                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
-                return;
+                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(Map.of("replyMessage", "You are not authorized to access this history"))));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -198,11 +192,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             System.out.println("Bot: " + bot.getId());
             List<PromptChat> promptChatList = history.getPromptChats();
             System.out.println("PromptChatList: ");
-            if (promptChatList == null) {
-                // TODO: promptChatList是否可能为空？
-                System.out.println("PromptChatList is null");
-                promptChatList = new ArrayList<>();
-            }
+
             preHandle(session, bot.getId(), promptChatList);
             /*
              * for (PromptChat promptChat : promptChatList) {
