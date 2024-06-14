@@ -63,6 +63,16 @@ class BotControllerTest {
     }
 
     @Test
+    void testGetBots_NotFound() {
+        when(service.getBots("", "latest", 0, 20)).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.getBots("", "latest", 0, 20);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testGetBotProfile_Brief() {
         BotBriefInfoDTO bot = new BotBriefInfoDTO(1, "bot1", "description1", "avatar1", false, false);
         when(service.getBotBriefInfo(1, "token")).thenReturn(bot);
@@ -83,11 +93,32 @@ class BotControllerTest {
     }
 
     @Test
+    void testGetBotProfile_Edit() {
+        BotEditInfoDTO botEditInfo = TestBotFactory.createBotEditInfoDTO();
+        when(service.getBotEditInfo(1, "token")).thenReturn(botEditInfo);
+
+        ResponseEntity<Object> response = controller.getBotProfile(1, "edit", "token");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+
+    @Test
     void testGetBotProfile_InvalidInfo() {
         ResponseEntity<Object> response = controller.getBotProfile(1, "invalid", "token");
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Invalid info parameter", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
+    void testGetBotProfile_NotFound() {
+        when(service.getBotBriefInfo(1, "token")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.getBotProfile(1, "brief", "token");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
     }
 
     @Test
@@ -102,6 +133,16 @@ class BotControllerTest {
         assertEquals(responseDTO, response.getBody());
     }
 
+    @Test
+    void testCreateBot_BadRequest() {
+        BotEditInfoDTO dto = new BotEditInfoDTO();
+        when(service.createBot(dto, "token")).thenThrow(new NoSuchElementException("Bad request"));
+
+        ResponseEntity<ResponseDTO> response = controller.createBot(dto, "token");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Bad request", ((ResponseDTO) response.getBody()).getMessage());
+    }
     @Test
     void testUpdateBot() {
         BotEditInfoDTO dto = new BotEditInfoDTO();
@@ -123,12 +164,33 @@ class BotControllerTest {
     }
 
     @Test
+    void testUpdateBot_BadRequest() {
+        BotEditInfoDTO dto = new BotEditInfoDTO();
+        when(service.updateBot(1, dto, "token")).thenThrow(new IllegalArgumentException("Bad request"));
+
+        ResponseEntity<Object> response = controller.updateBot(1, dto, "token");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Bad request", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testLikeBot() {
         when(service.likeBot(1, "token")).thenReturn(new ResponseDTO(true, "Liked"));
 
         ResponseEntity<Object> response = controller.likeBot(1, "token");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testLikeBot_NotFound() {
+        when(service.likeBot(1, "token")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.likeBot(1, "token");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
     }
 
     @Test
@@ -141,6 +203,16 @@ class BotControllerTest {
     }
 
     @Test
+    void testDislikeBot_NotFound() {
+        when(service.dislikeBot(1, "token")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.dislikeBot(1, "token");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testStarBot() {
         when(service.starBot(1, "token")).thenReturn(new ResponseDTO(true, "Starred"));
 
@@ -150,12 +222,32 @@ class BotControllerTest {
     }
 
     @Test
+    void testStarBot_NotFound() {
+        when(service.starBot(1, "token")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.starBot(1, "token");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testUnstarBot() {
         when(service.unstarBot(1, "token")).thenReturn(new ResponseDTO(true, "Unstarred"));
 
         ResponseEntity<Object> response = controller.unstarBot(1, "token");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testUnstarBot_NotFound() {
+        when(service.unstarBot(1, "token")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.unstarBot(1, "token");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
     }
 
     @Test
@@ -172,6 +264,16 @@ class BotControllerTest {
     }
 
     @Test
+    void testGetComments_NotFound() {
+        when(service.getComments(1, 0, 100)).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.getComments(1, 0, 100);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testCreateComment() {
         CommentRequestDTO request = new CommentRequestDTO();
         request.setContent("Test comment");
@@ -180,6 +282,18 @@ class BotControllerTest {
         ResponseEntity<Object> response = controller.createComment(1, "token", request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testCreateComment_NotFound() {
+        CommentRequestDTO request = new CommentRequestDTO();
+        request.setContent("Test comment");
+        when(service.createComment(1, "token", "Test comment")).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.createComment(1, "token", request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
     }
 
     @Test
@@ -196,6 +310,16 @@ class BotControllerTest {
     }
 
     @Test
+    void testGetBotHistory_NotFound() {
+        when(service.getBotHistory(1, "token", 0, 20)).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.getBotHistory(1, "token", 0, 20);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
     void testCreateBotHistory() throws BadRequestException {
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
@@ -206,6 +330,19 @@ class BotControllerTest {
         ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testCreateBotHistory_NotFound() throws BadRequestException {
+        List<PromptDTO> promptList = Arrays.asList(
+                new PromptDTO("key1", "value1"),
+                new PromptDTO("key2", "value2"));
+        when(service.createBotHistory(1, "token", promptList)).thenThrow(new NoSuchElementException("Not found"));
+
+        ResponseEntity<Object> response = controller.createBotHistory(1, "token", promptList);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Not found", ((ResponseDTO) response.getBody()).getMessage());
     }
 
     @Test
