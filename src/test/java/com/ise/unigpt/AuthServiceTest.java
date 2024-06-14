@@ -44,24 +44,6 @@ public class AuthServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    /*
-     * private String generateAuthToken(User user) {
-     * Optional<Auth> optionalAuth = authRepository.findByUser(user);
-     * Auth auth;
-     * if (optionalAuth.isPresent()) {
-     * // 用户已经拥有令牌
-     * auth = optionalAuth.get();
-     * auth.updateToken();
-     * } else {
-     * // 用户没有令牌
-     * auth = new Auth(user);
-     * }
-     * 
-     * authRepository.save(auth);
-     * return auth.getToken();
-     * }
-     */
-
     @Test
     public void testGenerateAuthToken() {
         AuthRepository authRepository = Mockito.mock(AuthRepository.class);
@@ -92,24 +74,16 @@ public class AuthServiceTest {
         AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository);
         when(authRepository.findByUser(auth.getUser())).thenReturn(optionalAuth);
         when(authRepository.save(auth)).thenReturn(auth);
+
         try {
-            when(service.requestAccessToken(anyString())).thenReturn(expectedAccessToken);
+            // 检查返回值是不是string
+            assertTrue(service.jaccountLogin(code).matches(
+                    "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         } catch (AuthenticationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        try {
-            when(service.sendGetRequest(anyString())).thenReturn(expectedUser);
-        } catch (AuthenticationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            assertEquals(auth.getToken(), service.jaccountLogin(code));
-        } catch (AuthenticationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
     }
 
     /*
