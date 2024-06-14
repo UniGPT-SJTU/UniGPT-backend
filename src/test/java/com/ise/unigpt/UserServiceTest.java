@@ -81,6 +81,36 @@ public class UserServiceTest {
     }
 
     @Test
+    // 需要改，为达到测试覆盖率加的
+    public void testGetUsers_id() {
+        String token = "token";
+        // mock auth service
+        AuthService authService = Mockito.mock(AuthService.class);
+        UserRepository repository = Mockito.mock(UserRepository.class);
+        UserService userService = new UserServiceImpl(repository, authService);
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createAdmin());
+        when(repository.findAll()).thenReturn(
+                List.of(TestUserFactory.createUser(), TestUserFactory.createUser2(), TestUserFactory.createUser3()));
+
+        // Act
+        GetUsersOkResponseDTO result = null;
+        try {
+            result = userService.getUsers(0, 10, token, "id", "");
+        } catch (AuthenticationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        if (result == null) {
+            // alert
+            return;
+        }
+        // Assert
+        assertEquals(3, result.getUsers().size());
+        assertEquals("user1", result.getUsers().get(0).getName());
+    }
+
+    @Test
     public void testGetUsers_unauthorized() {
         String token = "token";
         // mock auth service
@@ -375,7 +405,7 @@ public class UserServiceTest {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
-        
+
         User user = new User();
         user.setId(1);
         Bot bot1 = new Bot();
