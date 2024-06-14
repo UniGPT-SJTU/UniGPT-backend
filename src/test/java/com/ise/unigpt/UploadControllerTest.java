@@ -57,7 +57,6 @@ public class UploadControllerTest {
         User user = TestUserFactory.createUser();
         Mockito.when(authService.getUserByToken("token")).thenReturn(user);
         Path path = Paths.get("src/test/resources/test.jpg");
-//        String name = "OIP.jpg";
         String originalFileName = "test.jpg";
         String contentType = "image/jpeg";
         byte[] content = null;
@@ -74,9 +73,38 @@ public class UploadControllerTest {
         try {
             mockMvc.perform(MockMvcRequestBuilders.multipart("/api/file/upload")
                             .file(file)
-                            .cookie(new Cookie("token", "testToken"))
+                            .cookie(new Cookie("token", "token"))
                             .accept(MediaType.APPLICATION_JSON))
                             .andExpect(MockMvcResultMatchers.status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testUploadFileWithUserNotFound() {
+        User user = TestUserFactory.createUser();
+        Mockito.when(authService.getUserByToken("")).thenReturn(user);
+        Path path = Paths.get("src/test/resources/test.jpg");
+        String originalFileName = "test.jpg";
+        String contentType = "image/jpeg";
+        byte[] content = null;
+
+        try {
+            content = java.nio.file.Files.readAllBytes(path);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+
+        MockMultipartFile file = new MockMultipartFile("file",
+                originalFileName, contentType, content);
+
+        try {
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/api/file/upload")
+                            .file(file)
+                            .cookie(new Cookie("token", "token"))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(MockMvcResultMatchers.status().isBadRequest());
         } catch (Exception e) {
             e.printStackTrace();
         }
