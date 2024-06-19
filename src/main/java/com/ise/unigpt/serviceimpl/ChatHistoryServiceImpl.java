@@ -37,19 +37,14 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
         User requestUser = authService.getUserByToken(token);
 
-        if (requestUser.getId() != history.getUser().getId()) {
-            throw new AuthenticationException("User not authorized to access this history");
-        }
+        if (requestUser.getId() != history.getUser().getId()) { throw new AuthenticationException("User not authorized to access this history"); }
 
         List<Chat> chats = history.getChats();
         int size = chats.size();
         if (n > size) {
             n = size;
         }
-        for (int i = 0; i < n; i++) {
-            Chat chat = chats.remove(size - 1 - i);
-            chatRepository.delete(chat);
-        }
+        for (int i = 0; i < n; i++) { Chat chat = chats.remove(size - 1 - i); chatRepository.delete(chat); }
         historyRepository.save(history);
     }
 
@@ -60,9 +55,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
         User requestUser = authService.getUserByToken(token);
 
-        if (requestUser.getId() != history.getUser().getId()) {
-            throw new AuthenticationException("User not authorized to access this history");
-        }
+        if (requestUser.getId() != history.getUser().getId()) { throw new AuthenticationException("User not authorized to access this history"); }
 
         Chat chat = new Chat(history, type, content);
 
@@ -149,14 +142,10 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         User user;
         try {
             user = authService.getUserByToken(token);
-        } catch (Exception e) {
-            throw new AuthenticationException("unauthorized");
-        }
+        } catch (Exception e) { throw new AuthenticationException("unauthorized"); }
         History targetHistory = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found"));
-        if (!targetHistory.getUser().equals(user)) {
-            throw new AuthenticationException("unauthorized");
-        }
+        if (!targetHistory.getUser().equals(user)) { throw new AuthenticationException("unauthorized"); }
 
         // 删除关联表中的记录
         user.getHistories().remove(targetHistory);

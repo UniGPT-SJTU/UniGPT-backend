@@ -56,9 +56,7 @@ public class AuthServiceImpl implements AuthService {
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
         User user = auth.getUser();
-        if (user.isDisabled()) {
-            throw new UserDisabledException("User is disabled");
-        }
+        if (user.isDisabled()) throw new UserDisabledException("User is disabled");
         return user;
     }
 
@@ -71,9 +69,7 @@ public class AuthServiceImpl implements AuthService {
         // System.out.println("user" + user);
         // 查找是否已经注册
         Optional<User> optionalUser = userRepository.findByAccount(user.getAccount());
-        if (optionalUser.isPresent()) {
-            return generateAuthToken(optionalUser.get());
-        }
+        if (optionalUser.isPresent()) return generateAuthToken(optionalUser.get());
         userRepository.save(user);
         String token = generateAuthToken(user);
         System.out.println("token" + token);
