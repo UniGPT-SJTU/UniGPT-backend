@@ -132,9 +132,7 @@ public class BotServiceImpl implements BotService {
         User user;
         try {
             user = authService.getUserByToken(token);
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("User not found");
-        }
+        } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
 
         if ((bot.getCreator().getId() != user.getId()) && !user.isAsAdmin()) {
             // 以下两种情况任意一种满足时，可以获取bot的编辑信息
@@ -151,9 +149,7 @@ public class BotServiceImpl implements BotService {
         User creatorUser;
         try {
             creatorUser = authService.getUserByToken(token);
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("User not found");
-        }
+        } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
 
         // 创建promptChats列表并保存到数据库
         List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
@@ -239,9 +235,7 @@ public class BotServiceImpl implements BotService {
 
         User user = authService.getUserByToken(token);
 
-        if (!bot.getLikeUsers().contains(user)) {
-            return new ResponseDTO(false, "Bot not liked yet");
-        }
+        if (!bot.getLikeUsers().contains(user)) { return new ResponseDTO(false, "Bot not liked yet"); }
 
         bot.getLikeUsers().remove(user);
         user.getLikeBots().remove(bot);

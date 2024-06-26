@@ -92,6 +92,12 @@ public class User {
 
     public User() {
         // not used
+        this.likeBots = new ArrayList<>();
+        this.starBots = new ArrayList<>();
+        this.usedBots = new ArrayList<>();
+        this.createBots = new ArrayList<>();
+
+        this.histories = new ArrayList<>();
     }
 
 }

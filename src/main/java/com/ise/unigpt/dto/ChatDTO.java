@@ -30,4 +30,13 @@ public class ChatDTO {
                 history.getBot().getName() :
                 history.getUser().getName();
     }
+
+    public ChatDTO(Integer id, String content, Date time, String avatar, String name, ChatType type) {
+        this.id = id;
+        this.content = content;
+        this.time = time;
+        this.avatar = avatar;
+        this.name = name;
+        this.type = type;
+    }
 }
