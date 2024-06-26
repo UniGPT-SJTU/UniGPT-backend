@@ -159,7 +159,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         }
 
         // 删除关联表中的记录
-        user.getHistories().remove(targetHistory);
+//        user.getHistories().remove(targetHistory);
         // 删除History对象
         historyRepository.deleteById(historyId);
     }

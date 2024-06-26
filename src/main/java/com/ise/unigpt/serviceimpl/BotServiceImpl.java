@@ -118,6 +118,7 @@ public class BotServiceImpl implements BotService {
                 user.getUsedBots().remove(bot);
                 userRepository.save(user);
             }
+
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
 
@@ -264,7 +265,6 @@ public class BotServiceImpl implements BotService {
 
         bot.getStarUsers().add(user);
         user.getStarBots().add(bot);
-
         botRepository.save(bot);
         userRepository.save(user);
         return new ResponseDTO(true, "Bot starred successfully");
@@ -340,8 +340,8 @@ public class BotServiceImpl implements BotService {
         // 将对应 bot 加入用户的 usedBots 列表
         if (!user.getUsedBots().contains(bot)) {
             user.getUsedBots().add(bot);
+            userRepository.save(user);
         }
-        userRepository.save(user);
 
         // 將提示词列表转换为 key-value 对
         Map<String, String> promptKeyValuePairs = promptList.stream()
@@ -388,8 +388,8 @@ public class BotServiceImpl implements BotService {
         }
 
         // 将对话历史加入用户的 histories 列表
-        user.getHistories().add(history);
-        userRepository.save(user);
+//        user.getHistories().add(history);
+//        userRepository.save(user);
         return new CreateBotHistoryOkResponseDTO(
                 true, "Chat history created successfully",
                 history.getId(),

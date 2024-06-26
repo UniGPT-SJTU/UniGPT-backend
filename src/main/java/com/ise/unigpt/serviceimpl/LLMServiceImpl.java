@@ -65,14 +65,30 @@ public class LLMServiceImpl implements LLMService{
                                         chat.getContent()))
                         .collect(Collectors.toList()));
         OpenAIRequestDTO dto = new OpenAIRequestDTO(MODEL_NAME, messages, temperature);
-        HttpResponse<String> response = Unirest
-                .post(BASE_URL + "/v1/chat/completions")
-                .header("Accept", "application/json")
-                .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + API_KEY)
-                .body(new Gson().toJson(dto)).asString();
+        HttpResponse<String> response;
+        int retryCount = 0;
+        while (true){
+                response = Unirest
+                        .post(BASE_URL + "/v1/chat/completions")
+                        .header("Accept", "application/json")
+                        .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + API_KEY)
+                        .body(new Gson().toJson(dto)).asString();
+                if (response.getStatus() == 429) {
+                    if (retryCount > 3) {
+                        break;
+                    }
+                    System.out.println("retry after 5 seconds");
+                    retryCount++;
+                    Thread.sleep(5000);
+                } else {
+                    break;
+                }
+        }
         if (response.getStatus() != 200) {
+            System.out.println("status code: " + response.getStatus());
+            System.out.println("response body: " + response.getBody());
             throw new ServerException("openai service error");
         }
         JsonObject responseJsonObject = JsonParser.parseString(response.getBody()).getAsJsonObject();
@@ -81,7 +97,6 @@ public class LLMServiceImpl implements LLMService{
                 .get(0).getAsJsonObject()
                 .get("message").getAsJsonObject()
                 .get("content").getAsString();
-
         return responseContent;
     }
 }
