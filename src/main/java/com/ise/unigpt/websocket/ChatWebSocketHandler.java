@@ -46,17 +46,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final ChatHistoryService chatHistoryService;
 
     private final Map<WebSocketSession, Boolean> sessionFirstMessageSent;
-    private final Map<WebSocketSession, String> sessionToken;
+    public final Map<WebSocketSession, String> sessionToken;
     private final Map<WebSocketSession, History> sessionHistory;
     private final Map<WebSocketSession, BaseModelType> sessionBaseModelType;
 
     private final LLMServiceFactory llmServiceFactory;
 
     public ChatWebSocketHandler(
-        AuthService authService, 
-        ChatHistoryService chatHistoryService,
-        LLMServiceFactory llmServiceFactory
-    ) {
+            AuthService authService,
+            ChatHistoryService chatHistoryService,
+            LLMServiceFactory llmServiceFactory) {
         this.authService = authService;
         this.chatHistoryService = chatHistoryService;
 
@@ -101,8 +100,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         if (token != null) {
             System.out.println("Token: " + token);
             sessionToken.put(session, token);
-        } else {
-            System.out.println("No token found");
         }
 
         // ...
@@ -142,7 +139,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(errorMessage));
                 return;
-            } catch (Exception e2) { 
+            } catch (Exception e2) {
                 e2.printStackTrace();
             }
         }
@@ -169,11 +166,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("History user: " + historyUserId);
         if (!userId.equals(historyUserId)) {
             try {
-                String replyMessage = "You are not authorized to access this history";
-                Map<String, String> replyMap = new HashMap<>();
-                replyMap.put("replyMessage", replyMessage);
-                session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
-                return;
+                session.sendMessage(new TextMessage(new ObjectMapper()
+                        .writeValueAsString(Map.of("replyMessage", "You are not authorized to access this history"))));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -199,11 +193,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             System.out.println("Bot: " + bot.getId());
             List<PromptChat> promptChatList = history.getPromptChats();
             System.out.println("PromptChatList: ");
-            if (promptChatList == null) {
-                // TODO: promptChatList是否可能为空？
-                System.out.println("PromptChatList is null");
-                promptChatList = new ArrayList<>();
-            }
+
             preHandle(session, bot.getId(), promptChatList);
             /*
              * for (PromptChat promptChat : promptChatList) {
@@ -247,8 +237,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             String replyMessage = llmServiceFactory
-                                    .getLLMService(sessionBaseModelType.get(session))
-                                    .generateResponse(promptChatList, chatList, temperature);
+                    .getLLMService(sessionBaseModelType.get(session))
+                    .generateResponse(promptChatList, chatList, temperature);
 
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);

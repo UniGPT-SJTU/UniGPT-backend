@@ -21,7 +21,7 @@ public interface UserService {
          * @param updateUserInfoRequestDTO 更新用户信息请求
          * @param token                    用户token
          */
-        void updateUserInfo(
+        boolean updateUserInfo(
                         Integer id,
                         UpdateUserInfoRequestDTO updateUserInfoRequestDTO,
                         String token) throws AuthenticationException;
@@ -71,7 +71,7 @@ public interface UserService {
          * @param token 用户token
          * @param state 状态
          */
-        void setBanUser(Integer id, String token, Boolean state) throws AuthenticationException;
+        boolean setBanUser(Integer id, String token, Boolean state) throws AuthenticationException;
 
         /**
          * @brief 查看当前用户禁用状态

@@ -26,6 +26,10 @@ public class BotDetailInfoDTO {
     private boolean asAdmin;
     private List<String> promptKeys;
 
+
+    public BotDetailInfoDTO() {
+        // only for test
+    }
     public BotDetailInfoDTO(Bot bot, User user) {
         this.id = bot.getId();
         this.name = bot.getName();
