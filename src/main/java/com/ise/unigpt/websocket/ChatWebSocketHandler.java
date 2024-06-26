@@ -20,10 +20,7 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.ChatType;
@@ -68,7 +65,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         // 获取握手阶段的HTTP头
         Map<String, List<String>> headers = session.getHandshakeHeaders();
 
@@ -82,27 +79,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 解析Cookie头以获取token的值
         String token = null;
         if (cookies != null) {
-            for (String cookie : cookies) {
-                String[] parts = cookie.split(";");
-                for (String part : parts) {
-                    part = part.trim();
-                    if (part.startsWith("token=")) {
-                        token = part.substring("token=".length());
-                        break;
-                    }
-                }
-                if (token != null) {
-                    break;
-                }
-            }
+            token = cookies.stream()
+                    .flatMap(cookie -> Arrays.stream(cookie.split(";")))
+                    .map(String::trim)
+                    .filter(part -> part.startsWith("token="))
+                    .map(part -> part.substring("token=".length()))
+                    .findFirst()
+                    .orElse(null);
         }
 
         if (token != null) {
             System.out.println("Token: " + token);
             sessionToken.put(session, token);
         }
-
-        // ...
     }
 
     @Override
@@ -125,60 +114,56 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void handleFirstMessage(WebSocketSession session, String payLoad) {
-        System.out.println("Received first message: " + payLoad);
+        String errorMessage = "Error parsing historyId";
 
-        // 获得historyId
-        Integer historyId = 0;
         try {
+            System.out.println("Received first message: " + payLoad);
+
+            // 获得historyId
+            int historyId;
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
             String historyIdString = map.get("historyId");
             historyId = Integer.parseInt(historyIdString);
+            if (historyId == 0) {
+                errorMessage = "Please provide a valid history id";
+                throw new Exception();
+            }
+
+            History history = chatHistoryService.getHistory(historyId);
+            System.out.println("History: " + history.getId());
+            sessionHistory.put(session, history);
+            System.out.println("Save history: " + sessionHistory.get(session).getId());
+
+            // 检查用户是否有权限访问history
+            User user = authService.getUserByToken(sessionToken.get(session));
+            Integer userId = user.getId();
+            System.out.println("User: " + userId);
+            Integer historyUserId = chatHistoryService.getHistory(historyId).getUser().getId();
+            System.out.println("History user: " + historyUserId);
+
+            if (!userId.equals(historyUserId)) {
+                String replyMessage = "You are not authorized to access this history";
+                Map<String, String> replyMap = new HashMap<>();
+                replyMap.put("replyMessage", replyMessage);
+                errorMessage = new ObjectMapper().writeValueAsString(replyMap);
+                throw new Exception();
+            }
+
+            // 设置session的firstMessageSent为true
+            sessionFirstMessageSent.put(session, true);
+
+            // 设置 LLMServiceImpl
+            BaseModelType baseModelType = history.getBot().getBaseModelAPI();
+            sessionBaseModelType.put(session, baseModelType);
         } catch (Exception e) {
-            String errorMessage = "Error parsing historyId";
             try {
                 session.sendMessage(new TextMessage(errorMessage));
-                return;
             } catch (Exception e2) {
-                e2.printStackTrace();
+                System.out.println("Error sending error message");
             }
         }
 
-        // 保存session的history
-        if (historyId == 0) {
-            try {
-                session.sendMessage(new TextMessage("Please provide a valid history id"));
-                return;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        History history = chatHistoryService.getHistory(historyId);
-        System.out.println("History: " + history.getId());
-        sessionHistory.put(session, history);
-        System.out.println("Save history: " + sessionHistory.get(session).getId());
-
-        // 检查用户是否有权限访问history
-        User user = authService.getUserByToken(sessionToken.get(session));
-        Integer userId = user.getId();
-        System.out.println("User: " + userId);
-        Integer historyUserId = chatHistoryService.getHistory(historyId).getUser().getId();
-        System.out.println("History user: " + historyUserId);
-        if (!userId.equals(historyUserId)) {
-            try {
-                session.sendMessage(new TextMessage(new ObjectMapper()
-                        .writeValueAsString(Map.of("replyMessage", "You are not authorized to access this history"))));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return;
-        }
-        // 设置session的firstMessageSent为true
-        sessionFirstMessageSent.put(session, true);
-
-        // 设置 LLMServiceImpl
-        BaseModelType baseModelType = history.getBot().getBaseModelAPI();
-        sessionBaseModelType.put(session, baseModelType);
     }
 
     public void handleSecondMessage(WebSocketSession session, String payLoad) {
@@ -195,11 +180,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             System.out.println("PromptChatList: ");
 
             preHandle(session, bot.getId(), promptChatList);
-            /*
-             * for (PromptChat promptChat : promptChatList) {
-             * System.out.println(promptChat.getContent());
-             * }
-             */
 
             List<Chat> chatList = history.getChats();
 
@@ -273,7 +253,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e2) {
                 System.out.println("Error sending error message");
             }
-            e.printStackTrace();
         }
     }
 
@@ -311,14 +290,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             String icsData = response.body();
-            // System.out.println(icsData);
             if (Biweekly.parse(icsData).first() == null) {
                 return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。" +
                         "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
             }
             ICalendar ical = Biweekly.parse(icsData).first();
 
-            List<CanvasEventDTO> eventList = new ArrayList<>();
             LocalDateTime now = LocalDateTime.now();
 
             return ical.getEvents().stream()
@@ -346,8 +323,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     })
                     .toList().toString();
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "error";
         } catch (Exception e) {
-            e.printStackTrace();
             return "error";
         }
     }

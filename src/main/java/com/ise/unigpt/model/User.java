@@ -51,9 +51,11 @@ public class User {
     private List<Bot> usedBots;
 
     @OneToMany
+    @JoinColumn(name = "bot_id")
     private List<Bot> createBots;
 
     @OneToMany
+    @JoinColumn(name = "user_id")
     private List<History> histories;
 
     @Column(name = "is_admin")
