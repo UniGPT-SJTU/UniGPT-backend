@@ -39,7 +39,7 @@ public class History {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "history_prompt_key_value_pairs",
             joinColumns = @JoinColumn(name = "history_id"))
-    @MapKeyColumn(name = "prompt_key",columnDefinition = "LONGTEXT")
+    @MapKeyColumn(name = "prompt_key", columnDefinition = "VARCHAR(255)")
     @Column(name = "prompt_value", columnDefinition = "LONGTEXT")
     private Map<String, String> promptKeyValuePairs;
 

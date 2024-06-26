@@ -22,7 +22,7 @@ public class Bot {
     @Column(name = "avatar")
     private String avatar;
 
-    @Column(name = "description", columnDefinition = "LONGTEXT")
+    @Column(name = "description", columnDefinition = "VARCHAR(255)")
     private String description;
 
     @Column(name = "base_model_api")
@@ -34,7 +34,7 @@ public class Bot {
     @Column(name = "is_published")
     private boolean isPublished;
 
-    @Column(name = "detail", columnDefinition = "LONGTEXT")
+    @Column(name = "detail", columnDefinition = "VARCHAR(255)")
     private String detail;
 
     @ElementCollection
@@ -47,7 +47,7 @@ public class Bot {
     private List<PromptChat> promptChats;
 
     @ElementCollection
-    @Column(name = "promptKeys", columnDefinition = "LONGTEXT")
+    @Column(name = "promptKeys", columnDefinition = "VARCHAR(255)")
     private List<String> promptKeys;
 
     @Column(name = "like_number")
