@@ -303,6 +303,10 @@ public class BotServiceImpl implements BotService {
         if (!user.getUsedBots().contains(bot)) {
             user.getUsedBots().add(bot);
             userRepository.save(user);
+        } else {
+            user.getUsedBots().remove(bot);
+            user.getUsedBots().add(bot);
+            userRepository.save(user);
         }
 
         // 將提示词列表转换为 key-value 对

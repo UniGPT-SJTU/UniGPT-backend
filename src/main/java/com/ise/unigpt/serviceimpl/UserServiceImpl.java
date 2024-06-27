@@ -11,6 +11,7 @@ import com.ise.unigpt.utils.PaginationUtils;
 import org.springframework.stereotype.Service;
 
 import javax.security.sasl.AuthenticationException;
+import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ public class UserServiceImpl implements UserService {
         }
 
         List<Bot> usedBots = user.getUsedBots();
+        Collections.reverse(usedBots);
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
@@ -74,15 +76,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
-    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
-            throws AuthenticationException {
+    public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize) {
         User user = findUserById(userid);
 
-        if (!authService.getUserByToken(token).equals(user)) {
-            throw new AuthenticationException("Unauthorized to get used bots");
-        }
-
         List<Bot> starredBots = user.getStarBots();
+        Collections.reverse(starredBots);
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
@@ -96,6 +94,7 @@ public class UserServiceImpl implements UserService {
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
         User user = findUserById(userid);
         List<Bot> createdBots = user.getCreateBots();
+        Collections.reverse(createdBots);
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
