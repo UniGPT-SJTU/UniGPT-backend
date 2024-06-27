@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -20,7 +21,10 @@ import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.model.User;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -399,4 +403,6 @@ public class ChatWebSocketHandlerTest {
         assert promptChatList.size() == 1;
         assert promptChatList.get(0).getContent().contains("Here are my upcoming Canvas events");
     }
+
+
 }

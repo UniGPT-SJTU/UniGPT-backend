@@ -153,14 +153,7 @@ public class UserController {
     public ResponseEntity<Object> isUserDisabled(@PathVariable Integer id, @CookieValue(value = "token") String token) {
         try {
             Boolean banState = service.getBanState(id, token);
-            if (banState == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ResponseDTO(false, "User not found"));
-            } else if (banState) {
-                return ResponseEntity.ok(new ResponseDTO(true, "true"));
-            } else {
-                return ResponseEntity.ok(new ResponseDTO(true, "false"));
-            }
+            return ResponseEntity.ok(new ResponseDTO(true, (banState ? "true" : "false")));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

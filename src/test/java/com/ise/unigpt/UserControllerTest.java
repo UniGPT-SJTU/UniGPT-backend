@@ -27,7 +27,7 @@ public class UserControllerTest {
 
     @Mock
     private UserService userService;
-    
+
     @Mock
     private AuthService authService;
 
@@ -219,7 +219,7 @@ public class UserControllerTest {
 
     @Test
     void testIsUserDisabledNotFound() throws AuthenticationException {
-        when(userService.getBanState(1, "token")).thenReturn(null);
+        when(userService.getBanState(1, "token")).thenThrow(new AuthenticationException("User not found"));
         ResponseEntity<Object> response = controller.isUserDisabled(1, "token");
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }

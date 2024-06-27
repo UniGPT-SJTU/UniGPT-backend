@@ -111,7 +111,7 @@ public class ChatHistoryServiceTest {
         List<Chat> chats = new ArrayList<>();
         history.setChats(chats);
         when(historyRepository.findById(1)).thenReturn(java.util.Optional.of(history));
-        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser());
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser2());
         try {
             chatHistoryServiceImpl.createChat(1, "content", ChatType.USER, "token");
         } catch (AuthenticationException e) {
@@ -142,7 +142,7 @@ public class ChatHistoryServiceTest {
         List<Chat> chats = new ArrayList<>();
         history.setChats(chats);
         when(historyRepository.findById(1)).thenReturn(java.util.Optional.of(history));
-        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser());
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser2());
         try {
             chatHistoryServiceImpl.getChats(1, 0, 20, "token");
         } catch (AuthenticationException e) {
@@ -164,13 +164,14 @@ public class ChatHistoryServiceTest {
 
     @Test
     void testGetPromptListNoSuchElementException() {
-        when(historyRepository.findById(1)).thenThrow(new NoSuchElementException("Not found"));
+        when(historyRepository.findById(1)).thenReturn(java.util.Optional.empty());
         try {
             chatHistoryServiceImpl.getPromptList(1);
         } catch (NoSuchElementException e) {
-            assertEquals("Not found", e.getMessage());
+            assertEquals("History not found for ID: 1", e.getMessage());
         }
     }
+
 
     @Test
     void testGetHistory() throws Exception {

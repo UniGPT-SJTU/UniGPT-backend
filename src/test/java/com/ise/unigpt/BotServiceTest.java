@@ -9,10 +9,7 @@ import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.serviceimpl.BotServiceImpl;
-import com.ise.unigpt.utils.TestBotFactory;
-import com.ise.unigpt.utils.TestCommentFactory;
-import com.ise.unigpt.utils.TestHistoryFactory;
-import com.ise.unigpt.utils.TestUserFactory;
+import com.ise.unigpt.utils.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
@@ -25,6 +22,7 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 class BotServiceTest {
 
@@ -104,6 +102,15 @@ class BotServiceTest {
     }
 
     @Test
+    void testGetBots_invalidOrder() throws Exception {
+        try {
+            botService.getBots("", "invalid", 0, 20);
+        } catch (Exception e) {
+            assertEquals("Invalid order parameter", e.getMessage());
+        }
+    }
+
+    @Test
     void testGetBotBriefInfo() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
@@ -116,6 +123,45 @@ class BotServiceTest {
     }
 
     @Test
+    void testGetBriefInfo_userNotFound() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenThrow(new NoSuchElementException("User not found"));
+
+        try {
+            botService.getBotBriefInfo(1, "token");
+        } catch (Exception e) {
+            assertEquals("User not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetBriefInfo_botNotFound() throws Exception {
+        when(botRepository.findById(1)).thenThrow(new NoSuchElementException("Bot not found"));
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser());
+
+        try {
+            botService.getBotBriefInfo(1, "token");
+        } catch (Exception e) {
+            assertEquals("Bot not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetBriefInfo_botNotPublished() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setIsPublished(false);
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createUser2());
+
+        try {
+            botService.getBotBriefInfo(1, "token");
+        } catch (Exception e) {
+            assertEquals("Bot not published for ID: 1", e.getMessage());
+        }
+    }
+
+    @Test
     void testGetBotDetailInfo() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
@@ -125,6 +171,36 @@ class BotServiceTest {
         BotDetailInfoDTO response = botService.getBotDetailInfo(1, "token");
 
         assertEquals(botDetailInfoDTO, response);
+    }
+
+    @Test
+    void testGetBotDetailInfo_userNotFound() throws Exception{
+        Bot bot = TestBotFactory.createBot();
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenThrow(new NoSuchElementException("User not found"));
+
+        try {
+            botService.getBotDetailInfo(1, "token");
+        } catch (Exception e) {
+            assertEquals("User not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetBotDetailInfo_usedBotUnpublishedNow() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setIsPublished(false);
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+
+        User user = TestUserFactory.createUser2();
+        user.setUsedBots(new ArrayList<>(List.of(bot)));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        try {
+            botService.getBotDetailInfo(1, "token");
+        } catch (Exception e) {
+            assertEquals("Bot not published for ID: 1", e.getMessage());
+        }
     }
 
     @Test
@@ -200,6 +276,21 @@ class BotServiceTest {
     }
 
     @Test
+    void testUpdateBot_Unauthorized() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        BotEditInfoDTO dto = TestBotFactory.createBotEditInfoDTO();
+        User user = TestUserFactory.createUser2();
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenReturn(user);
+
+        try {
+            botService.updateBot(1, dto, "token");
+        } catch (Exception e) {
+            assertEquals("User not authorized to update bot", e.getMessage());
+        }
+    }
+
+    @Test
     void testLikeBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser2();
@@ -228,6 +319,23 @@ class BotServiceTest {
     }
 
     @Test
+    void testDislikeBot_notLiked() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        User user = TestUserFactory.createUser();
+        user.setLikeBots(new ArrayList<>());
+        bot.setLikeNumber(0);
+        bot.setLikeUsers(new ArrayList<>());
+
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        ResponseDTO response = botService.dislikeBot(1, "token");
+
+        assertEquals(0, bot.getLikeNumber());
+        assertEquals(0, bot.getLikeUsers().size());
+        assertEquals(false, response.getOk());
+    }
+
+    @Test
     void testStarBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser2();
@@ -242,6 +350,23 @@ class BotServiceTest {
     }
 
     @Test
+    void testStarBot_alreadyStarred() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setStarNumber(0);
+        User user = TestUserFactory.createUser();
+        user.setStarBots(new ArrayList<>(List.of(bot)));
+        bot.setStarUsers(new ArrayList<>(List.of(user)));
+
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        ResponseDTO response = botService.starBot(1, "token");
+
+        assertEquals(0, bot.getStarNumber());
+        assertEquals(1, bot.getStarUsers().size());
+        assertEquals(false, response.getOk());
+    }
+
+    @Test
     void testUnstarBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
@@ -253,6 +378,23 @@ class BotServiceTest {
         assertEquals(0, bot.getStarNumber());
         assertEquals(0, bot.getStarUsers().size());
         assertEquals(true, response.getOk());
+    }
+
+    @Test
+    void testUnstarBot_notStarred() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        User user = TestUserFactory.createUser();
+        user.setStarBots(new ArrayList<>());
+        bot.setStarNumber(0);
+        bot.setStarUsers(new ArrayList<>());
+
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        ResponseDTO response = botService.unstarBot(1, "token");
+
+        assertEquals(0, bot.getStarNumber());
+        assertEquals(0, bot.getStarUsers().size());
+        assertEquals(false, response.getOk());
     }
 
     @Test
@@ -302,6 +444,61 @@ class BotServiceTest {
 
     }
 
+    @Test
+    void testCreateBotHistory_promptListSizeNotMatch() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
+        User user = TestUserFactory.createUser();
+        List<PromptDTO> promptList = List.of(
+                new PromptDTO("prompt1", "response1"));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+
+        try {
+            botService.createBotHistory(1, "token", promptList);
+        } catch (Exception e) {
+            assertEquals("Prompt list not match", e.getMessage());
+        }
+    }
+
+    @Test
+    void testCreateBotHistory_promptListKeyNotMatch() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
+        User user = TestUserFactory.createUser();
+        List<PromptDTO> promptList = List.of(
+                new PromptDTO("prompt3", "response1"),
+                new PromptDTO("prompt2", "response2"));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+
+        try {
+            botService.createBotHistory(1, "token", promptList);
+        } catch (Exception e) {
+            assertEquals("Prompt list not match", e.getMessage());
+        }
+    }
+
+    @Test
+    void testCreateBotHistory_lastPromptChatNotUser() throws Exception {
+        Bot bot = TestBotFactory.createBot();
+        bot.setPromptChats(new ArrayList<>(List.of(
+                TestPromptChatFactory.createBotPromptChat(),
+                TestPromptChatFactory.createBotPromptChat(),
+                TestPromptChatFactory.createBotPromptChat())));
+        User user = TestUserFactory.createUser();
+        List<PromptDTO> promptList = List.of(
+                new PromptDTO("prompt1", "response1"),
+                new PromptDTO("prompt2", "response2"));
+        when(authService.getUserByToken("token")).thenReturn(user);
+        when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
+
+        try {
+            botService.createBotHistory(1, "token", promptList);
+        } catch (Exception e) {
+            assertEquals("Last prompt chat is not of type USER", e.getMessage());
+        }
+    }
     @Test
     void testGetComments() throws Exception {
         List<Comment> comments = List.of(
