@@ -51,7 +51,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetUsers() {
+    public void testGetUsers() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -81,8 +81,36 @@ public class UserServiceTest {
     }
 
     @Test
-    // 需要改，为达到测试覆盖率加的
-    public void testGetUsers_id() {
+    public void testGetUsers_getById() throws Exception {
+        String token = "token";
+        // mock auth service
+        AuthService authService = Mockito.mock(AuthService.class);
+        UserRepository repository = Mockito.mock(UserRepository.class);
+        UserService userService = new UserServiceImpl(repository, authService);
+        when(authService.getUserByToken("token")).thenReturn(TestUserFactory.createAdmin());
+        when(repository.findAll()).thenReturn(
+                List.of(TestUserFactory.createUser(), TestUserFactory.createUser2(), TestUserFactory.createUser3()));
+
+        // Act
+        GetUsersOkResponseDTO result = null;
+        try {
+            result = userService.getUsers(0, 10, token, "id", "3");
+        } catch (AuthenticationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        if (result == null) {
+            // alert
+            return;
+        }
+        // Assert
+        assertEquals(1, result.getUsers().size());
+        assertEquals("user3", result.getUsers().get(0).getName());
+    }
+
+    @Test
+    public void testGetUsers_getByIdNotNum() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -108,10 +136,33 @@ public class UserServiceTest {
         // Assert
         assertEquals(3, result.getUsers().size());
         assertEquals("user1", result.getUsers().get(0).getName());
+        assertEquals("user2", result.getUsers().get(1).getName());
+        assertEquals("user3", result.getUsers().get(2).getName());
     }
 
     @Test
-    public void testGetUsers_unauthorized() {
+    public void testGetUsers_userNotFound() throws Exception {
+        String token = "token";
+        // mock auth service
+        AuthService authService = Mockito.mock(AuthService.class);
+        UserRepository repository = Mockito.mock(UserRepository.class);
+        UserService userService = new UserServiceImpl(repository, authService);
+        when(authService.getUserByToken("token")).thenThrow(new NoSuchElementException(""));
+        when(repository.findAll()).thenReturn(
+                List.of(TestUserFactory.createUser(), TestUserFactory.createUser2(), TestUserFactory.createUser3()));
+
+        // Act
+        GetUsersOkResponseDTO result = null;
+        try {
+            result = userService.getUsers(0, 10, token, "latest", "");
+        } catch (AuthenticationException e) {
+            assertEquals("Unauthorized to get users", e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void testGetUsers_unauthorized() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -133,7 +184,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testSetBanUser() {
+    public void testSetBanUser() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -152,11 +203,11 @@ public class UserServiceTest {
         }
 
         // Assert
-        assertEquals(userService.findUserById(1).isDisabled(), true);
+        assertEquals(userService.findUserById(1).getDisabled(), true);
     }
 
     @Test
-    public void testSetBanUser_unauthorized() {
+    public void testSetBanUser_userUnauthorized() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -177,7 +228,22 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetBanState() {
+    public void testSetBanUser_userNotFound() throws Exception {
+        String token = "token";
+        AuthService authService = Mockito.mock(AuthService.class);
+        UserRepository repository = Mockito.mock(UserRepository.class);
+        UserService userService = new UserServiceImpl(repository, authService);
+        when(authService.getUserByToken("token")).thenThrow(new NoSuchElementException("Not found"));
+
+        try {
+            userService.setBanUser(1, token, true);
+        } catch (AuthenticationException e) {
+            assertEquals("Unauthorized to ban user", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetBanState() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -203,7 +269,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetBanState_unauthorized() {
+    public void testGetBanState_userUnauthorized() throws Exception {
         String token = "token";
         // mock auth service
         AuthService authService = Mockito.mock(AuthService.class);
@@ -225,7 +291,22 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testFindUserById_UserExists() {
+    public void testGetBanState_userNotFound() throws Exception {
+        String token = "token";
+        AuthService authService = Mockito.mock(AuthService.class);
+        UserRepository repository = Mockito.mock(UserRepository.class);
+
+        UserService userService = new UserServiceImpl(repository, authService);
+        when(authService.getUserByToken("token")).thenThrow(new NoSuchElementException("Not found"));
+        try {
+            userService.getBanState(1, token);
+        } catch (AuthenticationException e) {
+            assertEquals("Unauthorized to get ban state", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testFindUserById_UserExists() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
@@ -236,12 +317,12 @@ public class UserServiceTest {
         User foundUser = userService.findUserById(1);
 
         assertNotNull(foundUser);
-        assertEquals(1, foundUser.getId());
+        assertEquals(Integer.valueOf(1), foundUser.getId());
         verify(userRepository, times(1)).findById(1);
     }
 
     @Test
-    public void testFindUserById_UserNotExists() {
+    public void testFindUserById_UserNotExists() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
@@ -258,7 +339,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUpdateUserInfo_Success() throws AuthenticationException {
+    public void testUpdateUserInfo_Success() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
@@ -279,7 +360,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUpdateUserInfo_Unauthorized() throws AuthenticationException {
+    public void testUpdateUserInfo_Unauthorized() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
@@ -306,7 +387,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetUsedBots_Success() throws AuthenticationException {
+    public void testGetUsedBots_Success() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);
@@ -330,7 +411,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetUsedBots_Unauthorized() throws AuthenticationException {
+    public void testGetUsedBots_Unauthorized() throws Exception {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);
         userService = new UserServiceImpl(userRepository, authService);

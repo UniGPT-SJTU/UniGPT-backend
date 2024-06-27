@@ -46,6 +46,6 @@ public class BotDetailInfoDTO {
         this.starred = bot.getStarUsers().contains(user);
         this.asCreator = bot.getCreator().equals(user);
         this.promptKeys = bot.getPromptKeys();
-        this.asAdmin = user.isAsAdmin();
+        this.asAdmin = user.getAsAdmin();
     }
 }

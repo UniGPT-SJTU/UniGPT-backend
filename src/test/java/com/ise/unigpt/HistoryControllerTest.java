@@ -4,6 +4,7 @@ import com.ise.unigpt.controller.HistoryController;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.service.ChatHistoryService;
+import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -122,7 +123,7 @@ class HistoryControllerTest {
     }
 
     @Test
-    void testCreateChat_Unauthorized() throws Exception {
+    void testCreateChat_unauthorized() throws Exception {
         Integer historyid = 1;
         String token = "test-token";
         CreateChatRequestDTO dto = new CreateChatRequestDTO();
@@ -201,5 +202,17 @@ class HistoryControllerTest {
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Unauthorized", ((ResponseDTO) response.getBody()).getMessage());
+    }
+
+    @Test
+    void testDeleteHistory_BadRequest() throws Exception {
+        String token = "test-token";
+        Integer historyId = 1;
+        doThrow(new BadRequestException("Bad request")).when(service).deleteHistory(token, historyId);
+
+        ResponseEntity<Object> response = controller.deleteHistory(token, historyId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Bad request", ((ResponseDTO) response.getBody()).getMessage());
     }
 }

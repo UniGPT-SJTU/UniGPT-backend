@@ -9,21 +9,21 @@ import com.ise.unigpt.dto.BotDetailInfoDTO;
 import com.ise.unigpt.dto.BotEditInfoDTO;
 import com.ise.unigpt.dto.PromptChatDTO;
 import com.ise.unigpt.model.Bot;
-import com.ise.unigpt.model.User;
 import com.ise.unigpt.model.BaseModelType;
 
 public class TestBotFactory {
-    public static Bot createBot() {
+    public static Bot createBot() throws Exception {
         Bot bot = new Bot();
         bot.setId(1);
         bot.setName("bot1");
         bot.setAvatar("avatar1");
         bot.setDescription("description1");
         bot.setBaseModelAPI(BaseModelType.fromValue(0));
-        bot.setPublished(true);
+        bot.setTemperature(0.5);
+        bot.setIsPublished(true);
         bot.setDetail("detail1");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
-        bot.setPrompted(true);
+        bot.setIsPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
                 TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
@@ -33,20 +33,22 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
+
+        ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
     }
 
-    public static Bot createBot2() {
+    public static Bot createBot2() throws Exception {
         Bot bot = new Bot();
         bot.setId(2);
         bot.setName("bot2");
         bot.setAvatar("avatar2");
         bot.setDescription("description2");
         bot.setBaseModelAPI(BaseModelType.fromValue(1));
-        bot.setPublished(true);
+        bot.setIsPublished(true);
         bot.setDetail("detail2");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
-        bot.setPrompted(true);
+        bot.setIsPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
                 TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
@@ -56,20 +58,23 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser2());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
+        bot.setTemperature(0.5);
+
+        ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
     }
 
-    public static Bot createBot3() {
+    public static Bot createBot3() throws Exception {
         Bot bot = new Bot();
         bot.setId(3);
         bot.setName("bot3");
         bot.setAvatar("avatar3");
         bot.setDescription("description3");
         bot.setBaseModelAPI(BaseModelType.fromValue(2));
-        bot.setPublished(true);
+        bot.setIsPublished(true);
         bot.setDetail("detail3");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
-        bot.setPrompted(true);
+        bot.setIsPrompted(true);
         bot.setPromptChats(new ArrayList<>(List.of(TestPromptChatFactory.createUserPromptChat(),
                 TestPromptChatFactory.createBotPromptChat(), TestPromptChatFactory.createUserPromptChat())));
         bot.setPromptKeys(new ArrayList<>(List.of("prompt1", "prompt2")));
@@ -79,6 +84,9 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser3());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
+        bot.setTemperature(0.5);
+
+        ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
     }
 
@@ -98,7 +106,7 @@ public class TestBotFactory {
         return new BotBriefInfoDTO(1, "bot1", "description1", "avatar1", true, false);
     }
 
-    public static BotDetailInfoDTO createBotDetailInfoDTO() {
+    public static BotDetailInfoDTO createBotDetailInfoDTO() throws Exception {
         BotDetailInfoDTO dto = new BotDetailInfoDTO();
         dto.setId(1);
         dto.setName("bot1");
@@ -118,15 +126,18 @@ public class TestBotFactory {
         dto.setPromptKeys(Arrays.asList("prompt1", "prompt2"));
         dto.setLiked(true);
         dto.setStarred(true);
+
+        ReflectionTestUtils.assertNoNullFields(dto);
         return dto;
     }
 
-    public static BotEditInfoDTO createBotEditInfoDTO() {
+    public static BotEditInfoDTO createBotEditInfoDTO() throws Exception {
         BotEditInfoDTO dto = new BotEditInfoDTO();
         dto.setName("bot1");
         dto.setAvatar("avatar1");
         dto.setDescription("description1");
         dto.setBaseModelAPI(0);
+        dto.setTemperature(0.5);
         dto.setPublished(true);
         dto.setDetail("detail1");
         dto.setPhotos(Arrays.asList("photo1", "photo2"));
@@ -135,6 +146,8 @@ public class TestBotFactory {
         PromptChatDTO botPromptChat = new PromptChatDTO(TestPromptChatFactory.createBotPromptChat());
         dto.setPromptChats(Arrays.asList(userPromptChat, botPromptChat, userPromptChat));
         dto.setPromptKeys(Arrays.asList("prompt1", "prompt2"));
+
+        ReflectionTestUtils.assertNoNullFields(dto);
         return dto;
     }
 }

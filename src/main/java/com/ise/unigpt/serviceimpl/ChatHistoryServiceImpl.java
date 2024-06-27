@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +56,9 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
         User requestUser = authService.getUserByToken(token);
 
-        if (requestUser.getId() != history.getUser().getId()) { throw new AuthenticationException("User not authorized to access this history"); }
+        if (!requestUser.getId().equals(history.getUser().getId())) {
+            throw new AuthenticationException("User not authorized to access this history");
+        }
 
         Chat chat = new Chat(history, type, content);
 
@@ -85,7 +88,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .findById(historyid)
                 .orElseThrow(
                         () -> new NoSuchElementException(
-                                "History not found for ID: " + historyid));
+                                "History not found for ID: " + historyid)
+                );
 
         List<PromptDTO> promptList = history
                 .getPromptKeyValuePairs()
@@ -98,39 +102,6 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                 .collect(Collectors.toList());
         return promptList;
     }
-
-    // public ResponseDTO updatePromptList(Integer historyid, List<PromptDTO> promptList) throws BadRequestException {
-    //     History history = historyRepository
-    //             .findById(historyid)
-    //             .orElseThrow(
-    //                     () -> new NoSuchElementException(
-    //                             "History not found for ID: " + historyid));
-
-    //     // 校验promptList与promptKeys的对应关系
-    //     int promptListSize = promptList.size();
-    //     if (promptListSize != history.getPromptList().size()) {
-    //         throw new BadRequestException("Prompt list not match");
-    //     }
-    //     for (int i = 0; i < promptListSize; ++i) {
-    //         // TODO: 使用containsKey 效率较低
-    //         if (!history
-    //                 .getPromptList()
-    //                 .containsKey(promptList.get(i).getPromptKey())) {
-    //             throw new BadRequestException("Prompt list not match");
-    //         }
-    //     }
-
-    //     history.setPromptList(
-    //             promptList
-    //                     .stream()
-    //                     .collect(
-    //                             Collectors.toMap(
-    //                                     PromptDTO::getPromptKey,
-    //                                     PromptDTO::getPromptValue)));
-    //     historyRepository.save(history);
-
-    //     return new ResponseDTO(true, "Prompt list changed successfully");
-    // }
 
     public History getHistory(Integer historyId) {
         History history = historyRepository.findById(historyId)

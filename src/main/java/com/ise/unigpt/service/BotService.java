@@ -106,7 +106,7 @@ public interface BotService {
      * @param promptList prompt记录内容
      * @return 添加结果
      */
-    CreateBotHistoryOkResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws BadRequestException;
+    CreateBotHistoryOkResponseDTO createBotHistory(Integer id, String token, List<PromptDTO> promptList) throws Exception;
 
     /**s
      * @brief 获取机器人评论

@@ -14,7 +14,7 @@ public class Bot {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -32,7 +32,7 @@ public class Bot {
     private Double temperature;
 
     @Column(name = "is_published")
-    private boolean isPublished;
+    private Boolean isPublished;
 
     @Column(name = "detail", columnDefinition = "VARCHAR(255)")
     private String detail;
@@ -41,7 +41,7 @@ public class Bot {
     private List<String> photos;
 
     @Column(name = "is_prompted")
-    private boolean isPrompted;
+    private Boolean isPrompted;
 
     @OneToMany(fetch = FetchType.EAGER)
     private List<PromptChat> promptChats;
@@ -51,10 +51,10 @@ public class Bot {
     private List<String> promptKeys;
 
     @Column(name = "like_number")
-    private int likeNumber;
+    private Integer likeNumber;
 
     @Column(name = "star_number")
-    private int starNumber;
+    private Integer starNumber;
 
     @ManyToMany(mappedBy = "likeBots")
     private List<User> likeUsers;

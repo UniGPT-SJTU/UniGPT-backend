@@ -27,7 +27,7 @@ public class UserControllerTest {
 
     @Mock
     private UserService userService;
-    
+
     @Mock
     private AuthService authService;
 
@@ -40,7 +40,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetUserProfile() {
+    void testGetUserProfile() throws Exception {
         User user = TestUserFactory.createUser();
         when(userService.findUserById(1)).thenReturn(user);
         ResponseEntity<Object> response = controller.getUserProfile(1);
@@ -48,14 +48,14 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetUserProfileNotFound() {
+    void testGetUserProfileNotFound() throws Exception {
         when(userService.findUserById(1)).thenThrow(new NoSuchElementException("User not found"));
         ResponseEntity<Object> response = controller.getUserProfile(1);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void testGetMyProfile() {
+    void testGetMyProfile() throws Exception {
         User user = TestUserFactory.createUser();
         when(userService.findUserById(1)).thenReturn(user);
         when(authService.getUserByToken("token")).thenReturn(user);
@@ -85,7 +85,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testUpdateUserProfile() throws AuthenticationException {
+    void testUpdateUserProfile() throws Exception {
         UpdateUserInfoRequestDTO updateUserInfoRequestDTO = new UpdateUserInfoRequestDTO();
         User user = TestUserFactory.createUser();
         when(authService.getUserByToken("token")).thenReturn(user);
@@ -112,7 +112,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetUsedBots() throws AuthenticationException {
+    void testGetUsedBots() throws Exception {
         User user = TestUserFactory.createUser();
         when(userService.findUserById(1)).thenReturn(user);
         when(authService.getUserByToken("token")).thenReturn(user);
@@ -138,7 +138,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testGetStarredBots() throws AuthenticationException {
+    void testGetStarredBots() throws Exception {
         User user = TestUserFactory.createUser();
         when(userService.findUserById(1)).thenReturn(user);
         when(authService.getUserByToken("token")).thenReturn(user);
@@ -196,7 +196,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testDisableUser() {
+    void testDisableUser() throws Exception {
         User user = TestUserFactory.createUser();
         when(userService.findUserById(1)).thenReturn(user);
         ResponseEntity<Object> response = controller.disableUser(1, "token", true);
@@ -219,7 +219,7 @@ public class UserControllerTest {
 
     @Test
     void testIsUserDisabledNotFound() throws AuthenticationException {
-        when(userService.getBanState(1, "token")).thenReturn(null);
+        when(userService.getBanState(1, "token")).thenThrow(new AuthenticationException("User not found"));
         ResponseEntity<Object> response = controller.isUserDisabled(1, "token");
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }

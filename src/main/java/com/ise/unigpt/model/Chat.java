@@ -12,7 +12,7 @@ public class Chat {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "history_id")
@@ -22,7 +22,7 @@ public class Chat {
     private ChatType type;
 
     @Column(name = "time")
-    Date time;
+    private Date time;
 
     @Column(name = "content", columnDefinition = "LONGTEXT")
     private String content;

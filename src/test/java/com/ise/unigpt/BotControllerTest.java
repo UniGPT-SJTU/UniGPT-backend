@@ -80,7 +80,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotProfile_Detail() {
+    void testGetBotProfile_Detail() throws Exception {
         BotDetailInfoDTO botDetailInfo = TestBotFactory.createBotDetailInfoDTO();
         when(service.getBotDetailInfo(1, "token")).thenReturn(botDetailInfo);
 
@@ -90,7 +90,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotProfile_Edit() {
+    void testGetBotProfile_Edit() throws Exception {
         BotEditInfoDTO botEditInfo = TestBotFactory.createBotEditInfoDTO();
         when(service.getBotEditInfo(1, "token")).thenReturn(botEditInfo);
 
@@ -294,7 +294,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotHistory() {
+    void testGetBotHistory() throws Exception {
         List<History> historyList = Arrays.asList(
                 TestHistoryFactory.CreateHistory(),
                 TestHistoryFactory.CreateHistory());
@@ -317,7 +317,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBotHistory() throws BadRequestException {
+    void testCreateBotHistory() throws Exception {
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
                 new PromptDTO("key2", "value2"));
@@ -330,7 +330,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBotHistory_NotFound() throws BadRequestException {
+    void testCreateBotHistory_NotFound() throws Exception {
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
                 new PromptDTO("key2", "value2"));
@@ -343,7 +343,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBotHistory_NoSuchElementException() throws BadRequestException {
+    void testCreateBotHistory_NoSuchElementException() throws Exception {
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
                 new PromptDTO("key2", "value2"));
@@ -356,7 +356,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBotHistory_BadRequestException() throws BadRequestException {
+    void testCreateBotHistory_BadRequestException() throws Exception {
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
                 new PromptDTO("key2", "value2"));

@@ -15,7 +15,7 @@ public class User {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -59,10 +59,10 @@ public class User {
     private List<History> histories;
 
     @Column(name = "is_admin")
-    private boolean asAdmin = false;
+    private Boolean asAdmin = false;
 
     @Column(name = "is_disabled")
-    private boolean disabled = false;
+    private Boolean disabled = false;
 
     public User(RegisterRequestDTO dto) {
 
