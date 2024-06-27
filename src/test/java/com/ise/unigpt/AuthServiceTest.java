@@ -42,7 +42,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testGenerateAuthToken() {
+    public void testGenerateAuthToken() throws Exception {
         AuthRepository authRepository = Mockito.mock(AuthRepository.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
         User user = TestUserFactory.createUser();
@@ -60,7 +60,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testJaccountLogin() {
+    public void testJaccountLogin() throws Exception {
         AuthRepository authRepository = Mockito.mock(AuthRepository.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
         String code = "test";
@@ -96,7 +96,7 @@ public class AuthServiceTest {
      * }
      */
     @Test
-    public void testGetUserByToken() {
+    public void testGetUserByToken() throws Exception {
         AuthRepository authRepository = Mockito.mock(AuthRepository.class);
         UserRepository userRepository = Mockito.mock(UserRepository.class);
         String token = "test";

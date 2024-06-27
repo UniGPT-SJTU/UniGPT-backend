@@ -26,10 +26,10 @@ public class BotEditInfoDTO {
         this.description = bot.getDescription();
         this.baseModelAPI = bot.getBaseModelAPI().getValue();
         this.temperature = bot.getTemperature();
-        this.isPublished = bot.isPublished();
+        this.isPublished = bot.getIsPublished();
         this.detail = bot.getDetail();
         this.photos = bot.getPhotos();
-        this.isPrompted = bot.isPrompted();
+        this.isPrompted = bot.getIsPrompted();
         this.promptChats = bot.getPromptChats().stream().map(PromptChatDTO::new).collect(Collectors.toList());
         this.promptKeys = bot.getPromptKeys();
     }

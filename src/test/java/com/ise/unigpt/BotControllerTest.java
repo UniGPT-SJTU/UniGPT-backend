@@ -80,7 +80,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotProfile_Detail() {
+    void testGetBotProfile_Detail() throws Exception {
         BotDetailInfoDTO botDetailInfo = TestBotFactory.createBotDetailInfoDTO();
         when(service.getBotDetailInfo(1, "token")).thenReturn(botDetailInfo);
 
@@ -90,7 +90,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotProfile_Edit() {
+    void testGetBotProfile_Edit() throws Exception {
         BotEditInfoDTO botEditInfo = TestBotFactory.createBotEditInfoDTO();
         when(service.getBotEditInfo(1, "token")).thenReturn(botEditInfo);
 
@@ -294,7 +294,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testGetBotHistory() {
+    void testGetBotHistory() throws Exception {
         List<History> historyList = Arrays.asList(
                 TestHistoryFactory.CreateHistory(),
                 TestHistoryFactory.CreateHistory());

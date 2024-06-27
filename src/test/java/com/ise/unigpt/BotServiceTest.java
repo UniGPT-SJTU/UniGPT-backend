@@ -55,7 +55,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBots_latest() {
+    void testGetBots_latest() throws Exception {
         List<Bot> bots = Arrays.asList(
                 TestBotFactory.createBot(),
                 TestBotFactory.createBot2(),
@@ -72,7 +72,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBots_like() {
+    void testGetBots_like() throws Exception {
         List<Bot> bots = Arrays.asList(
                 TestBotFactory.createBot(),
                 TestBotFactory.createBot2(),
@@ -89,7 +89,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBots_query() {
+    void testGetBots_query() throws Exception {
         List<Bot> bots = Arrays.asList(
                 TestBotFactory.createBot(),
                 TestBotFactory.createBot2(),
@@ -104,7 +104,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotBriefInfo() {
+    void testGetBotBriefInfo() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
         BotBriefInfoDTO botBriefInfoDTO = TestBotFactory.createBotBriefInfoDTO_asCreator();
@@ -116,7 +116,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotDetailInfo() {
+    void testGetBotDetailInfo() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
         BotDetailInfoDTO botDetailInfoDTO = TestBotFactory.createBotDetailInfoDTO();
@@ -128,7 +128,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotEditInfo_creator() {
+    void testGetBotEditInfo_creator() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
         BotEditInfoDTO botEditInfoDTO = TestBotFactory.createBotEditInfoDTO();
@@ -140,7 +140,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotEditInfo_notCreator() {
+    void testGetBotEditInfo_notCreator() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser2();
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(bot));
@@ -154,7 +154,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotEditInfo_admin() {
+    void testGetBotEditInfo_admin() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createAdmin();
         BotEditInfoDTO botEditInfoDTO = TestBotFactory.createBotEditInfoDTO();
@@ -166,7 +166,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testCreateBot() {
+    void testCreateBot() throws Exception {
         BotEditInfoDTO dto = TestBotFactory.createBotEditInfoDTO();
         User user = TestUserFactory.createUser();
         when(authService.getUserByToken("token")).thenReturn(user);
@@ -176,7 +176,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testUpdateBot_creator() {
+    void testUpdateBot_creator() throws Exception {
         Bot bot = TestBotFactory.createBot();
         BotEditInfoDTO dto = TestBotFactory.createBotEditInfoDTO();
         User user = TestUserFactory.createUser();
@@ -188,7 +188,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testUpdateBot_admin() {
+    void testUpdateBot_admin() throws Exception {
         Bot bot = TestBotFactory.createBot();
         BotEditInfoDTO dto = TestBotFactory.createBotEditInfoDTO();
         User user = TestUserFactory.createAdmin();
@@ -200,7 +200,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testLikeBot() {
+    void testLikeBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser2();
 
@@ -214,7 +214,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testDislikeBot() {
+    void testDislikeBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
 
@@ -228,7 +228,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testStarBot() {
+    void testStarBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser2();
 
@@ -242,7 +242,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testUnstarBot() {
+    void testUnstarBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
 
@@ -256,7 +256,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testLikeAlreadyLikeBot() {
+    void testLikeAlreadyLikeBot() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
 
@@ -269,7 +269,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetBotHistory() {
+    void testGetBotHistory() throws Exception {
         List<History> histories = new ArrayList<>(
                 List.of(TestHistoryFactory.CreateHistory()));
         Bot bot = TestBotFactory.createBot();
@@ -284,7 +284,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testCreateBotHistory() {
+    void testCreateBotHistory() throws Exception {
         Bot bot = TestBotFactory.createBot();
         User user = TestUserFactory.createUser();
         List<PromptDTO> promptList = Arrays.asList(
@@ -303,7 +303,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testGetComments() {
+    void testGetComments() throws Exception {
         List<Comment> comments = List.of(
                 TestCommentFactory.createComment(TestUserFactory.createUser(), TestBotFactory.createBot()));
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(TestBotFactory.createBot()));
@@ -314,7 +314,7 @@ class BotServiceTest {
     }
 
     @Test
-    void testCreateComment() {
+    void testCreateComment() throws Exception {
         User user = TestUserFactory.createUser();
         when(authService.getUserByToken("token")).thenReturn(user);
         when(botRepository.findById(1)).thenReturn(java.util.Optional.of(TestBotFactory.createBot()));

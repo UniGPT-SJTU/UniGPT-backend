@@ -6,7 +6,7 @@ import java.util.Map;
 import com.ise.unigpt.model.History;
 
 public class TestHistoryFactory {
-    static public History CreateHistory() {
+    static public History CreateHistory() throws Exception {
         History history;
         history = new History();
         history.setId(1);
@@ -14,6 +14,9 @@ public class TestHistoryFactory {
         history.setUser(TestUserFactory.createUser());
         history.setPromptKeyValuePairs(Map.of("prompt1", "response1"));
         history.setChats(new ArrayList<>());
+        history.setPromptChats(new ArrayList<>());
+
+        ReflectionTestUtils.assertNoNullFields(history);
         return history;
 
     }

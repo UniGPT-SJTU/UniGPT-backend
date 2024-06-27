@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(user), user.isAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(user), user.isAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(user), user.isAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Unauthorized to get users");
         }
 
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get users");
         }
 
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Unauthorized to ban user");
         }
 
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to ban user");
         }
 
@@ -175,10 +175,10 @@ public class UserServiceImpl implements UserService {
         } catch (NoSuchElementException e) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
         User user = findUserById(id);
-        return user.isDisabled();
+        return user.getDisabled();
     }
 }

@@ -58,7 +58,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testDeleteChats() throws AuthenticationException {
+    void testDeleteChats() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         User user = TestUserFactory.createUser();
         history.setUser(user);
@@ -73,7 +73,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testDeleteChatsUserNotAuthorized() throws AuthenticationException {
+    void testDeleteChatsUserNotAuthorized() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         User user = TestUserFactory.createUser();
         history.setUser(user);
@@ -89,7 +89,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testCreateChat() throws AuthenticationException {
+    void testCreateChat() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         User user = TestUserFactory.createUser();
         history.setUser(user);
@@ -104,7 +104,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testCreateChatUserNotAuthorized() throws AuthenticationException {
+    void testCreateChatUserNotAuthorized() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         User user = TestUserFactory.createUser();
         history.setUser(user);
@@ -120,7 +120,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testGetChats() throws AuthenticationException{
+    void testGetChats() throws Exception {
         List<Chat> chatList = Arrays.asList(
                 new Chat(TestHistoryFactory.CreateHistory(), ChatType.USER, "content"),
                 new Chat(TestHistoryFactory.CreateHistory(), ChatType.BOT, "content"));
@@ -135,7 +135,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testGetChatsUserNotAuthorized() throws AuthenticationException {
+    void testGetChatsUserNotAuthorized() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         User user = TestUserFactory.createUser();
         history.setUser(user);
@@ -151,7 +151,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testGetPromptList() throws AuthenticationException {
+    void testGetPromptList() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         List<PromptDTO> promptList = Arrays.asList(
                 new PromptDTO("key1", "value1"),
@@ -173,7 +173,7 @@ public class ChatHistoryServiceTest {
     }
 
     @Test
-    void testGetHistory() {
+    void testGetHistory() throws Exception {
         History history = TestHistoryFactory.CreateHistory();
         when(historyRepository.findById(1)).thenReturn(java.util.Optional.of(history));
         History response = chatHistoryServiceImpl.getHistory(1);

@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
         User user = auth.getUser();
-        if (user.isDisabled()) throw new UserDisabledException("User is disabled");
+        if (user.getDisabled()) throw new UserDisabledException("User is disabled");
         return user;
     }
 

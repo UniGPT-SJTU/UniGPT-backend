@@ -51,7 +51,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByIdDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .filter(bot -> bot.isPublished())
+                    .filter(bot -> bot.getIsPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false, false))
                     .collect(Collectors.toList());
@@ -59,7 +59,7 @@ public class BotServiceImpl implements BotService {
             bots = botRepository.findAllByOrderByLikeNumberDesc()
                     .stream()
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
-                    .filter(bot -> bot.isPublished())
+                    .filter(bot -> bot.getIsPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
                             false, false))
                     .collect(Collectors.toList());
@@ -88,12 +88,12 @@ public class BotServiceImpl implements BotService {
                     false, false);
         }
 
-        if (!bot.isPublished() && bot.getCreator() != user) {
+        if (!bot.getIsPublished() && bot.getCreator() != user) {
             // 如果bot未发布且请求用户不是bot的创建者，则抛出异常
             throw new NoSuchElementException("Bot not published for ID: " + id);
         }
         return new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                bot.getCreator().equals(user), user.isAsAdmin());
+                bot.getCreator().equals(user), user.getAsAdmin());
     }
 
     public BotDetailInfoDTO getBotDetailInfo(Integer id, String token) {
@@ -107,7 +107,7 @@ public class BotServiceImpl implements BotService {
             return new BotDetailInfoDTO(bot, null);
         }
 
-        if (!bot.isPublished() && bot.getCreator() != user && !user.isAsAdmin()) {
+        if (!bot.getIsPublished() && bot.getCreator() != user && !user.getAsAdmin()) {
             // 以下三种情况任意一种满足时，可以查看bot的详细信息
             // 1. bot已发布
             // 2. 请求用户是bot的创建者
@@ -134,7 +134,7 @@ public class BotServiceImpl implements BotService {
             user = authService.getUserByToken(token);
         } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
 
-        if ((bot.getCreator().getId() != user.getId()) && !user.isAsAdmin()) {
+        if ((bot.getCreator().getId() != user.getId()) && !user.getAsAdmin()) {
             // 以下两种情况任意一种满足时，可以获取bot的编辑信息
             // 1. 请求用户是bot的创建者
             // 2. 请求用户是管理员
@@ -183,7 +183,7 @@ public class BotServiceImpl implements BotService {
             throw new NoSuchElementException("User not found");
 
         }
-        if (updatedBot.getCreator().getId() != requestUser.getId() && !requestUser.isAsAdmin()) {
+        if (updatedBot.getCreator().getId() != requestUser.getId() && !requestUser.getAsAdmin()) {
             // 以下两种情况任意一种满足时，可以更新bot
             // 1. 请求用户是bot的创建者
             // 2. 请求用户是管理员

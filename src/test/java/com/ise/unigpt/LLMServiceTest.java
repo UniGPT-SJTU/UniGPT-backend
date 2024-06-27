@@ -54,7 +54,7 @@ public class LLMServiceTest {
         assert result instanceof String;
     }
 
-    @Test
+   @Test
     public void testOpenAIGenerateResponseConcurrently() throws Exception {
         ExecutorService executorService = Executors.newFixedThreadPool(10); // 创建一个固定大小的线程池
         List<Future<String>> futures = new ArrayList<>(); // 创建一个Future列表来存储每个任务的结果
@@ -110,7 +110,7 @@ public class LLMServiceTest {
         assert result instanceof String;
     }
 
-    @Test
+   @Test
     public void testLlamaGenerateResponse() throws Exception {
         List<PromptChat> promptChats = new ArrayList<>();
         llmService = new LLMServiceImpl(BaseModelType.fromValue(2));

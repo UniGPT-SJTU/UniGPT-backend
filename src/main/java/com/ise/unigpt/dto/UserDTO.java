@@ -20,6 +20,6 @@ public class UserDTO {
         this.description = user.getDescription();
         this.account = user.getAccount();
         this.canvasUrl = user.getCanvasUrl();
-        this.asAdmin = user.isAsAdmin();
+        this.asAdmin = user.getAsAdmin();
     }
 }
