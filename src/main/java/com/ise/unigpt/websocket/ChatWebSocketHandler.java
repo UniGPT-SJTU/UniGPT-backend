@@ -151,7 +151,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             sessionFirstMessageSent.put(session, true);
 
             // 设置 LLMServiceImpl
-            BaseModelType baseModelType = history.getBot().getBaseModelAPI();
+            BaseModelType baseModelType = history.getLlmArgs().getBaseModelType();
             sessionBaseModelType.put(session, baseModelType);
         } catch (Exception e) {
             try {

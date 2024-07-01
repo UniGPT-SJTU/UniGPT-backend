@@ -27,9 +27,6 @@ public class Bot {
     @Column(name = "description", columnDefinition = "VARCHAR(255)")
     private String description;
 
-    @Column(name = "base_model_api")
-    private BaseModelType baseModelAPI;
-
     @Embedded
     private LLMArgs llmArgs;
 
@@ -75,7 +72,6 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -88,21 +84,26 @@ public class Bot {
         this.creator = creator;
         this.comments = new ArrayList<>();
 
-        this.llmArgs = LLMArgs.builder().temperature(dto.getTemperature()).build();
+        this.llmArgs = LLMArgs.builder()
+            .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+            .temperature(dto.getTemperature()).build();
     }
 
     public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
         this.isPrompted = dto.isPrompted();
         this.promptKeys = dto.getPromptKeys();
 
-        this.llmArgs = LLMArgs.builder().temperature(dto.getTemperature()).build();
+        this.llmArgs = LLMArgs
+                .builder()
+                .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+                .temperature(dto.getTemperature())
+                .build();
     }
 
     public Bot() {
