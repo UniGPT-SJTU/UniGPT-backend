@@ -10,15 +10,17 @@ public class LLMArgsBuilder {
     private Double temperature;
 
     LLMArgsBuilder() {
-        
+
     }
-    
+
     public LLMArgsBuilder baseModelType(BaseModelType baseModelType) {
         this.baseModelType = baseModelType;
         return this;
     }
+
     public LLMArgsBuilder temperature(Double temperature) {
-        this.temperature = temperature;
+        this.temperature = baseModelType != null && baseModelType.equals(BaseModelType.GPT) ? temperature * 2
+                : temperature;
         return this;
     }
 
