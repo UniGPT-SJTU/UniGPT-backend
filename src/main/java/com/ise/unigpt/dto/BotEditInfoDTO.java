@@ -25,7 +25,7 @@ public class BotEditInfoDTO {
         this.avatar = bot.getAvatar();
         this.description = bot.getDescription();
         this.baseModelAPI = bot.getBaseModelAPI().getValue();
-        this.temperature = bot.getTemperature();
+        this.temperature = bot.getLlmArgs().getTemperature();
         this.isPublished = bot.getIsPublished();
         this.detail = bot.getDetail();
         this.photos = bot.getPhotos();

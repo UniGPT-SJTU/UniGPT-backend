@@ -3,7 +3,6 @@ import com.ise.unigpt.dto.*;
 
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
 
 public interface BotService {
     /**

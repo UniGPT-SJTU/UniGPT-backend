@@ -3,7 +3,6 @@ package com.ise.unigpt.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
 
 @Data
 @Entity
@@ -21,21 +20,21 @@ public class Chat {
     @Column(name = "type")
     private ChatType type;
 
-    @Column(name = "time")
-    private Date time;
-
     @Column(name = "content", columnDefinition = "LONGTEXT")
     private String content;
+
+    @Column(name = "is_visible")
+    private Boolean isVisible;
 
     public Chat() {
         // not used
     }
 
-    public Chat(History history, ChatType type, String content) {
+    public Chat(History history, ChatType type, String content, Boolean isVisible) {
         this.history = history;
         this.type = type;
-        this.time = new Date();
         this.content = content;
+        this.isVisible = isVisible;
     }
 
     public Chat(ChatType type, String content) {

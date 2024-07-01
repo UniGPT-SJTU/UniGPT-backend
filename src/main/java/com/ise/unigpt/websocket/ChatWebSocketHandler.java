@@ -22,16 +22,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-import com.ise.unigpt.model.Chat;
 import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.model.History;
-import com.ise.unigpt.model.PromptChat;
-import com.ise.unigpt.model.PromptChatType;
 import com.ise.unigpt.service.LLMServiceFactory;
+import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.model.User;
-import com.ise.unigpt.model.Bot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -174,74 +171,54 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             History history = sessionHistory.get(session);
 
-            Bot bot = history.getBot();
-            System.out.println("Bot: " + bot.getId());
-            List<PromptChat> promptChatList = history.getPromptChats();
-            System.out.println("PromptChatList: ");
-
-            preHandle(session, bot.getId(), promptChatList);
-
-            List<Chat> chatList = history.getChats();
+            // preHandle(session, bot.getId(), promptChatList);
 
             // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
             System.out.println("objectMapper: " + objectMapper);
             Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
-            // 如果cover为true，则删除末尾的两个对话
-            boolean cover = (boolean) map.get("cover");
-            boolean isUserAsk = (boolean) map.get("userAsk");
-            if (cover) {
-                if (chatList.size() < 2) {
-                    chatList = new ArrayList<>();
-                } else {
-                    chatList = chatList.subList(0, chatList.size() - 2);
-                }
-            }
+
             // 获取用户的消息
             String userMessage = (String) map.get("chatContent");
-            System.out.println("User message: " + userMessage);
-            Chat userChat = new Chat(history, ChatType.USER, userMessage);
-            if (!isUserAsk) {
-                chatList.add(userChat);
-            }
 
-            // 打印chatList
-            System.out.println("ChatList: ");
-            for (Chat chat : chatList) {
-                System.out.println(chat.getContent());
-            }
+            // double temperature = bot.getTemperature();
+            // // TODO: 温度的特殊情况不应该写在这里
+            // if (bot.getBaseModelAPI() == BaseModelType.GPT) {
+            // temperature = temperature * 2;
+            // }
 
-            double temperature = bot.getTemperature();
-            if (bot.getBaseModelAPI() == BaseModelType.GPT) {
-                temperature = temperature * 2;
-            }
+            // 更新历史的最近活跃时间
+            chatHistoryService.updateHistoryActiveTime(history);
 
+            // 生成回复消息
+            Boolean cover = (Boolean) map.get("cover");
+            Boolean isUserAsk = (Boolean) map.get("userAsk");
             String replyMessage = llmServiceFactory
                     .getLLMService(sessionBaseModelType.get(session))
-                    .generateResponse(promptChatList, chatList, temperature);
+                    .generateResponse(
+                            history,
+                            userMessage,
+                            GenerateResponseOptions.builder()
+                                    .cover(cover)
+                                    .isUserAsk(isUserAsk)
+                                    .build());
 
+                                    
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
             // 如果cover为true，则删除末尾的两个对话
-            if (cover)
+            if (cover) {
                 chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
+            }
             // 将用户的消息存入history
-            if (!isUserAsk)
+            if (!isUserAsk) {
                 chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
-            /* System.out.println(replyMessage); */
-            // 将恢复内容存入history
+            }
+
+            // 将回复内容存入history
             chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
 
-            /*
-             * // 打印数据库中的chatList
-             * List<ChatDTO> chatListFromDB = chatHistoryService
-             * .getChats(history.getId(), 1, 100, sessionToken.get(session)).getChats();
-             * System.out.println("ChatList from DB: ");
-             * for (ChatDTO chat : chatListFromDB) {
-             * System.out.println(chat.getContent());
-             * }
-             */
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {
@@ -253,30 +230,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e2) {
                 System.out.println("Error sending error message");
             }
-        }
-    }
-
-    public void preHandle(WebSocketSession session, int botId, List<PromptChat> promptChatList) {
-        if (botId == 22) {
-            User user = authService.getUserByToken(sessionToken.get(session));
-            String url = user.getCanvasUrl();
-            if (url == null || url.isEmpty()) {
-                System.out.println("Canvas URL is empty");
-                promptChatList.add(new PromptChat(PromptChatType.USER, "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
-                        "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
-                return;
-            }
-            // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
-            // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
-            if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") || !url.endsWith(".ics")) {
-                System.out.println("Canvas URL is invalid");
-                promptChatList.add(new PromptChat(PromptChatType.USER, "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
-                        "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
-                return;
-            }
-            String canvasEventList = getCanvasEventList(url);
-            promptChatList
-                    .add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas events:" + canvasEventList));
         }
     }
 
