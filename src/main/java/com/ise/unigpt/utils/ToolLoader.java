@@ -1,4 +1,4 @@
-package com.ise.unigpt.utils;
+/* package com.ise.unigpt.utils;
 
 import java.lang.reflect.Method;
 
@@ -14,7 +14,7 @@ public class ToolLoader {
     public Object executeTool(String functionName, Object... args) {
         try {
             // 从数据库中获取函数的参数、函数体等信息
-            Tool toolInfo = getTool(functionName);
+            Tool tool = getTool(functionName);
 
             // 使用Java的反射机制动态加载函数
             Class<?> toolClass = Class.forName(tool.getClassName());
@@ -27,3 +27,4 @@ public class ToolLoader {
         }
     }
 }
+ */
