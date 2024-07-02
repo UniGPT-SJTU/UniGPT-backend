@@ -86,6 +86,7 @@ public class LLMServiceImpl implements LLMService {
                 .baseUrl(baseUrl + "/v1")
                 .apiKey(apiKey)
                 .modelName(modelName)
+                .temperature(history.getLlmArgs().getAdjustedTemperature())
                 .build();
 
         ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()

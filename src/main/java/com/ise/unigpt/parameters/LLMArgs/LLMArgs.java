@@ -17,4 +17,8 @@ public class LLMArgs {
     public static LLMArgsBuilder builder() {
         return new LLMArgsBuilder();
     }
+
+    public Double getAdjustedTemperature() {
+        return BaseModelType.GPT.equals(baseModelType) ? temperature * 2: temperature;
+    }
 }

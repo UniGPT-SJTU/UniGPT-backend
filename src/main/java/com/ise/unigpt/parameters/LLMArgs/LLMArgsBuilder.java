@@ -19,8 +19,7 @@ public class LLMArgsBuilder {
     }
 
     public LLMArgsBuilder temperature(Double temperature) {
-        this.temperature = baseModelType != null && baseModelType.equals(BaseModelType.GPT) ? temperature * 2
-                : temperature;
+        this.temperature = temperature;
         return this;
     }
 
