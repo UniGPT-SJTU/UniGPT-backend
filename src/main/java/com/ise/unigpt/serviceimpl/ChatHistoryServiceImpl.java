@@ -40,6 +40,9 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throws AuthenticationException {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
+        Memory memory = memoryRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("Memory not found for ID: " + historyId));
+
         User requestUser = authService.getUserByToken(token);
 
         if (requestUser.getId() != history.getUser().getId()) {
@@ -47,16 +50,24 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         }
 
         List<Chat> chats = history.getChats();
-        int size = chats.size();
-        n = Math.min(n, size);
+        int chatSize = chats.size();
+        int deletedChatSize = Math.min(n, chats.size());
         
-        // 删除末尾的n个chat
-        for (int i = 0; i < n; i++) {
-            chats.remove(size - 1 - i);
+        // 删除末尾的最多n个chat
+        for (int i = 0; i < deletedChatSize; i++) {
+            chats.remove(chatSize - 1 - i);
         }
         historyRepository.save(history);
 
-        // TODO: deleteMemoryItem in memory
+        List<MemoryItem> memoryItems = memory.getMemoryItems();
+        int memoryItemSize = memoryItems.size();
+        int deletedMemoryItemSize = Math.min(n, memoryItemSize);
+
+        // 删除末尾的n个memoryItem
+        for (int i = 0; i < deletedMemoryItemSize; i++) {
+            memoryItems.remove(memoryItemSize - 1 - i);
+        }
+        memoryRepository.save(memory);
     }
 
     public void createChat(Integer historyId, String content, ChatType type, String token)

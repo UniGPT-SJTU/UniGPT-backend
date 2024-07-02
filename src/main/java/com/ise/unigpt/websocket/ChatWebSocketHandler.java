@@ -181,18 +181,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             // 获取用户的消息
             String userMessage = (String) map.get("chatContent");
 
-            // double temperature = bot.getTemperature();
-            // // TODO: 温度的特殊情况不应该写在这里
-            // if (bot.getBaseModelAPI() == BaseModelType.GPT) {
-            // temperature = temperature * 2;
-            // }
 
             // 更新历史的最近活跃时间
             chatHistoryService.updateHistoryActiveTime(history);
 
-            // 生成回复消息
+
             Boolean cover = (Boolean) map.get("cover");
             Boolean isUserAsk = (Boolean) map.get("userAsk");
+
+            // 如果cover为true，则删除末尾的两个对话
+            if (cover) {
+                chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
+            }
+            // 生成回复消息
             String replyMessage = llmServiceFactory
                     .getLLMService(sessionBaseModelType.get(session))
                     .generateResponse(
@@ -203,14 +204,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                                     .isUserAsk(isUserAsk)
                                     .build());
 
-                                    
             Map<String, String> replyMap = new HashMap<>();
             replyMap.put("replyMessage", replyMessage);
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
-            // 如果cover为true，则删除末尾的两个对话
-            if (cover) {
-                chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
-            }
+
             // 将用户的消息存入history
             if (!isUserAsk) {
                 chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));

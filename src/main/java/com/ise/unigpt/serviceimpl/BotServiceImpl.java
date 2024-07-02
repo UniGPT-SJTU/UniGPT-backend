@@ -359,7 +359,11 @@ public class BotServiceImpl implements BotService {
         historyRepository.save(history);
 
         memory.getMemoryItems().addAll(
-                interpolatedChats.stream().map(chat -> new MemoryItem(chat, memory)).collect(Collectors.toList()));
+                interpolatedChats.stream()
+                // TODO: 有可能的话，标记一下userAsk
+                .limit(interpolatedChats.size() - 1)
+                .map(chat -> new MemoryItem(chat, memory))
+                .collect(Collectors.toList()));
         memoryRepository.save(memory);
 
         // 将对话历史加入用户的 histories 列表
