@@ -211,18 +211,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             if (cover) {
                 chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
             }
-            // 将用户的消息存入history
-            if (!isUserAsk) {
-                chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
-            }
+            // // 将用户的消息存入history
+            // if (!isUserAsk) {
+            //     chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
+            // }
 
-            // 将回复内容存入history
-            chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
+            // // 将回复内容存入history
+            // chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
 
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {
                 System.out.println(e.getMessage());
+                e.printStackTrace();
                 String replyMessage = "Error sending second reply message";
                 Map<String, String> replyMap = new HashMap<>();
                 replyMap.put("replyMessage", replyMessage);

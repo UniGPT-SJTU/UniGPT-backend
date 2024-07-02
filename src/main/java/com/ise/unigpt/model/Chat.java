@@ -1,14 +1,20 @@
 package com.ise.unigpt.model;
 
+import java.util.List;
+
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ChatMessageType;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.rag.content.Content;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "chat")
-public class Chat implements ChatMessage {
+public class Chat {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -38,35 +44,40 @@ public class Chat implements ChatMessage {
         this.isVisible = isVisible;
     }
 
-    
     public Chat(History history, ChatMessage chatMessage) {
         this.history = history;
-        this.type = chatMessage.type() == ChatMessageType.USER ? ChatType.USER : chatMessage.type() == ChatMessageType.AI ? ChatType.BOT : ChatType.SYSTEM;
+        switch (chatMessage.type()) {
+            case USER:
+                this.type = ChatType.USER;
+                break;
+            case AI: 
+                this.type = ChatType.BOT;
+                break;
+            case SYSTEM:
+            default:
+                this.type = ChatType.SYSTEM;
+                break;
+        }
         this.content = chatMessage.text();
         this.isVisible = true;
     }
+
     public Chat(ChatType type, String content) {
         // 只在测试使用
         this.history = null;
         this.type = type;
         this.content = content;
     }
-    
-    @Override
-    public ChatMessageType type() {
+
+    public ChatMessage toChatMessage() {
         switch (type) {
             case USER:
-                return ChatMessageType.USER;
+                return new UserMessage(content);
             case BOT:
-                return ChatMessageType.AI;
+                return new AiMessage(content);
             case SYSTEM:
             default:
-                return ChatMessageType.SYSTEM;
+                return new SystemMessage(content);
         }
-    }
-
-    @Override
-    public String text() {
-        return content;
     }
 }
