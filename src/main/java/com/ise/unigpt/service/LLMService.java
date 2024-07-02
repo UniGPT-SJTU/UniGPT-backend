@@ -48,8 +48,8 @@ public interface LLMService {
      * @brief 生成LLM的回复
      * 
      * @param history     大模型对话的历史上下文（不包含userMessage）
-     * @param userMessage 最新的用户对话信息
-     * @param cover       是否覆盖历史上下文
+     * @param userMessage 用户的最后一条消息
+     * @param generateResponseOptions 生成回复的选项，包括isUserAsk, cover等boolean参数
      * @return LLM基于对话补全生成的回复内容
      * @throws Exception 抛出异常
      */

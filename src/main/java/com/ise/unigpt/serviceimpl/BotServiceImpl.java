@@ -126,13 +126,24 @@ public class BotServiceImpl implements BotService {
         return new BotEditInfoDTO(bot);
     }
 
-    public ResponseDTO createBot(BotEditInfoDTO dto, String token) {
+    public ResponseDTO createBot(BotEditInfoDTO dto, String token) throws Exception {
         // 根据token获取用户
         User creatorUser;
         try {
             creatorUser = authService.getUserByToken(token);
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("User not found");
+        }
+
+        int promptChatSize = dto.getPromptChats().size();
+        if(promptChatSize < 1) {
+            // 提示词模板列表不能为空
+            throw new BadRequestException("Prompt chats should not be empty");
+        }
+
+        if(dto.getPromptChats().get(promptChatSize - 1).getType() != ChatType.USER) {
+            // 最后一个提示词模板应该是用户类型
+            throw new BadRequestException("Last prompt chat should be user type");
         }
 
         // 创建promptChats列表并保存到数据库

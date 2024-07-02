@@ -119,7 +119,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBot() {
+    void testCreateBot() throws Exception {
         BotEditInfoDTO dto = new BotEditInfoDTO();
         ResponseDTO responseDTO = new ResponseDTO(true, "Success");
         when(service.createBot(dto, "token")).thenReturn(responseDTO);
@@ -131,7 +131,7 @@ class BotControllerTest {
     }
 
     @Test
-    void testCreateBot_BadRequest() {
+    void testCreateBot_BadRequest() throws Exception {
         BotEditInfoDTO dto = new BotEditInfoDTO();
         when(service.createBot(dto, "token")).thenThrow(new NoSuchElementException("Bad request"));
 
