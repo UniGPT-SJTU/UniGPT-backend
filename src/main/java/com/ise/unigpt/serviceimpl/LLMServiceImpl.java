@@ -13,7 +13,6 @@ import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
-import okhttp3.internal.ws.RealWebSocket.Message;
 
 public class LLMServiceImpl implements LLMService {
 

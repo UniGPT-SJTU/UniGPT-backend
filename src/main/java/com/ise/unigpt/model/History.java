@@ -46,8 +46,9 @@ public class History {
     /**
      * @brief 存储用户和机器人的对话
      */
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "history")
     private List<Chat> chats;
+
 
     public History() {
         // not used

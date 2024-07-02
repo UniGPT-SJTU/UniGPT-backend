@@ -2,12 +2,13 @@ package com.ise.unigpt.serviceimpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.ise.unigpt.model.Chat;
-import com.ise.unigpt.model.History;
-import com.ise.unigpt.repository.HistoryRepository;
+import com.ise.unigpt.model.Memory;
+import com.ise.unigpt.model.MemoryItem;
+import com.ise.unigpt.repository.MemoryRepository;
 
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -15,48 +16,49 @@ import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 @Component
 public class PersistentChatMemoryStore implements ChatMemoryStore {
 
-    private final HistoryRepository historyRepository;
+    private final MemoryRepository memoryRepository;
 
-    public PersistentChatMemoryStore(HistoryRepository historyRepository) {
-        this.historyRepository = historyRepository;
+    public PersistentChatMemoryStore(MemoryRepository memoryRepository) {
+        this.memoryRepository = memoryRepository;
     }
 
     @Override
     public List<ChatMessage> getMessages(Object memoryId) {
-        List<ChatMessage> chatMessages = historyRepository.findById((Integer) memoryId)
+        List<ChatMessage> chatMessages = memoryRepository.findById((Integer) memoryId)
                 .get()
-                .getChats()
+                .getMemoryItems()
                 .stream()
-                .map(chat -> chat.toChatMessage())
-                .toList();
+                .map(memoryItem -> memoryItem.toChatMessage())
+                .collect(Collectors.toList());
 
-        System.out.println("getMessages: chatMessages.size == " + chatMessages.size());
-        for (ChatMessage chatMessage : chatMessages) {
-            System.out.println("getMessages: chatMessage == " + chatMessage);
-        }
+        // System.out.println("getMessages: chatMessages.size == " +
+        // chatMessages.size());
+        // for (ChatMessage chatMessage : chatMessages) {
+        // System.out.println("getMessages: chatMessage == " + chatMessage);
+        // }
         return chatMessages;
     }
 
     @Override
     public void updateMessages(Object memoryId, List<ChatMessage> messages) {
-        History history = historyRepository.findById((Integer) memoryId).get();
-        System.out.println("updateMessages: messages.size == " + messages.size());
-        for (ChatMessage message : messages) {
-            System.out.println("updateMessages: message == " + message);
-        }
-        List<Chat> chats = messages
+        Memory memory = memoryRepository.findById((Integer) memoryId).get();
+        // System.out.println("updateMessages: messages.size == " + messages.size());
+        // for (ChatMessage message : messages) {
+        // System.out.println("updateMessages: message == " + message);
+        // }
+        List<MemoryItem> memoryItems = messages
                 .stream()
-                .map(chatMessage -> new Chat(history, chatMessage))
+                .map(chatMessage -> new MemoryItem(chatMessage, memory))
                 .toList();
-        history.setChats(chats);
-        historyRepository.save(history);
+        memory.setMemoryItems(memoryItems);
+        memoryRepository.save(memory);
     }
 
     @Override
     public void deleteMessages(Object memoryId) {
-        History history = historyRepository.findById((Integer) memoryId).get();
-        history.setChats(new ArrayList<>());
-        historyRepository.save(history);
+        Memory memory = memoryRepository.findById((Integer) memoryId).get();
+        memory.setMemoryItems(new ArrayList<>());
+        memoryRepository.save(memory);
     }
 
 }

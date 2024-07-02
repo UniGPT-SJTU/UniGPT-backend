@@ -3,6 +3,7 @@ package com.ise.unigpt.serviceimpl;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
+import com.ise.unigpt.repository.MemoryRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
@@ -23,12 +24,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
     private final HistoryRepository historyRepository;
     private final AuthService authService;
+    private final MemoryRepository memoryRepository;
 
     public ChatHistoryServiceImpl(
             HistoryRepository historyRepository,
-            AuthService authService) {
+            AuthService authService,
+            MemoryRepository memoryRepository) {
         this.historyRepository = historyRepository;
         this.authService = authService;
+        this.memoryRepository = memoryRepository;
     }
 
     @Transactional
@@ -51,6 +55,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             chats.remove(size - 1 - i);
         }
         historyRepository.save(history);
+
+        // TODO: deleteMemoryItem in memory
     }
 
     public void createChat(Integer historyId, String content, ChatType type, String token)
@@ -129,10 +135,10 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new AuthenticationException("unauthorized");
         }
 
-        // 删除关联表中的记录
-        // user.getHistories().remove(targetHistory);
-        // 删除History对象
+        // 先删除memory，再删除history
+        memoryRepository.deleteById(historyId);
         historyRepository.deleteById(historyId);
+
     }
 
     @Override

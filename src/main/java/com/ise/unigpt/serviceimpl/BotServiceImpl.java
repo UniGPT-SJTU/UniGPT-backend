@@ -2,15 +2,13 @@ package com.ise.unigpt.serviceimpl;
 
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
-import com.ise.unigpt.parameters.LLMArgs.LLMArgs;
 import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.repository.HistoryRepository;
-
+import com.ise.unigpt.repository.MemoryRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
-import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
 import com.ise.unigpt.utils.StringTemplateParser;
 
@@ -25,6 +23,7 @@ public class BotServiceImpl implements BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
     private final HistoryRepository historyRepository;
+    private final MemoryRepository memoryRepository;
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
@@ -32,6 +31,7 @@ public class BotServiceImpl implements BotService {
     public BotServiceImpl(BotRepository botRepository,
             UserRepository userRepository,
             HistoryRepository historyRepository,
+            MemoryRepository memoryRepository,
             PromptChatRepository promptChatRepository,
             AuthService authService) {
         this.botRepository = botRepository;
@@ -39,6 +39,7 @@ public class BotServiceImpl implements BotService {
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
         this.historyRepository = historyRepository;
+        this.memoryRepository = memoryRepository;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -136,12 +137,12 @@ public class BotServiceImpl implements BotService {
         }
 
         int promptChatSize = dto.getPromptChats().size();
-        if(promptChatSize < 1) {
+        if (promptChatSize < 1) {
             // 提示词模板列表不能为空
             throw new BadRequestException("Prompt chats should not be empty");
         }
 
-        if(dto.getPromptChats().get(promptChatSize - 1).getType() != ChatType.USER) {
+        if (dto.getPromptChats().get(promptChatSize - 1).getType() != ChatType.USER) {
             // 最后一个提示词模板应该是用户类型
             throw new BadRequestException("Last prompt chat should be user type");
         }
@@ -326,16 +327,16 @@ public class BotServiceImpl implements BotService {
         Map<String, String> promptKeyValuePairs = promptList.stream()
                 .collect(Collectors.toMap(PromptDTO::getPromptKey, PromptDTO::getPromptValue));
 
-
         // 创建新的对话历史并保存到数据库
         History history = new History(
                 user,
                 bot,
                 promptKeyValuePairs,
-                bot.getLlmArgs()
-            );
+                bot.getLlmArgs());
         historyRepository.save(history);
 
+        Memory memory = new Memory(history);
+        memoryRepository.save(memory);
 
         // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
         // 并保存到数据库
@@ -347,17 +348,19 @@ public class BotServiceImpl implements BotService {
                                 promptChat.getType(),
                                 StringTemplateParser.interpolate(
                                         promptChat.getContent(),
-                                        promptKeyValuePairs
-                                    ), true // TODO: 修改可见性
-                                )
-                    )
+                                        promptKeyValuePairs),
+                                true // TODO: 修改可见性
+                        ))
                 .collect(Collectors.toList());
 
         // 将插值后的结果加入对话历史
         // 并保存到数据库
         history.getChats().addAll(interpolatedChats);
         historyRepository.save(history);
-        
+
+        memory.getMemoryItems().addAll(
+                interpolatedChats.stream().map(chat -> new MemoryItem(chat, memory)).collect(Collectors.toList()));
+        memoryRepository.save(memory);
 
         // 将对话历史加入用户的 histories 列表
         // user.getHistories().add(history);

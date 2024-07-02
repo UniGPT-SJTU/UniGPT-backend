@@ -5,6 +5,7 @@ import biweekly.ICalendar;
 import com.ise.unigpt.dto.CanvasEventDTO;
 
 import com.ise.unigpt.model.BaseModelType;
+import com.ise.unigpt.model.ChatType;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -22,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-import com.ise.unigpt.model.ChatType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.service.LLMServiceFactory;
 import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
@@ -211,13 +211,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             if (cover) {
                 chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
             }
-            // // 将用户的消息存入history
-            // if (!isUserAsk) {
-            //     chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
-            // }
+            // 将用户的消息存入history
+            if (!isUserAsk) {
+                chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
+            }
 
-            // // 将回复内容存入history
-            // chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
+            // 将回复内容存入history
+            chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
 
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
