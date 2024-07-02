@@ -349,9 +349,11 @@ public class BotServiceImpl implements BotService {
                                 StringTemplateParser.interpolate(
                                         promptChat.getContent(),
                                         promptKeyValuePairs),
-                                true // TODO: 修改可见性
-                        ))
+                                false)) // 前面的提示词用户不可见
                 .collect(Collectors.toList());
+
+        // 最后一条 chat 是用户的提问，设置为可见
+        interpolatedChats.get(interpolatedChats.size() - 1).setIsVisible(true);
 
         // 将插值后的结果加入对话历史
         // 并保存到数据库
@@ -360,10 +362,10 @@ public class BotServiceImpl implements BotService {
 
         memory.getMemoryItems().addAll(
                 interpolatedChats.stream()
-                // TODO: 有可能的话，标记一下userAsk
-                .limit(interpolatedChats.size() - 1)
-                .map(chat -> new MemoryItem(chat, memory))
-                .collect(Collectors.toList()));
+                        // TODO: 有可能的话，标记一下userAsk
+                        .limit(interpolatedChats.size() - 1)
+                        .map(chat -> new MemoryItem(chat, memory))
+                        .collect(Collectors.toList()));
         memoryRepository.save(memory);
 
         // 将对话历史加入用户的 histories 列表
