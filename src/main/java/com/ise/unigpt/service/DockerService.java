@@ -17,25 +17,23 @@ public class DockerService {
 
             // 获取当前工作目录
             String currentDir = new File("").getAbsolutePath();
-            String addScriptPath = new File(currentDir, "utils/function/add.py").getAbsolutePath();
-            String runScriptPath = new File(currentDir, "utils/function/run.py").getAbsolutePath();
-
-            // Docker安装路径（请根据实际情况调整）
-            String dockerPath = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe";
+            String funcScriptPath = new File(currentDir, "src/main/resources/func/" + functionName + ".py").getAbsolutePath();
+            String runScriptPath = new File(currentDir, "src/main/resources/func/run.py").getAbsolutePath();
 
             // 构建Docker命令
             String[] command = {
-                dockerPath, "run", "--rm",
-                "-v", addScriptPath + ":/app/add.py",
+                "docker", "run", "--rm",
+                "-v", funcScriptPath + ":/app/" + functionName + ".py",
                 "-v", runScriptPath + ":/app/run.py",
-                "my-python-function-image",
+                "mytest_py",
+                "python3", "run.py",
                 functionName,
                 jsonParams.toString()
             };
 
             // 执行命令
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(new File(currentDir, "utils/function"));
+            pb.directory(new File(currentDir, "src/main/resources/func"));
             Process process = pb.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
