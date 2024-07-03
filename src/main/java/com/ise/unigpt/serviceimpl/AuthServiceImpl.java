@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ise.unigpt.config.BasicConfig;
 import com.ise.unigpt.dto.JaccountResponseDTO;
 import com.ise.unigpt.dto.LoginRequestDTO;
 import com.ise.unigpt.dto.RegisterRequestDTO;
@@ -28,10 +29,12 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
+    private final BasicConfig basicConfig;
 
-    public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository) {
+    public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository, BasicConfig basicConfig) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
+        this.basicConfig = basicConfig;
     }
 
     public String login(LoginRequestDTO dto) throws AuthenticationException {
@@ -80,14 +83,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public String requestAccessToken(String code) throws AuthenticationException {
-        String client_id = "ov3SLrO4HyZSELxcHiqS";
-        String client_secret = "B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C";
         Unirest.setTimeouts(0, 0);
         HttpResponse<String> response = null;
         try {
             response = Unirest.post("http://jaccount.sjtu.edu.cn/oauth2/token")
                     .header("Authorization",
-                            "Basic b3YzU0xyTzRIeVpTRUx4Y0hpcVM6Qjk5MTlEREEzQkQ5RkJGN0FEQjlGODRGNjc5MjBEOENCNjUyODYyMEI5NTg2RDFD")
+                            "Basic " + basicConfig.ENCODED_JACCOUNT_CLIENT_ID_SECRET_COMBINED)
                     .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .header("Accept", "*/* ")
@@ -95,9 +96,9 @@ public class AuthServiceImpl implements AuthService {
                     .header("Connection", "keep-alive")
                     .field("grant_type", "authorization_code")
                     .field("code", code)
-                    .field("client_id", client_id)
-                    .field("client_secret", client_secret)
-                    .field("redirect_uri", "http://localhost:3000/login")
+                    .field("client_id", basicConfig.JACCOUNT_CLIENT_ID)
+                    .field("client_secret", basicConfig.JACCOUNT_CLIENT_SECRET)
+                    .field("redirect_uri", basicConfig.FRONTEND_SERVER_URL + "/login")
                     .asString();
         } catch (UnirestException e) {
             e.printStackTrace();

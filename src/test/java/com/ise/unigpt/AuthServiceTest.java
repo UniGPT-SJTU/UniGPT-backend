@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.ise.unigpt.config.BasicConfig;
 import com.ise.unigpt.exception.UserDisabledException;
 import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.User;
@@ -36,6 +37,9 @@ public class AuthServiceTest {
     @InjectMocks
     private AuthServiceImpl service;
 
+    @InjectMocks
+    private BasicConfig basicConfig;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -48,7 +52,7 @@ public class AuthServiceTest {
         User user = TestUserFactory.createUser();
         Auth auth = TestAuthFactory.createAuth(user);
         Optional<Auth> optionalAuth = Optional.of(auth);
-        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository);
+        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository, basicConfig);
         when(authRepository.findByUser(user)).thenReturn(optionalAuth);
         when(authRepository.save(auth)).thenReturn(auth);
 
@@ -68,7 +72,7 @@ public class AuthServiceTest {
         User expectedUser = TestUserFactory.createUser();
         Auth auth = TestAuthFactory.createAuth(expectedUser);
         Optional<Auth> optionalAuth = Optional.of(auth);
-        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository);
+        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository, basicConfig);
         when(authRepository.findByUser(auth.getUser())).thenReturn(optionalAuth);
         when(authRepository.save(auth)).thenReturn(auth);
 
@@ -106,7 +110,7 @@ public class AuthServiceTest {
         Auth auth = TestAuthFactory.createAuth(user);
         Optional<Auth> optionalAuth = Optional.of(auth);
         Optional<User> optionalUser = Optional.of(user);
-        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository);
+        AuthServiceImpl service = new AuthServiceImpl(authRepository, userRepository, basicConfig);
         when(authRepository.findByToken(token)).thenReturn(optionalAuth);
         when(authRepository.save(auth)).thenReturn(auth);
         when(authRepository.findByToken(token)).thenReturn(optionalAuth);
