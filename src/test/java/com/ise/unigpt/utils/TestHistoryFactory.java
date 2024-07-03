@@ -14,7 +14,6 @@ public class TestHistoryFactory {
         history.setUser(TestUserFactory.createUser());
         history.setPromptKeyValuePairs(Map.of("prompt1", "response1"));
         history.setChats(new ArrayList<>());
-        history.setPromptChats(new ArrayList<>());
 
         ReflectionTestUtils.assertNoNullFields(history);
         return history;

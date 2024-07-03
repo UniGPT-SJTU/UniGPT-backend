@@ -9,6 +9,7 @@ import com.ise.unigpt.dto.BotDetailInfoDTO;
 import com.ise.unigpt.dto.BotEditInfoDTO;
 import com.ise.unigpt.dto.PromptChatDTO;
 import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.parameters.LLMArgs.LLMArgs;
 import com.ise.unigpt.model.BaseModelType;
 
 public class TestBotFactory {
@@ -18,8 +19,6 @@ public class TestBotFactory {
         bot.setName("bot1");
         bot.setAvatar("avatar1");
         bot.setDescription("description1");
-        bot.setBaseModelAPI(BaseModelType.fromValue(0));
-        bot.setTemperature(0.5);
         bot.setIsPublished(true);
         bot.setDetail("detail1");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
@@ -33,6 +32,9 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
+        bot.setLlmArgs(
+            LLMArgs.builder().baseModelType(BaseModelType.GPT).temperature(0.5).build()
+        );
 
         ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
@@ -44,7 +46,6 @@ public class TestBotFactory {
         bot.setName("bot2");
         bot.setAvatar("avatar2");
         bot.setDescription("description2");
-        bot.setBaseModelAPI(BaseModelType.fromValue(1));
         bot.setIsPublished(true);
         bot.setDetail("detail2");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
@@ -58,8 +59,9 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser2());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
-        bot.setTemperature(0.5);
-
+        bot.setLlmArgs(
+            LLMArgs.builder().baseModelType(BaseModelType.GPT).temperature(0.5).build()
+        );
         ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
     }
@@ -70,7 +72,6 @@ public class TestBotFactory {
         bot.setName("bot3");
         bot.setAvatar("avatar3");
         bot.setDescription("description3");
-        bot.setBaseModelAPI(BaseModelType.fromValue(2));
         bot.setIsPublished(true);
         bot.setDetail("detail3");
         bot.setPhotos(new ArrayList<>(List.of("photo1", "photo2")));
@@ -84,8 +85,9 @@ public class TestBotFactory {
         bot.setStarUsers(new ArrayList<>(List.of(TestUserFactory.createUser())));
         bot.setCreator(TestUserFactory.createUser3());
         bot.setComments(new ArrayList<>(List.of(TestCommentFactory.createComment(TestUserFactory.createUser(), bot))));
-        bot.setTemperature(0.5);
-
+        bot.setLlmArgs(
+            LLMArgs.builder().baseModelType(BaseModelType.GPT).temperature(0.5).build()
+        );
         ReflectionTestUtils.assertNoNullFields(bot);
         return bot;
     }

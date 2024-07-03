@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.ise.unigpt.parameters.LLMArgs.LLMArgs;
+
 @Data
 @Entity
 @Table(name = "history")
@@ -25,14 +27,6 @@ public class History {
     @JoinColumn(name = "bot_id")
     private Bot bot;
 
-    // TODO@creeper: 将Bot.promptChats和History.promptChats隔离开
-
-    /**
-     * @brief 对话历史的提示对话（已经嵌入了用户填写的表单）
-     */
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<PromptChat> promptChats;
-
     /**
      * @brief 存储机器人的promptKey和用户填写的promptValue的映射关系
      */
@@ -43,30 +37,34 @@ public class History {
     @Column(name = "prompt_value", columnDefinition = "LONGTEXT")
     private Map<String, String> promptKeyValuePairs;
 
+    @Column(name = "last_active_time")
+    private Date lastActiveTime;
+
+    @Embedded
+    private LLMArgs llmArgs;
+
     /**
      * @brief 存储用户和机器人的对话
      */
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "history")
     private List<Chat> chats;
+
 
     public History() {
         // not used
     }
 
-    public History(User user, Bot bot, Map<String, String> promptKeyValuePairs, List<PromptChat> promptChats) {
+    public History(User user, Bot bot, Map<String, String> promptKeyValuePairs, LLMArgs llmArgs) {
         this.user = user;
         this.bot = bot;
         this.chats = new ArrayList<>();
         this.promptKeyValuePairs = promptKeyValuePairs;
-        this.promptChats = promptChats;
+        this.lastActiveTime = new Date();
+        this.llmArgs = llmArgs;
     }
 
     public Date getLatestChatTime() {
-        if (chats.isEmpty()) {
-            return new Date(); // 或者你可以定义一个默认的时间
-        } else {
-            return chats.get(chats.size() - 1).getTime();
-        }
+        return lastActiveTime;
     }
 
 }

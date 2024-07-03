@@ -1,6 +1,8 @@
 package com.ise.unigpt.model;
 
 import com.ise.unigpt.dto.BotEditInfoDTO;
+import com.ise.unigpt.parameters.LLMArgs.LLMArgs;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -25,11 +27,8 @@ public class Bot {
     @Column(name = "description", columnDefinition = "VARCHAR(255)")
     private String description;
 
-    @Column(name = "base_model_api")
-    private BaseModelType baseModelAPI;
-
-    @Column(name = "temperature")
-    private Double temperature;
+    @Embedded
+    private LLMArgs llmArgs;
 
     @Column(name = "is_published")
     private Boolean isPublished;
@@ -73,8 +72,6 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
-        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -86,19 +83,27 @@ public class Bot {
         this.starUsers = new ArrayList<>();
         this.creator = creator;
         this.comments = new ArrayList<>();
+
+        this.llmArgs = LLMArgs.builder()
+            .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+            .temperature(dto.getTemperature()).build();
     }
 
     public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
-        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
         this.isPrompted = dto.isPrompted();
         this.promptKeys = dto.getPromptKeys();
+
+        this.llmArgs = LLMArgs
+                .builder()
+                .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+                .temperature(dto.getTemperature())
+                .build();
     }
 
     public Bot() {
