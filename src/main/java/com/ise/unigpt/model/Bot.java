@@ -1,6 +1,8 @@
 package com.ise.unigpt.model;
 
 import com.ise.unigpt.dto.BotEditInfoDTO;
+import com.ise.unigpt.parameters.LLMArgs.LLMArgs;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,7 +16,7 @@ public class Bot {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -22,39 +24,36 @@ public class Bot {
     @Column(name = "avatar")
     private String avatar;
 
-    @Column(name = "description", columnDefinition = "LONGTEXT")
+    @Column(name = "description", columnDefinition = "VARCHAR(255)")
     private String description;
 
-    @Column(name = "base_model_api")
-    private BaseModelType baseModelAPI;
-
-    @Column(name = "temperature")
-    private Double temperature;
+    @Embedded
+    private LLMArgs llmArgs;
 
     @Column(name = "is_published")
-    private boolean isPublished;
+    private Boolean isPublished;
 
-    @Column(name = "detail", columnDefinition = "LONGTEXT")
+    @Column(name = "detail", columnDefinition = "VARCHAR(255)")
     private String detail;
 
     @ElementCollection
     private List<String> photos;
 
     @Column(name = "is_prompted")
-    private boolean isPrompted;
+    private Boolean isPrompted;
 
     @OneToMany(fetch = FetchType.EAGER)
     private List<PromptChat> promptChats;
 
     @ElementCollection
-    @Column(name = "promptKeys", columnDefinition = "LONGTEXT")
+    @Column(name = "promptKeys", columnDefinition = "VARCHAR(255)")
     private List<String> promptKeys;
 
     @Column(name = "like_number")
-    private int likeNumber;
+    private Integer likeNumber;
 
     @Column(name = "star_number")
-    private int starNumber;
+    private Integer starNumber;
 
     @ManyToMany(mappedBy = "likeBots")
     private List<User> likeUsers;
@@ -73,8 +72,6 @@ public class Bot {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
-        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
@@ -86,22 +83,34 @@ public class Bot {
         this.starUsers = new ArrayList<>();
         this.creator = creator;
         this.comments = new ArrayList<>();
+
+        this.llmArgs = LLMArgs.builder()
+            .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+            .temperature(dto.getTemperature()).build();
     }
 
     public void updateInfo(BotEditInfoDTO dto) {
         this.name = dto.getName();
         this.avatar = dto.getAvatar();
         this.description = dto.getDescription();
-        this.baseModelAPI = BaseModelType.fromValue(dto.getBaseModelAPI());
-        this.temperature = dto.getTemperature();
         this.isPublished = dto.isPublished();
         this.detail = dto.getDetail();
         this.photos = dto.getPhotos();
         this.isPrompted = dto.isPrompted();
         this.promptKeys = dto.getPromptKeys();
+
+        this.llmArgs = LLMArgs
+                .builder()
+                .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
+                .temperature(dto.getTemperature())
+                .build();
     }
 
     public Bot() {
         // not used
+        this.likeUsers = new ArrayList<>();
+        this.starUsers = new ArrayList<>();
+        this.comments = new ArrayList<>();
+        this.creator = new User();
     }
 }

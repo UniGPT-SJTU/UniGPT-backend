@@ -3,14 +3,18 @@ package com.ise.unigpt.serviceimpl;
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
 import com.ise.unigpt.repository.HistoryRepository;
-import com.ise.unigpt.repository.ChatRepository;
+import com.ise.unigpt.repository.MemoryRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -20,21 +24,25 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
     private final HistoryRepository historyRepository;
     private final AuthService authService;
-    private final ChatRepository chatRepository;
+    private final MemoryRepository memoryRepository;
 
     public ChatHistoryServiceImpl(
             HistoryRepository historyRepository,
             AuthService authService,
-            ChatRepository chatRepository) {
+            MemoryRepository memoryRepository) {
         this.historyRepository = historyRepository;
         this.authService = authService;
-        this.chatRepository = chatRepository;
+        this.memoryRepository = memoryRepository;
     }
 
+    @Transactional
     public void deleteChats(Integer historyId, Integer n, String token)
             throws AuthenticationException {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
+        Memory memory = memoryRepository.findById(historyId)
+                .orElseThrow(() -> new NoSuchElementException("Memory not found for ID: " + historyId));
+
         User requestUser = authService.getUserByToken(token);
 
         if (requestUser.getId() != history.getUser().getId()) {
@@ -42,15 +50,24 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         }
 
         List<Chat> chats = history.getChats();
-        int size = chats.size();
-        if (n > size) {
-            n = size;
-        }
-        for (int i = 0; i < n; i++) {
-            Chat chat = chats.remove(size - 1 - i);
-            chatRepository.delete(chat);
+        int chatSize = chats.size();
+        int deletedChatSize = Math.min(n, chats.size());
+        
+        // 删除末尾的最多n个chat
+        for (int i = 0; i < deletedChatSize; i++) {
+            chats.remove(chatSize - 1 - i);
         }
         historyRepository.save(history);
+
+        List<MemoryItem> memoryItems = memory.getMemoryItems();
+        int memoryItemSize = memoryItems.size();
+        int deletedMemoryItemSize = Math.min(n, memoryItemSize);
+
+        // 删除末尾的n个memoryItem
+        for (int i = 0; i < deletedMemoryItemSize; i++) {
+            memoryItems.remove(memoryItemSize - 1 - i);
+        }
+        memoryRepository.save(memory);
     }
 
     public void createChat(Integer historyId, String content, ChatType type, String token)
@@ -60,11 +77,11 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
         User requestUser = authService.getUserByToken(token);
 
-        if (requestUser.getId() != history.getUser().getId()) {
+        if (!requestUser.getId().equals(history.getUser().getId())) {
             throw new AuthenticationException("User not authorized to access this history");
         }
 
-        Chat chat = new Chat(history, type, content);
+        Chat chat = new Chat(history, type, content, true);
 
         history.getChats().add(chat);
         historyRepository.save(history);
@@ -82,7 +99,11 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         if (requestUser.getId() != history.getUser().getId()) {
             throw new AuthenticationException("User not authorized to access this history");
         }
-        List<ChatDTO> chats = history.getChats().stream().map(ChatDTO::new).toList();
+        List<ChatDTO> chats = history.getChats()
+                .stream()
+                .filter(chat -> chat.getIsVisible())
+                .map(ChatDTO::new)
+                .toList();
 
         return new GetChatsOkResponseDTO(chats.size(), PaginationUtils.paginate(chats, page, pageSize));
     }
@@ -106,39 +127,6 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return promptList;
     }
 
-    // public ResponseDTO updatePromptList(Integer historyid, List<PromptDTO> promptList) throws BadRequestException {
-    //     History history = historyRepository
-    //             .findById(historyid)
-    //             .orElseThrow(
-    //                     () -> new NoSuchElementException(
-    //                             "History not found for ID: " + historyid));
-
-    //     // 校验promptList与promptKeys的对应关系
-    //     int promptListSize = promptList.size();
-    //     if (promptListSize != history.getPromptList().size()) {
-    //         throw new BadRequestException("Prompt list not match");
-    //     }
-    //     for (int i = 0; i < promptListSize; ++i) {
-    //         // TODO: 使用containsKey 效率较低
-    //         if (!history
-    //                 .getPromptList()
-    //                 .containsKey(promptList.get(i).getPromptKey())) {
-    //             throw new BadRequestException("Prompt list not match");
-    //         }
-    //     }
-
-    //     history.setPromptList(
-    //             promptList
-    //                     .stream()
-    //                     .collect(
-    //                             Collectors.toMap(
-    //                                     PromptDTO::getPromptKey,
-    //                                     PromptDTO::getPromptValue)));
-    //     historyRepository.save(history);
-
-    //     return new ResponseDTO(true, "Prompt list changed successfully");
-    // }
-
     public History getHistory(Integer historyId) {
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
@@ -158,9 +146,16 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new AuthenticationException("unauthorized");
         }
 
-        // 删除关联表中的记录
-        user.getHistories().remove(targetHistory);
-        // 删除History对象
+        // 先删除memory，再删除history
+        memoryRepository.deleteById(historyId);
         historyRepository.deleteById(historyId);
+
     }
+
+    @Override
+    public void updateHistoryActiveTime(History history) throws Exception {
+        history.setLastActiveTime(new Date());
+        historyRepository.save(history);
+    }
+
 }

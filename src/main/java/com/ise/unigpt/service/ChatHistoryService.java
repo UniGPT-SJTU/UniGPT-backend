@@ -62,6 +62,13 @@ public interface ChatHistoryService {
      */
     History getHistory(Integer historyId);
 
+    /**
+     * @brief 更新历史的最近活跃时间
+     * @param history
+     * @throws Exception
+     */
+    void updateHistoryActiveTime(History history) throws Exception;
+
 
     /**
      * @brief 删除对话历史

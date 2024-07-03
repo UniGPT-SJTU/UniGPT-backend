@@ -1,20 +1,25 @@
 package com.ise.unigpt.serviceimpl;
 
-import com.ise.unigpt.model.User;
-import com.ise.unigpt.dto.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.security.sasl.AuthenticationException;
+
+import org.springframework.stereotype.Service;
+
+import com.ise.unigpt.dto.BotBriefInfoDTO;
+import com.ise.unigpt.dto.GetBotsOkResponseDTO;
+import com.ise.unigpt.dto.GetUsersOkResponseDTO;
+import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
+import com.ise.unigpt.dto.UserBriefInfoDTO;
 import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
 import com.ise.unigpt.utils.PaginationUtils;
-
-import org.springframework.stereotype.Service;
-
-import javax.security.sasl.AuthenticationException;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -73,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -95,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().isAsAdmin()))
+                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -112,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(user), user.isAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -130,7 +135,7 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Unauthorized to get users");
         }
 
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get users");
         }
 
@@ -171,7 +176,7 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Unauthorized to ban user");
         }
 
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to ban user");
         }
         Optional<User> optionalUser = repository.findById(id);
@@ -190,7 +195,7 @@ public class UserServiceImpl implements UserService {
         } catch (NoSuchElementException e) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
-        if (!requestUser.isAsAdmin()) {
+        if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
 
@@ -198,6 +203,6 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isEmpty()) {
             throw new NoSuchElementException("User with id " + id + " not found");
         }
-        return optionalUser.get().isDisabled();
+        return optionalUser.get().getDisabled();
     }
 }

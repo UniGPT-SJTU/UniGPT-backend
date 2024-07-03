@@ -10,4 +10,12 @@ public class PromptDTO {
         this.promptKey = promptKey;
         this.promptValue = promptValue;
     }
+
+    public String getKey() {
+        return promptKey;
+    }
+
+    public String getValue() {
+        return promptValue;
+    }
 }

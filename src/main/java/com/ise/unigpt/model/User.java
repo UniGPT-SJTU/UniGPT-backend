@@ -15,7 +15,7 @@ public class User {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -51,16 +51,18 @@ public class User {
     private List<Bot> usedBots;
 
     @OneToMany
+    @JoinColumn(name = "creator_id")
     private List<Bot> createBots;
 
     @OneToMany
+    @JoinColumn(name = "user_id")
     private List<History> histories;
 
     @Column(name = "is_admin")
-    private boolean asAdmin = false;
+    private Boolean asAdmin = false;
 
     @Column(name = "is_disabled")
-    private boolean disabled = false;
+    private Boolean disabled = false;
 
     public User(RegisterRequestDTO dto) {
 
@@ -90,6 +92,12 @@ public class User {
 
     public User() {
         // not used
+        this.likeBots = new ArrayList<>();
+        this.starBots = new ArrayList<>();
+        this.usedBots = new ArrayList<>();
+        this.createBots = new ArrayList<>();
+
+        this.histories = new ArrayList<>();
     }
 
 }

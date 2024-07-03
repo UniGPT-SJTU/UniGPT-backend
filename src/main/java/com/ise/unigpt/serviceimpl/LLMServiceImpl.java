@@ -1,87 +1,159 @@
 package com.ise.unigpt.serviceimpl;
 
-import java.rmi.ServerException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.ise.unigpt.dto.OpenAIMessageDTO;
-import com.ise.unigpt.dto.OpenAIRequestDTO;
 import com.ise.unigpt.model.BaseModelType;
-import com.ise.unigpt.model.Chat;
+import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
+import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.LLMService;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 
-public class LLMServiceImpl implements LLMService{
+import dev.langchain4j.memory.chat.ChatMemoryProvider;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
+import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 
-    private String BASE_URL;
-    private String API_KEY;
-    private String MODEL_NAME;
+public class LLMServiceImpl implements LLMService {
 
-    public LLMServiceImpl(BaseModelType type) {
+    private String baseUrl;
+    private String apiKey;
+    private String modelName;
+
+    private final ChatMemoryStore chatMemoryStore;
+
+
+    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore) {
         switch (type) {
             case CLAUDE:
-                BASE_URL = System.getenv("CLAUDE_API_BASE_URL");
-                API_KEY = System.getenv("CLAUDE_API_KEY");
-                MODEL_NAME = "claude-instant-1.2";
+                baseUrl = System.getenv("CLAUDE_API_BASE_URL");
+                apiKey = System.getenv("CLAUDE_API_KEY");
+                modelName = "claude-instant-1.2";
                 break;
             case LLAMA:
-                BASE_URL = System.getenv("LLAMA_API_BASE_URL");
-                API_KEY = System.getenv("LLAMA_API_KEY");
-                MODEL_NAME = "llama3-70b-8192";
+                baseUrl = System.getenv("LLAMA_API_BASE_URL");
+                apiKey = System.getenv("LLAMA_API_KEY");
+                modelName = "llama3-70b-8192";
                 break;
             case KIMI:
-                BASE_URL = System.getenv("KIMI_API_BASE_URL");
-                API_KEY = System.getenv("KIMI_API_KEY");
-                MODEL_NAME = "moonshot-v1-8k";
+                baseUrl = System.getenv("KIMI_API_BASE_URL");
+                apiKey = System.getenv("KIMI_API_KEY");
+                modelName = "moonshot-v1-8k";
                 break;
             default:
-                BASE_URL = System.getenv("OPENAI_API_BASE_URL");
-                API_KEY = System.getenv("OPENAI_API_KEY");
-                MODEL_NAME = "gpt-3.5-turbo";
+                baseUrl = System.getenv("OPENAI_API_BASE_URL");
+                apiKey = System.getenv("OPENAI_API_KEY");
+                modelName = "gpt-3.5-turbo";
                 break;
         }
+        this.chatMemoryStore = chatMemoryStore;
+
     }
 
-    public String generateResponse(List<PromptChat> promptChats, List<Chat> chats, double temperature)
-            throws Exception {
-        Unirest.setTimeouts(0, 0);
-        List<OpenAIMessageDTO> messages = new ArrayList<>();
-        messages.addAll(
-                promptChats
-                        .stream()
-                        .map(promptChat -> new OpenAIMessageDTO(promptChat.getType().toString(),
-                                promptChat.getContent()))
-                        .toList());
-        messages.addAll(
-                chats.stream().map(
-                                chat -> new OpenAIMessageDTO(chat.getType().toString(),
-                                        chat.getContent()))
-                        .collect(Collectors.toList()));
-        OpenAIRequestDTO dto = new OpenAIRequestDTO(MODEL_NAME, messages, temperature);
-        HttpResponse<String> response = Unirest
-                .post(BASE_URL + "/v1/chat/completions")
-                .header("Accept", "application/json")
-                .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + API_KEY)
-                .body(new Gson().toJson(dto)).asString();
-        if (response.getStatus() != 200) {
-            throw new ServerException("openai service error");
-        }
-        JsonObject responseJsonObject = JsonParser.parseString(response.getBody()).getAsJsonObject();
-        String responseContent = responseJsonObject
-                .get("choices").getAsJsonArray()
-                .get(0).getAsJsonObject()
-                .get("message").getAsJsonObject()
-                .get("content").getAsString();
+    // TODO: 将preHandle移动到这里
+    public void preHandle(int botId, List<PromptChat> promptChatList) {
+        // if (botId == 22) {
+        // String url = user.getCanvasUrl();
+        // if (url == null || url.isEmpty()) {
+        // System.out.println("Canvas URL is empty");
+        // promptChatList.add(new PromptChat(PromptChatType.USER,
+        // "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
+        // "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+        // return;
+        // }
+        // //
+        // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
+        // // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
+        // if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") ||
+        // !url.endsWith(".ics")) {
+        // System.out.println("Canvas URL is invalid");
+        // promptChatList.add(new PromptChat(PromptChatType.USER,
+        // "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
+        // "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
+        // return;
+        // }
+        // String canvasEventList = getCanvasEventList(url);
+        // promptChatList
+        // .add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas
+        // events:" + canvasEventList));
+        // }
+    }
 
-        return responseContent;
+    public String generateResponse(History history, String userMessage, GenerateResponseOptions options)
+            throws Exception {
+        // // TODO: 集成prehandle函数
+        OpenAiChatModel model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl + "/v1")
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .temperature(history.getLlmArgs().getAdjustedTemperature())
+                .build();
+
+        ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
+                .id(memoryId)
+                .maxMessages(10)
+                .chatMemoryStore(chatMemoryStore)
+                .build();
+
+        Assistant assistant = AiServices.builder(Assistant.class)
+                .chatLanguageModel(model)
+                .chatMemoryProvider(chatMemoryProvider)
+                .build();
+
+
+        return assistant.chat(history.getId(), userMessage);
+        // Unirest.setTimeouts(0, 0);
+        // List<Chat>chats = history.getChats();
+        // if(options.getCover()) {
+        // chats = chats.size() < 2 ? new ArrayList<>() : chats.subList(0, chats.size()
+        // - 2);
+        // }
+        // List<OpenAIMessageDTO> messages = new ArrayList<>();
+        // messages.addAll(
+        // chats.stream().map(
+        // chat -> new OpenAIMessageDTO(chat.getType().toString(),
+        // chat.getContent()))
+        // .collect(Collectors.toList()));
+
+        // if(!options.getIsUserAsk()) {
+        // messages.add(new OpenAIMessageDTO(ChatType.USER.toString(), userMessage));
+        // }
+
+        // OpenAIRequestDTO dto = new OpenAIRequestDTO(modelName, messages,
+        // history.getLlmArgs().getTemperature());
+        // HttpResponse<String> response;
+        // int retryCount = 0;
+        // while (true){
+        // response = Unirest
+        // .post(baseUrl + "/v1/chat/completions")
+        // .header("Accept", "application/json")
+        // .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+        // .header("Content-Type", "application/json")
+        // .header("Authorization", "Bearer " + apiKey)
+        // .body(new Gson().toJson(dto)).asString();
+        // if (response.getStatus() == 429) {
+        // if (retryCount > 3) {
+        // break;
+        // }
+        // System.out.println("retry after 5 seconds");
+        // retryCount++;
+        // Thread.sleep(5000);
+        // } else {
+        // break;
+        // }
+        // }
+        // if (response.getStatus() != 200) {
+        // System.out.println("status code: " + response.getStatus());
+        // System.out.println("response body: " + response.getBody());
+        // throw new ServerException("openai service error");
+        // }
+        // JsonObject responseJsonObject =
+        // JsonParser.parseString(response.getBody()).getAsJsonObject();
+        // String responseContent = responseJsonObject
+        // .get("choices").getAsJsonArray()
+        // .get(0).getAsJsonObject()
+        // .get("message").getAsJsonObject()
+        // .get("content").getAsString();
+        // return responseContent;
     }
 }

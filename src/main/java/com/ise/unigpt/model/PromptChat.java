@@ -10,20 +10,20 @@ import lombok.Data;
 public class PromptChat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "type")
-    PromptChatType type;
+    private ChatType type;
 
     @Column(name = "content", columnDefinition = "LONGTEXT")
-    String content;
+    private String content;
 
     public PromptChat(PromptChatDTO dto) {
         this.type = dto.getType();
         this.content = dto.getContent();
     }
 
-    public PromptChat(PromptChatType type, String content) {
+    public PromptChat(ChatType type, String content) {
         this.type = type;
         this.content = content;
     }

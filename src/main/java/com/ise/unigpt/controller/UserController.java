@@ -3,7 +3,6 @@ package com.ise.unigpt.controller;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.dto.UpdateUserInfoRequestDTO;
 import com.ise.unigpt.dto.UserDTO;
-import com.ise.unigpt.model.User;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.UserService;
 import com.ise.unigpt.exception.UserDisabledException;
@@ -78,7 +77,11 @@ public class UserController {
         try {
             // 使用userid和token
             return ResponseEntity.ok(service.getUsedBots(userid, token, page, pagesize));
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
@@ -93,7 +96,11 @@ public class UserController {
         try {
             // 使用userid和token
             return ResponseEntity.ok(service.getStarredBots(userid, token, page, pagesize));
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
@@ -123,8 +130,8 @@ public class UserController {
             @CookieValue(value = "token") String token) {
         try {
             return ResponseEntity.ok(service.getUsers(page, pagesize, token, type, q));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }
@@ -146,14 +153,7 @@ public class UserController {
     public ResponseEntity<Object> isUserDisabled(@PathVariable Integer id, @CookieValue(value = "token") String token) {
         try {
             Boolean banState = service.getBanState(id, token);
-            if (banState == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ResponseDTO(false, "User not found"));
-            } else if (banState) {
-                return ResponseEntity.ok(new ResponseDTO(true, "true"));
-            } else {
-                return ResponseEntity.ok(new ResponseDTO(true, "false"));
-            }
+            return ResponseEntity.ok(new ResponseDTO(true, (banState ? "true" : "false")));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));

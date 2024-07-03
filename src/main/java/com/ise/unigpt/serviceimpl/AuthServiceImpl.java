@@ -1,28 +1,25 @@
 package com.ise.unigpt.serviceimpl;
 
+import java.net.HttpURLConnection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.naming.AuthenticationException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ise.unigpt.dto.JaccountResponseDTO;
 import com.ise.unigpt.dto.LoginRequestDTO;
 import com.ise.unigpt.dto.RegisterRequestDTO;
+import com.ise.unigpt.exception.UserDisabledException;
 import com.ise.unigpt.model.Auth;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.AuthRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.dto.JaccountResponseDTO;
-import com.ise.unigpt.exception.UserDisabledException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.stereotype.Service;
-import org.json.JSONObject;
-
-import javax.naming.AuthenticationException;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import java.net.HttpURLConnection;
-
-import org.json.JSONException;
-
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -55,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(new User(dto));
     }
 
-    private String generateAuthToken(User user) {
+    public String generateAuthToken(User user) {
         Optional<Auth> optionalAuth = authRepository.findByUser(user);
         Auth auth;
         if (optionalAuth.isPresent()) {
@@ -76,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
         Auth auth = authRepository.findByToken(token)
                 .orElseThrow(() -> new NoSuchElementException("Invalid token"));
         User user = auth.getUser();
-        if (user.isDisabled()) {
+        if (user.getDisabled()) {
             throw new UserDisabledException("User is disabled");
         }
         return user;

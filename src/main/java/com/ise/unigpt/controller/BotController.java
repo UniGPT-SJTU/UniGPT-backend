@@ -6,7 +6,6 @@ import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.BotService;
 import com.ise.unigpt.dto.CommentRequestDTO;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -163,7 +162,7 @@ public class BotController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
-        } catch (BadRequestException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO(false, e.getMessage()));
         }

@@ -29,3 +29,5 @@ server:
       key-store-password: unigpt
       keyStoreType: PKCS12
       keyAlias: tomcat
+
+imageServerUrl: http://124.70.222.207:10339

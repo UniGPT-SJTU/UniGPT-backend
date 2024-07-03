@@ -26,6 +26,10 @@ public class BotDetailInfoDTO {
     private boolean asAdmin;
     private List<String> promptKeys;
 
+
+    public BotDetailInfoDTO() {
+        // only for test
+    }
     public BotDetailInfoDTO(Bot bot, User user) {
         this.id = bot.getId();
         this.name = bot.getName();
@@ -35,13 +39,13 @@ public class BotDetailInfoDTO {
         this.photos = bot.getPhotos();
         this.detail = bot.getDetail();
         this.avatar = bot.getAvatar();
-        this.baseModelAPI = bot.getBaseModelAPI().toString();
+        this.baseModelAPI = bot.getLlmArgs().getBaseModelType().toString();
         this.likeNumber = bot.getLikeNumber();
         this.starNumber = bot.getStarNumber();
         this.liked = bot.getLikeUsers().contains(user);
         this.starred = bot.getStarUsers().contains(user);
         this.asCreator = bot.getCreator().equals(user);
         this.promptKeys = bot.getPromptKeys();
-        this.asAdmin = user.isAsAdmin();
+        this.asAdmin = user.getAsAdmin();
     }
 }
