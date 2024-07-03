@@ -96,8 +96,8 @@ public class UserControllerTest {
     @Test
     void testUpdateUserProfileUnauthorized() throws AuthenticationException {
         UpdateUserInfoRequestDTO updateUserInfoRequestDTO = new UpdateUserInfoRequestDTO();
-        when(userService.updateUserInfo(1, updateUserInfoRequestDTO, "token"))
-                .thenThrow(new AuthenticationException("Unauthorized"));
+        doThrow(new AuthenticationException("Unauthorized"))
+                .when(userService).updateUserInfo(1, updateUserInfoRequestDTO, "token");
         ResponseEntity<Object> response = controller.updateUserProfile(1, "token", updateUserInfoRequestDTO);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
@@ -105,8 +105,8 @@ public class UserControllerTest {
     @Test
     void testUpdateUserProfileNotFound() throws AuthenticationException {
         UpdateUserInfoRequestDTO updateUserInfoRequestDTO = new UpdateUserInfoRequestDTO();
-        when(userService.updateUserInfo(1, updateUserInfoRequestDTO, "token"))
-                .thenThrow(new NoSuchElementException("User not found"));
+        doThrow(new NoSuchElementException("User not found"))
+                .when(userService).updateUserInfo(1, updateUserInfoRequestDTO, "token");
         ResponseEntity<Object> response = controller.updateUserProfile(1, "token", updateUserInfoRequestDTO);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -205,7 +205,8 @@ public class UserControllerTest {
 
     @Test
     void testDisableUserUnauthorized() throws AuthenticationException {
-        when(userService.setBanUser(1, "token", true)).thenThrow(new AuthenticationException("Unauthorized"));
+        doThrow(new AuthenticationException("Unauthorized"))
+                .when(userService).setBanUser(1, "token", true);
         ResponseEntity<Object> response = controller.disableUser(1, "token", true);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
