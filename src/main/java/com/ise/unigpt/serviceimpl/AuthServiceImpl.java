@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(new User(dto));
     }
 
-    private String generateAuthToken(User user) {
+    public String generateAuthToken(User user) {
         Optional<Auth> optionalAuth = authRepository.findByUser(user);
         Auth auth;
         if (optionalAuth.isPresent()) {
