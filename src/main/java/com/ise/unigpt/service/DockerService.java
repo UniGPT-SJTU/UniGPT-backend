@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 public class DockerService {
-    public static String invokeFunction(String functionName, List<Object> params) {
+    public static String invokeFunction(String moduleName, String functionName, List<Object> params) {
         try {
             // 将参数列表转换为JSON字符串
             JSONObject jsonParams = new JSONObject();
@@ -17,16 +17,17 @@ public class DockerService {
 
             // 获取当前工作目录
             String currentDir = new File("").getAbsolutePath();
-            String funcScriptPath = new File(currentDir, "src/main/resources/func/" + functionName + ".py").getAbsolutePath();
+            String moduleScriptPath = new File(currentDir, "src/main/resources/func/" + moduleName + ".py").getAbsolutePath();
             String runScriptPath = new File(currentDir, "src/main/resources/func/run.py").getAbsolutePath();
 
             // 构建Docker命令
             String[] command = {
                 "docker", "run", "--rm",
-                "-v", funcScriptPath + ":/app/" + functionName + ".py",
+                "-v", moduleScriptPath + ":/app/" + moduleName + ".py",
                 "-v", runScriptPath + ":/app/run.py",
                 "mytest_py",
                 "python3", "run.py",
+                moduleName,
                 functionName,
                 jsonParams.toString()
             };

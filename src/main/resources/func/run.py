@@ -1,31 +1,28 @@
 import sys
 import json
-from add import add  # 确保导入 add 函数
+import importlib
 
-def execute_function(func_name, json_args):
-    # Parse the JSON string to a Python object
-    args_dict = json.loads(json_args)
-    # Extract the 'params' list
-    args = args_dict.get('params', [])
-    
-    # Retrieve the function from globals
-    func = globals().get(func_name)
-    if not func:
-        return {"error": f"Function {func_name} not found"}
-    
+def execute_function(module_name, func_name, json_args):
     try:
-        # Call the function with unpacked arguments
+        # 动态导入模块
+        module = importlib.import_module(module_name)
+        # 动态获取函数
+        func = getattr(module, func_name)
+        # 调用函数并获得结果
+        args = json_args.get('params', [])
         result = func(*args)
         return {"result": result}
     except Exception as e:
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("execute_function.py <function_name> <parameters>")
+    if len(sys.argv) != 4:
+        print("Usage: run.py <module_name> <function_name> <parameters>")
         print(json.dumps({"error": "Invalid number of arguments"}))
         sys.exit(1)
 
-    function_name = sys.argv[1]
-    response = execute_function(function_name, sys.argv[2])
+    module_name = sys.argv[1]
+    function_name = sys.argv[2]
+    parameters = json.loads(sys.argv[3])
+    response = execute_function(module_name, function_name, parameters)
     print(json.dumps(response))
