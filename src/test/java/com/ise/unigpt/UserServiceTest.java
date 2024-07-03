@@ -458,30 +458,6 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testGetStarredBots_Unauthorized() throws AuthenticationException {
-        userRepository = Mockito.mock(UserRepository.class);
-        authService = Mockito.mock(AuthService.class);
-        userService = new UserServiceImpl(userRepository, authService);
-
-        User user = new User();
-        user.setId(1);
-
-        User differentUser = new User();
-        differentUser.setId(2);
-
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(authService.getUserByToken("token")).thenReturn(differentUser);
-
-        AuthenticationException thrown = assertThrows(
-                AuthenticationException.class,
-                () -> userService.getStarredBots(1, "token", 0, 10),
-                "Expected getStarredBots to throw, but it didn't"
-        );
-
-        assertTrue(thrown.getMessage().contains("Unauthorized to get used bots"));
-    }
-
-    @Test
     public void testGetCreatedBots_Success() {
         userRepository = Mockito.mock(UserRepository.class);
         authService = Mockito.mock(AuthService.class);

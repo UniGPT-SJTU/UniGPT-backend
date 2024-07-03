@@ -148,12 +148,6 @@ public class UserControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
-    @Test
-    void testGetStarredBotsUnauthorized() throws AuthenticationException {
-        when(userService.getStarredBots(1, "token", 0, 20)).thenThrow(new AuthenticationException("Unauthorized"));
-        ResponseEntity<Object> response = controller.getStarredBots(1, "token", 0, 20);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
 
     @Test
     void testGetStarredBotsNotFound() throws AuthenticationException {

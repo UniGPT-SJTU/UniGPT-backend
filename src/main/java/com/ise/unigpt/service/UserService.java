@@ -43,8 +43,7 @@ public interface UserService {
          * @param page     页码
          * @param pageSize 每页大小
          */
-        GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
-                        throws AuthenticationException;
+        GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize);
 
         /**
          * @brief 获取创建的机器人

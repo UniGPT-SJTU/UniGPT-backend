@@ -2,10 +2,7 @@ package com.ise.unigpt;
 
 import com.ise.unigpt.dto.*;
 import com.ise.unigpt.model.*;
-import com.ise.unigpt.repository.BotRepository;
-import com.ise.unigpt.repository.HistoryRepository;
-import com.ise.unigpt.repository.PromptChatRepository;
-import com.ise.unigpt.repository.UserRepository;
+import com.ise.unigpt.repository.*;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.serviceimpl.BotServiceImpl;
@@ -34,6 +31,9 @@ class BotServiceTest {
 
     @Mock
     private HistoryRepository historyRepository;
+
+    @Mock
+    private MemoryRepository memoryRepository;
 
     @Mock
     private PromptChatRepository promptChatRepository;

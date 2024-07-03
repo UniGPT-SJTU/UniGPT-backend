@@ -55,7 +55,7 @@ public class FileUploadController {
             Gson gson = new Gson();
             FileUploadOkResponseDTO dto = gson.fromJson(response.getBody(), FileUploadOkResponseDTO.class);
 
-            String imageUrl = dto.getUrl();
+            String imageUrl = dto.getUrl(); 
 
             // 返回图片URL给前端
             return ResponseEntity.ok(new ResponseDTO(true, imageUrl));
