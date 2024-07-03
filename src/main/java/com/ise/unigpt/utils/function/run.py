@@ -1,11 +1,20 @@
 import sys
 import json
+from add import add  # 确保导入 add 函数
 
-def execute_function(func_name, args):
+def execute_function(func_name, json_args):
+    # Parse the JSON string to a Python object
+    args_dict = json.loads(json_args)
+    # Extract the 'params' list
+    args = args_dict.get('params', [])
+    
+    # Retrieve the function from globals
     func = globals().get(func_name)
     if not func:
         return {"error": f"Function {func_name} not found"}
+    
     try:
+        # Call the function with unpacked arguments
         result = func(*args)
         return {"result": result}
     except Exception as e:
@@ -18,6 +27,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     function_name = sys.argv[1]
-    parameters = json.loads(sys.argv[2])
-    response = execute_function(function_name, parameters)
+    response = execute_function(function_name, sys.argv[2])
     print(json.dumps(response))
