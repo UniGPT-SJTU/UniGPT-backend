@@ -3,20 +3,22 @@ package com.ise.unigpt.service;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 
 public class DockerService {
-    public static String invokeFunction(String moduleName, String functionName, String params) {
+    public static String invokeFunction(String moduleName, String functionName, List<String> params) {
         try {
 
             // 获取当前工作目录
             String currentDir = new File("").getAbsolutePath();
-            String escapedParams = params.replace("\"", "\\\"");
             String moduleScriptPath = new File(currentDir, "src/main/resources/func/" + moduleName + ".py").getAbsolutePath();
             String runScriptPath = new File(currentDir, "src/main/resources/func/run.py").getAbsolutePath();
-
+            JSONObject jsonParams = new JSONObject();
+            jsonParams.put("params", params);
+            
             // 构建Docker命令
             String[] command = {
                 "docker", "run", "--rm",
@@ -26,7 +28,7 @@ public class DockerService {
                 "python3", "run.py",
                 moduleName,
                 functionName,
-                escapedParams
+                jsonParams.toString()
             };
 
             // 执行命令

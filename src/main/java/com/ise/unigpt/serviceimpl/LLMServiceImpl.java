@@ -1,7 +1,10 @@
 package com.ise.unigpt.serviceimpl;
 
+import java.util.ArrayList;
 import static java.util.Collections.singletonMap;
 import java.util.List;
+
+import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
@@ -96,12 +99,22 @@ public class LLMServiceImpl implements LLMService {
             .description("Returns the value of the square root of a number")
             .addParameter("number", type("string"), description("The number to calculate the square root of"))
             .build();
-
+        
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
-            // TODO: Send the frontend that a function is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
             String argument = toolExecutionRequest.arguments();
-            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", argument);
+        
+            // Parse the argument JSON string to a JSONObject
+            JSONObject jsonArgument = new JSONObject(argument);
+            List<String> valuesList = new ArrayList<>();
+        
+            // Iterate over all keys and add their values to the list
+            jsonArgument.keys().forEachRemaining(key -> {
+                valuesList.add(jsonArgument.get(key).toString());
+            });
+        
+        
+            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
             System.out.println("Tool output: " + output);
             return output;
         };

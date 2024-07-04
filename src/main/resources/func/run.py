@@ -2,17 +2,15 @@ import sys
 import json
 import importlib
 
-import importlib
-import json
-
 def execute_function(module_name, func_name, json_args):
     try:
         # 动态导入模块
         module = importlib.import_module(module_name)
         # 动态获取函数
         func = getattr(module, func_name)
-        # 调用函数并获得结果，使用 ** 将字典转换为关键字参数
-        result = func(**json_args)
+        # 调用函数并获得结果
+        args = json_args.get('params', [])
+        result = func(*args)
         return {"result": result}
     except Exception as e:
         return {"error": str(e)}
