@@ -17,7 +17,7 @@ public class DockerRunFunction {
     DockerService funcExecuteService = new DockerService();
 
     @RequestMapping("/invoke")
-    public ResponseEntity<String> invokeFunction(@RequestParam String moduleName, @RequestParam Integer param) {
+    public ResponseEntity<String> invokeFunction(@RequestParam String moduleName, @RequestParam String param) {
         Object result = funcExecuteService.invokeFunction(moduleName,"handler", List.of(param));
         return ResponseEntity.ok(result.toString());
     }

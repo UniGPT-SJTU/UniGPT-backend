@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 public class DockerService {
-    public static String invokeFunction(String moduleName, String functionName, List<Object> params) {
+    public static String invokeFunction(String moduleName, String functionName, List<String> params) {
         try {
             // 将参数列表转换为JSON字符串
             JSONObject jsonParams = new JSONObject();

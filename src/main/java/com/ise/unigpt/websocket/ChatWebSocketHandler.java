@@ -1,19 +1,5 @@
 package com.ise.unigpt.websocket;
 
-import biweekly.Biweekly;
-import biweekly.ICalendar;
-import com.ise.unigpt.dto.CanvasEventDTO;
-
-import com.ise.unigpt.model.BaseModelType;
-import com.ise.unigpt.model.ChatType;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-
-import io.micrometer.common.lang.NonNull;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,16 +7,31 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.ise.unigpt.model.History;
-import com.ise.unigpt.service.LLMServiceFactory;
-import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
-import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.service.ChatHistoryService;
-import com.ise.unigpt.model.User;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ise.unigpt.dto.CanvasEventDTO;
+import com.ise.unigpt.model.BaseModelType;
+import com.ise.unigpt.model.ChatType;
+import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.User;
+import com.ise.unigpt.service.AuthService;
+import com.ise.unigpt.service.ChatHistoryService;
+import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
+import com.ise.unigpt.service.LLMServiceFactory;
+
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import io.micrometer.common.lang.NonNull;
 
 @EnableWebSocketMessageBroker
 @CrossOrigin(origins = "http://localhost:3000")
@@ -205,7 +206,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                                     .build());
 
             Map<String, String> replyMap = new HashMap<>();
-            replyMap.put("replyMessage", replyMessage);
+            replyMap.put("replyMessage", replyMessage.toString());
             session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
 
             // 将用户的消息存入history
@@ -214,8 +215,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             // 将回复内容存入history
-            chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
-
+            chatHistoryService.createChat(history.getId(), replyMessage.toString(), ChatType.BOT, sessionToken.get(session));
+            
         } catch (Exception e) {
             System.out.println("Error sending second reply message");
             try {
