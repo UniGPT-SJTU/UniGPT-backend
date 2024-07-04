@@ -2,11 +2,7 @@ package com.ise.unigpt.serviceimpl;
 
 import static java.util.Collections.singletonMap;
 import java.util.List;
-import java.util.Map;
-import com.fasterxml.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
@@ -22,7 +18,6 @@ import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.service.AiServices;
@@ -92,53 +87,10 @@ public class LLMServiceImpl implements LLMService {
         // }
     }
 
-    public void should_use_programmatically_configured_tools() {
 
-        // // TODO: 集成prehandle函数
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl(baseUrl + "/v1")
-                .apiKey(apiKey)
-                .modelName(modelName)
-                .temperature(0.0)
-                .build();
-
-        // given
-        ToolSpecification toolSpecification = ToolSpecification.builder()
-                .name("get_booking_details")
-                .description("Returns booking details")
-                .addParameter("bookingNumber", type("string"))
-                .build();
-
-        ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
-            Map<String, Object> arguments = toMap(toolExecutionRequest.arguments());
-            return "Booking period: from 1 July 2027 to 10 July 2027";
-        };
-
-        Assistant assistant = AiServices.builder(Assistant.class)
-                .chatLanguageModel(model)
-                .tools(singletonMap(toolSpecification, toolExecutor))
-                .build();
-
-        // when
-        Response<AiMessage> response = assistant.chat(0, "When does my booking 123-456 starts?");
-
-        // then
-        System.out.println(response.content().text());
-    }
-
-    private static Map<String, Object> toMap(String arguments) {
-        try {
-            return new ObjectMapper().readValue(arguments, new TypeReference<Map<String, Object>>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
     public String generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
                 
-
-        should_use_programmatically_configured_tools();
         ToolSpecification toolSpecification = ToolSpecification.builder()
             .name("sqrt")
             .description("Returns the value of the square root of a number")
@@ -148,8 +100,9 @@ public class LLMServiceImpl implements LLMService {
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: Send the frontend that a function is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
-            List<String> arguments = List.of(toolExecutionRequest.arguments());
-            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", arguments);
+            String argument = toolExecutionRequest.arguments();
+            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", argument);
+            System.out.println("Tool output: " + output);
             return output;
         };
                 

@@ -1,8 +1,6 @@
 package com.ise.unigpt.controller;
 
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +16,7 @@ public class DockerRunFunction {
 
     @RequestMapping("/invoke")
     public ResponseEntity<String> invokeFunction(@RequestParam String moduleName, @RequestParam String param) {
-        Object result = funcExecuteService.invokeFunction(moduleName,"handler", List.of(param));
+        Object result = funcExecuteService.invokeFunction(moduleName,"handler", param);
         return ResponseEntity.ok(result.toString());
     }
 }
