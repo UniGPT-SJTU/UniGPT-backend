@@ -2,6 +2,8 @@ package com.ise.unigpt.websocket;
 
 import biweekly.Biweekly;
 import biweekly.ICalendar;
+import dev.langchain4j.service.TokenStream;
+
 import com.ise.unigpt.dto.CanvasEventDTO;
 
 import com.ise.unigpt.model.BaseModelType;
@@ -9,6 +11,8 @@ import com.ise.unigpt.model.ChatType;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
@@ -22,6 +26,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.service.LLMServiceFactory;
@@ -46,6 +51,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final LLMServiceFactory llmServiceFactory;
 
+    private final Logger log = LoggerFactory.getLogger(ChatWebSocketHandler.class);
+
     public ChatWebSocketHandler(
             AuthService authService,
             ChatHistoryService chatHistoryService,
@@ -65,11 +72,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         // 获取握手阶段的HTTP头
         Map<String, List<String>> headers = session.getHandshakeHeaders();
-
-        System.out.println("Headers: ");
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
+        log.info("ConnectionEstablished. Headers: " + headers);
         // 获取Cookie头
         List<String> cookies = headers.get("Cookie");
 
@@ -86,7 +89,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
 
         if (token != null) {
-            System.out.println("Token: " + token);
+            log.info("token is " + token);
             sessionToken.put(session, token);
         }
     }
@@ -99,13 +102,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 检查是否已经发送过第一种消息
         Boolean firstMessageSent = sessionFirstMessageSent.get(session);
         if (firstMessageSent == null || !firstMessageSent) {
-            System.out.println("handleFirstMessage");
             handleFirstMessage(session, payLoad);
-            System.out.println("handleFirstMessage done");
         } else {
-            System.out.println("handleSecondMessage");
             handleSecondMessage(session, payLoad);
-            System.out.println("handleSecondMessage done");
         }
 
     }
@@ -114,7 +113,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String errorMessage = "Error parsing historyId";
 
         try {
-            System.out.println("Received first message: " + payLoad);
+            log.info("Received first message: " + payLoad);
 
             // 获得historyId
             int historyId;
@@ -128,9 +127,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             History history = chatHistoryService.getHistory(historyId);
-            System.out.println("History: " + history.getId());
             sessionHistory.put(session, history);
-            System.out.println("Save history: " + sessionHistory.get(session).getId());
 
             // 检查用户是否有权限访问history
             User user = authService.getUserByToken(sessionToken.get(session));
@@ -157,7 +154,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(errorMessage));
             } catch (Exception e2) {
-                System.out.println("Error sending error message");
+                log.error(e2.getMessage());
             }
         }
 
@@ -166,8 +163,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void handleSecondMessage(WebSocketSession session, String payLoad) {
         // 这是第二种消息
         try {
+            log.info("Received second message: " + payLoad);
             // 发送回复消息
-            System.out.println("Received second message: " + payLoad);
 
             History history = sessionHistory.get(session);
 
@@ -175,16 +172,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             // 获取用户的消息
             ObjectMapper objectMapper = new ObjectMapper();
-            System.out.println("objectMapper: " + objectMapper);
             Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
 
             // 获取用户的消息
             String userMessage = (String) map.get("chatContent");
 
-
             // 更新历史的最近活跃时间
             chatHistoryService.updateHistoryActiveTime(history);
-
 
             Boolean cover = (Boolean) map.get("cover");
             Boolean isUserAsk = (Boolean) map.get("userAsk");
@@ -194,7 +188,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
             }
             // 生成回复消息
-            String replyMessage = llmServiceFactory
+            TokenStream tokenStream = llmServiceFactory
                     .getLLMService(sessionBaseModelType.get(session))
                     .generateResponse(
                             history,
@@ -203,30 +197,58 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                                     .cover(cover)
                                     .isUserAsk(isUserAsk)
                                     .build());
+            AtomicReference<String> replyMessageRef = new AtomicReference<>();
+            AtomicReference<History> historyRef = new AtomicReference<>(history);
+            tokenStream.onNext(token -> {
+                // 发送报文：
+                // {"finalState": "false", "token": "token"}
+                log.info("Response stream on next");
+                Map<String, String> replyMap = new HashMap<>();
+                replyMap.put("finalState", "false");
+                replyMap.put("token", token);
+                try {
+                    session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }).onComplete(response -> {
+                // 发送报文：
+                // {"finalState": "true", "replyMessage": "replyMessage"}
+                log.info("Response stream on complete");
+                replyMessageRef.set(response.content().text());
+                Map<String, String> replyMap = new HashMap<>();
+                replyMap.put("finalState", "true");
+                replyMap.put("replyMessage", replyMessageRef.get());
+                try {
+                    String replyMessage = new ObjectMapper().writeValueAsString(replyMap);
+                    session.sendMessage(new TextMessage(replyMessage));
+                    // 将用户的消息存入history
+                    if (!isUserAsk) {
+                        chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER,
+                                sessionToken.get(session));
+                    }
 
-            Map<String, String> replyMap = new HashMap<>();
-            replyMap.put("replyMessage", replyMessage);
-            session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
-
-            // 将用户的消息存入history
-            if (!isUserAsk) {
-                chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER, sessionToken.get(session));
-            }
-
-            // 将回复内容存入history
-            chatHistoryService.createChat(history.getId(), replyMessage, ChatType.BOT, sessionToken.get(session));
+                    // 将回复内容存入history
+                    chatHistoryService.createChat(historyRef.get().getId(), replyMessageRef.get(), ChatType.BOT,
+                            sessionToken.get(session));
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }).onError(error -> {
+                log.error("Response stream on error");
+            }).start();
 
         } catch (Exception e) {
-            System.out.println("Error sending second reply message");
+            // TODO: 修改此处的错误处理
             try {
-                System.out.println(e.getMessage());
+                // System.out.println(e.getMessage());
                 e.printStackTrace();
                 String replyMessage = "Error sending second reply message";
                 Map<String, String> replyMap = new HashMap<>();
                 replyMap.put("replyMessage", replyMessage);
                 session.sendMessage(new TextMessage(new ObjectMapper().writeValueAsString(replyMap)));
             } catch (Exception e2) {
-                System.out.println("Error sending error message");
+                // System.out.println("Error sending error message");
             }
         }
     }

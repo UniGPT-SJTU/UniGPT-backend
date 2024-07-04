@@ -11,7 +11,9 @@ import com.ise.unigpt.service.LLMService;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
+import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 
 public class LLMServiceImpl implements LLMService {
@@ -79,10 +81,10 @@ public class LLMServiceImpl implements LLMService {
         // }
     }
 
-    public String generateResponse(History history, String userMessage, GenerateResponseOptions options)
+    public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
         // // TODO: 集成prehandle函数
-        OpenAiChatModel model = OpenAiChatModel.builder()
+        OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl + "/v1")
                 .apiKey(apiKey)
                 .modelName(modelName)
@@ -96,11 +98,10 @@ public class LLMServiceImpl implements LLMService {
                 .build();
 
         Assistant assistant = AiServices.builder(Assistant.class)
-                .chatLanguageModel(model)
+                .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
                 .build();
-
-
+        
         return assistant.chat(history.getId(), userMessage);
         // Unirest.setTimeouts(0, 0);
         // List<Chat>chats = history.getChats();
