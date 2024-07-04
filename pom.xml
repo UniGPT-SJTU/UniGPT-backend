@@ -121,6 +121,12 @@
 			<version>0.6.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-pgvector</artifactId>
+			<version>0.31.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
