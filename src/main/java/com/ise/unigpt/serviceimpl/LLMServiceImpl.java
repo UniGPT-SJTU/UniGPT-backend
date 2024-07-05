@@ -15,7 +15,6 @@ import com.ise.unigpt.service.LLMService;
 
 import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
 import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
-import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolExecutor;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.AiMessage;
@@ -91,9 +90,46 @@ public class LLMServiceImpl implements LLMService {
     }
 
 
+    void should_use_programmatically_configured_tools() {
+        // // TODO: 集成prehandle函数
+        OpenAiChatModel model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl + "/v1")
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .temperature(0.0)
+                .build();
+
+        ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
+                .id(memoryId)
+                .maxMessages(10)
+                .chatMemoryStore(chatMemoryStore)
+                .build();
+        // given
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+                .name("get_booking_details")
+                .description("Returns booking details")
+                .addParameter("bookingNumber", type("string"))
+                .build();
+
+        ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
+            return "Booking period: from 1 July 2027 to 10 July 2027";
+        };
+
+        Assistant assistant = AiServices.builder(Assistant.class)
+                .chatLanguageModel(model)
+                .tools(singletonMap(toolSpecification, toolExecutor))
+                .build();
+
+        // when
+        Response<AiMessage> response = assistant.chat(93,"When does my booking 123-456 starts?");
+
+        System.out.println(response.content().text());
+    }
+
     public String generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
-                
+
+        should_use_programmatically_configured_tools();
         ToolSpecification toolSpecification = ToolSpecification.builder()
             .name("sqrt")
             .description("Returns the value of the square root of a number")
@@ -101,6 +137,7 @@ public class LLMServiceImpl implements LLMService {
             .build();
         
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
+            // TODO: notify the frontend that a tool is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
             String argument = toolExecutionRequest.arguments();
         
@@ -115,6 +152,7 @@ public class LLMServiceImpl implements LLMService {
         
         
             String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            // TODO: notify the frontend that the tool has been executed
             System.out.println("Tool output: " + output);
             return output;
         };
@@ -135,22 +173,18 @@ public class LLMServiceImpl implements LLMService {
 
         Assistant assistant = AiServices.builder(Assistant.class)
                 .chatLanguageModel(model)
-                .chatMemoryProvider(chatMemoryProvider)
+                // .chatMemoryProvider(chatMemoryProvider)
                 .tools(singletonMap(toolSpecification, toolExecutor))
                 .build();
 
 
         Response<AiMessage> response = assistant.chat(history.getId(), userMessage);
         AiMessage aiMessage = response.content();
-        List<ToolExecutionRequest> toolExecutionRequests = aiMessage.toolExecutionRequests();
-        if(toolExecutionRequests != null && !toolExecutionRequests.isEmpty()) {
-            System.out.println("Tool execution requests: " + toolExecutionRequests);
-            return aiMessage.text();
-        }
-        if(aiMessage.hasToolExecutionRequests() == false) {
-            return aiMessage.text();
-        }
-        System.out.println("Tool execution requests: " + aiMessage.toolExecutionRequests());
+        // while(aiMessage.hasToolExecutionRequests() == true) {
+        //     response = assistant.chat(history.getId(), userMessage);
+        //     aiMessage = response.content();
+        //     System.out.println("Tool execution requests: " + aiMessage.toolExecutionRequests());
+        // }
         return aiMessage.text();
         // Unirest.setTimeouts(0, 0);
         // List<Chat>chats = history.getChats();
