@@ -1,11 +1,11 @@
 package com.ise.unigpt.service;
 
+import org.springframework.stereotype.Service;
+
 import com.ise.unigpt.model.History;
 
 import dev.langchain4j.service.TokenStream;
 import lombok.Data;
-
-import org.springframework.stereotype.Service;
 
 
 /**

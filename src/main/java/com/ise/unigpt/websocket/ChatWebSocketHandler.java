@@ -27,15 +27,31 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.ise.unigpt.model.History;
-import com.ise.unigpt.service.LLMServiceFactory;
-import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
-import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.service.ChatHistoryService;
-import com.ise.unigpt.model.User;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ise.unigpt.dto.CanvasEventDTO;
+import com.ise.unigpt.model.BaseModelType;
+import com.ise.unigpt.model.ChatType;
+import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.User;
+import com.ise.unigpt.service.AuthService;
+import com.ise.unigpt.service.ChatHistoryService;
+import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
+import com.ise.unigpt.service.LLMServiceFactory;
+
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import io.micrometer.common.lang.NonNull;
 
 @EnableWebSocketMessageBroker
 @CrossOrigin(origins = "http://localhost:3000")

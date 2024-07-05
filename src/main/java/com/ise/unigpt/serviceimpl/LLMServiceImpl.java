@@ -1,17 +1,28 @@
 package com.ise.unigpt.serviceimpl;
 
+import java.util.ArrayList;
+import static java.util.Collections.singletonMap;
 import java.util.List;
+
+import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
+import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
 
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
+import dev.langchain4j.agent.tool.ToolExecutor;
+import dev.langchain4j.agent.tool.ToolSpecification;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import dev.langchain4j.model.output.Response;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -23,7 +34,6 @@ public class LLMServiceImpl implements LLMService {
     private String modelName;
 
     private final ChatMemoryStore chatMemoryStore;
-
 
     public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore) {
         switch (type) {
@@ -49,7 +59,6 @@ public class LLMServiceImpl implements LLMService {
                 break;
         }
         this.chatMemoryStore = chatMemoryStore;
-
     }
 
     // TODO: 将preHandle移动到这里
@@ -83,6 +92,33 @@ public class LLMServiceImpl implements LLMService {
 
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
+
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+                .name("sqrt")
+                .description("Returns the value of the square root of a number")
+                .addParameter("number", type("string"), description("The number to calculate the square root of"))
+                .build();
+
+        ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
+            // TODO: notify the frontend that a tool is being executed
+            System.out.println("Executing tool: " + toolExecutionRequest.name());
+            String argument = toolExecutionRequest.arguments();
+
+            // Parse the argument JSON string to a JSONObject
+            JSONObject jsonArgument = new JSONObject(argument);
+            List<String> valuesList = new ArrayList<>();
+
+            // Iterate over all keys and add their values to the list
+            jsonArgument.keys().forEachRemaining(key -> {
+                valuesList.add(jsonArgument.get(key).toString());
+            });
+
+            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            // TODO: notify the frontend that the tool has been executed
+            System.out.println("Tool output: " + output);
+            return output;
+        };
+
         // // TODO: 集成prehandle函数
         OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl + "/v1")
@@ -100,61 +136,9 @@ public class LLMServiceImpl implements LLMService {
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
+                .tools(singletonMap(toolSpecification, toolExecutor))
                 .build();
-        
+
         return assistant.chat(history.getId(), userMessage);
-        // Unirest.setTimeouts(0, 0);
-        // List<Chat>chats = history.getChats();
-        // if(options.getCover()) {
-        // chats = chats.size() < 2 ? new ArrayList<>() : chats.subList(0, chats.size()
-        // - 2);
-        // }
-        // List<OpenAIMessageDTO> messages = new ArrayList<>();
-        // messages.addAll(
-        // chats.stream().map(
-        // chat -> new OpenAIMessageDTO(chat.getType().toString(),
-        // chat.getContent()))
-        // .collect(Collectors.toList()));
-
-        // if(!options.getIsUserAsk()) {
-        // messages.add(new OpenAIMessageDTO(ChatType.USER.toString(), userMessage));
-        // }
-
-        // OpenAIRequestDTO dto = new OpenAIRequestDTO(modelName, messages,
-        // history.getLlmArgs().getTemperature());
-        // HttpResponse<String> response;
-        // int retryCount = 0;
-        // while (true){
-        // response = Unirest
-        // .post(baseUrl + "/v1/chat/completions")
-        // .header("Accept", "application/json")
-        // .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-        // .header("Content-Type", "application/json")
-        // .header("Authorization", "Bearer " + apiKey)
-        // .body(new Gson().toJson(dto)).asString();
-        // if (response.getStatus() == 429) {
-        // if (retryCount > 3) {
-        // break;
-        // }
-        // System.out.println("retry after 5 seconds");
-        // retryCount++;
-        // Thread.sleep(5000);
-        // } else {
-        // break;
-        // }
-        // }
-        // if (response.getStatus() != 200) {
-        // System.out.println("status code: " + response.getStatus());
-        // System.out.println("response body: " + response.getBody());
-        // throw new ServerException("openai service error");
-        // }
-        // JsonObject responseJsonObject =
-        // JsonParser.parseString(response.getBody()).getAsJsonObject();
-        // String responseContent = responseJsonObject
-        // .get("choices").getAsJsonArray()
-        // .get(0).getAsJsonObject()
-        // .get("message").getAsJsonObject()
-        // .get("content").getAsString();
-        // return responseContent;
     }
 }
