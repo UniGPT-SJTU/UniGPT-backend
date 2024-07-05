@@ -1,16 +1,27 @@
 package com.ise.unigpt.serviceimpl;
 
+import java.util.ArrayList;
+import static java.util.Collections.singletonMap;
 import java.util.List;
+
+import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
+import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
 
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
+import dev.langchain4j.agent.tool.ToolExecutor;
+import dev.langchain4j.agent.tool.ToolSpecification;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.output.Response;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 
@@ -47,7 +58,6 @@ public class LLMServiceImpl implements LLMService {
                 break;
         }
         this.chatMemoryStore = chatMemoryStore;
-
     }
 
     // TODO: 将preHandle移动到这里
@@ -79,8 +89,74 @@ public class LLMServiceImpl implements LLMService {
         // }
     }
 
+
+    void should_use_programmatically_configured_tools() {
+        // // TODO: 集成prehandle函数
+        OpenAiChatModel model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl + "/v1")
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .temperature(0.0)
+                .build();
+
+        ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
+                .id(memoryId)
+                .maxMessages(10)
+                .chatMemoryStore(chatMemoryStore)
+                .build();
+        // given
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+                .name("get_booking_details")
+                .description("Returns booking details")
+                .addParameter("bookingNumber", type("string"))
+                .build();
+
+        ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
+            return "Booking period: from 1 July 2027 to 10 July 2027";
+        };
+
+        Assistant assistant = AiServices.builder(Assistant.class)
+                .chatLanguageModel(model)
+                .tools(singletonMap(toolSpecification, toolExecutor))
+                .build();
+
+        // when
+        Response<AiMessage> response = assistant.chat(93,"When does my booking 123-456 starts?");
+
+        System.out.println(response.content().text());
+    }
+
     public String generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
+
+        should_use_programmatically_configured_tools();
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+            .name("sqrt")
+            .description("Returns the value of the square root of a number")
+            .addParameter("number", type("string"), description("The number to calculate the square root of"))
+            .build();
+        
+        ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
+            // TODO: notify the frontend that a tool is being executed
+            System.out.println("Executing tool: " + toolExecutionRequest.name());
+            String argument = toolExecutionRequest.arguments();
+        
+            // Parse the argument JSON string to a JSONObject
+            JSONObject jsonArgument = new JSONObject(argument);
+            List<String> valuesList = new ArrayList<>();
+        
+            // Iterate over all keys and add their values to the list
+            jsonArgument.keys().forEachRemaining(key -> {
+                valuesList.add(jsonArgument.get(key).toString());
+            });
+        
+        
+            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            // TODO: notify the frontend that the tool has been executed
+            System.out.println("Tool output: " + output);
+            return output;
+        };
+                
         // // TODO: 集成prehandle函数
         OpenAiChatModel model = OpenAiChatModel.builder()
                 .baseUrl(baseUrl + "/v1")
@@ -97,11 +173,19 @@ public class LLMServiceImpl implements LLMService {
 
         Assistant assistant = AiServices.builder(Assistant.class)
                 .chatLanguageModel(model)
-                .chatMemoryProvider(chatMemoryProvider)
+                // .chatMemoryProvider(chatMemoryProvider)
+                .tools(singletonMap(toolSpecification, toolExecutor))
                 .build();
 
 
-        return assistant.chat(history.getId(), userMessage);
+        Response<AiMessage> response = assistant.chat(history.getId(), userMessage);
+        AiMessage aiMessage = response.content();
+        // while(aiMessage.hasToolExecutionRequests() == true) {
+        //     response = assistant.chat(history.getId(), userMessage);
+        //     aiMessage = response.content();
+        //     System.out.println("Tool execution requests: " + aiMessage.toolExecutionRequests());
+        // }
+        return aiMessage.text();
         // Unirest.setTimeouts(0, 0);
         // List<Chat>chats = history.getChats();
         // if(options.getCover()) {

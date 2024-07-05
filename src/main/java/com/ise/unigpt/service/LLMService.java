@@ -1,10 +1,10 @@
 package com.ise.unigpt.service;
 
+import org.springframework.stereotype.Service;
+
 import com.ise.unigpt.model.History;
 
 import lombok.Data;
-
-import org.springframework.stereotype.Service;
 
 
 /**
