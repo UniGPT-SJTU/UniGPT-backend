@@ -130,7 +130,7 @@ public class LLMServiceImpl implements LLMService {
         ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
                 .maxMessages(10)
-                .chatMemoryStore(chatMemoryStore)
+                // .chatMemoryStore(chatMemoryStore)
                 .build();
 
         Assistant assistant = AiServices.builder(Assistant.class)
