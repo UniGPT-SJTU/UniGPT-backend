@@ -13,7 +13,7 @@ public class PromptChat {
     private Integer id;
 
     @Column(name = "type")
-    private PromptChatType type;
+    private ChatType type;
 
     @Column(name = "content", columnDefinition = "LONGTEXT")
     private String content;
@@ -23,7 +23,7 @@ public class PromptChat {
         this.content = dto.getContent();
     }
 
-    public PromptChat(PromptChatType type, String content) {
+    public PromptChat(ChatType type, String content) {
         this.type = type;
         this.content = content;
     }

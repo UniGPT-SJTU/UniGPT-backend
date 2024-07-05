@@ -1,6 +1,7 @@
 package com.ise.unigpt.controller;
 
 import com.google.gson.Gson;
+import com.ise.unigpt.config.BasicConfig;
 import com.ise.unigpt.dto.FileUploadOkResponseDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.User;
@@ -18,9 +19,11 @@ import java.io.*;
 @RequestMapping("/api/file")
 public class FileUploadController {
     private final AuthService authService;
+    private final BasicConfig basicConfig;
 
-    public FileUploadController(AuthService authService) {
+    public FileUploadController(AuthService authService, BasicConfig basicConfig) {
         this.authService = authService;
+        this.basicConfig = basicConfig;
     }
 
     @PostMapping("/upload")
@@ -42,7 +45,7 @@ public class FileUploadController {
             
             // 使用Unirest发送请求给图片服务器
             Unirest.setTimeouts(0, 0);
-            HttpResponse<String> response = Unirest.post("http://10.119.12.131:10339/upload")
+            HttpResponse<String> response = Unirest.post(basicConfig.IMAGE_SERVER_URL + "/upload")
             .header("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
             .header("Content-Type", "multipart/form-data")
             .field("file", tempFile)

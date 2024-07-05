@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ChatType {
     USER(0, "user"),
-    BOT(1, "assistant");
+    BOT(1, "assistant"),
+    SYSTEM(2, "system");
 
     private final int value;
     private final String string;

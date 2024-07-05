@@ -6,10 +6,9 @@ import com.ise.unigpt.repository.BotRepository;
 import com.ise.unigpt.repository.PromptChatRepository;
 import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.repository.HistoryRepository;
-
+import com.ise.unigpt.repository.MemoryRepository;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.BotService;
-import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
 import com.ise.unigpt.utils.StringTemplateParser;
 
@@ -24,23 +23,23 @@ public class BotServiceImpl implements BotService {
     private final BotRepository botRepository;
     private final UserRepository userRepository;
     private final HistoryRepository historyRepository;
+    private final MemoryRepository memoryRepository;
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
-    private final ChatHistoryService chatHistoryService;
 
     public BotServiceImpl(BotRepository botRepository,
             UserRepository userRepository,
             HistoryRepository historyRepository,
+            MemoryRepository memoryRepository,
             PromptChatRepository promptChatRepository,
-            AuthService authService,
-            ChatHistoryService chatHistoryService) {
+            AuthService authService) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
         this.historyRepository = historyRepository;
-        this.chatHistoryService = chatHistoryService;
+        this.memoryRepository = memoryRepository;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -95,7 +94,7 @@ public class BotServiceImpl implements BotService {
             // 2. 请求用户是bot的创建者
             // 3. 请求用户是管理员
 
-            //如果均不是，检查是否是 bot 是否在用户的 usedBots 列表中，如有则删除
+            // 如果均不是，检查是否是 bot 是否在用户的 usedBots 列表中，如有则删除
             if (user.getUsedBots().contains(bot)) {
                 user.getUsedBots().remove(bot);
                 userRepository.save(user);
@@ -114,7 +113,9 @@ public class BotServiceImpl implements BotService {
         User user;
         try {
             user = authService.getUserByToken(token);
-        } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("User not found");
+        }
 
         if ((bot.getCreator().getId() != user.getId()) && !user.getAsAdmin()) {
             // 以下两种情况任意一种满足时，可以获取bot的编辑信息
@@ -126,12 +127,25 @@ public class BotServiceImpl implements BotService {
         return new BotEditInfoDTO(bot);
     }
 
-    public ResponseDTO createBot(BotEditInfoDTO dto, String token) {
+    public ResponseDTO createBot(BotEditInfoDTO dto, String token) throws Exception {
         // 根据token获取用户
         User creatorUser;
         try {
             creatorUser = authService.getUserByToken(token);
-        } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("User not found");
+        }
+
+        int promptChatSize = dto.getPromptChats().size();
+        if (promptChatSize < 1) {
+            // 提示词模板列表不能为空
+            throw new BadRequestException("Prompt chats should not be empty");
+        }
+
+        if (dto.getPromptChats().get(promptChatSize - 1).getType() != ChatType.USER) {
+            // 最后一个提示词模板应该是用户类型
+            throw new BadRequestException("Last prompt chat should be user type");
+        }
 
         // 创建promptChats列表并保存到数据库
         List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
@@ -313,53 +327,54 @@ public class BotServiceImpl implements BotService {
         Map<String, String> promptKeyValuePairs = promptList.stream()
                 .collect(Collectors.toMap(PromptDTO::getPromptKey, PromptDTO::getPromptValue));
 
-        // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
-        // 并保存到数据库
-        List<PromptChat> interpolatedPromptChats = bot.getPromptChats()
-                .stream()
-                .map(
-                        promptChat -> new PromptChat(
-                                promptChat.getType(),
-                                StringTemplateParser.interpolate(
-                                        promptChat.getContent(),
-                                        promptKeyValuePairs)))
-                .collect(Collectors.toList());
-
-        // 创建新的对话历史
+        // 创建新的对话历史并保存到数据库
         History history = new History(
                 user,
                 bot,
                 promptKeyValuePairs,
-                interpolatedPromptChats);
+                bot.getLlmArgs());
         historyRepository.save(history);
 
-        // 读取最后一条对话，并保证其为USER类型
-        PromptChat lastPromptChat = interpolatedPromptChats.get(interpolatedPromptChats.size() - 1);
-        String lastPromptChatContent = lastPromptChat.getContent();
-        PromptChatType lastPromptChatType = lastPromptChat.getType();
-        if (lastPromptChatType != PromptChatType.USER) {
-            throw new RuntimeException("Last prompt chat is not of type USER");
-        }
+        Memory memory = new Memory(history);
+        memoryRepository.save(memory);
 
-        // 删除PromptChatList中的最后一条对话（userAsk）
-        interpolatedPromptChats.remove(interpolatedPromptChats.size() - 1);
-        promptChatRepository.delete(lastPromptChat);
+        // 將用户填写的表单内容与 bot 的 promptChats 进行模板插值，
+        // 并保存到数据库
+        List<Chat> interpolatedChats = bot.getPromptChats()
+                .stream()
+                .map(
+                        promptChat -> new Chat(
+                                history,
+                                promptChat.getType(),
+                                StringTemplateParser.interpolate(
+                                        promptChat.getContent(),
+                                        promptKeyValuePairs),
+                                false)) // 前面的提示词用户不可见
+                .collect(Collectors.toList());
+
+        // 最后一条 chat 是用户的提问，设置为可见
+        interpolatedChats.get(interpolatedChats.size() - 1).setIsVisible(true);
+
+        // 将插值后的结果加入对话历史
+        // 并保存到数据库
+        history.getChats().addAll(interpolatedChats);
+        historyRepository.save(history);
+
+        memory.getMemoryItems().addAll(
+                interpolatedChats.stream()
+                        // TODO: 有可能的话，标记一下userAsk
+                        .limit(interpolatedChats.size() - 1)
+                        .map(chat -> new MemoryItem(chat, memory))
+                        .collect(Collectors.toList()));
+        memoryRepository.save(memory);
 
         // 将对话历史加入用户的 histories 列表
-        chatHistoryService.createChat(
-                history.getId(),
-                lastPromptChatContent,
-                ChatType.USER,
-                token
-        );
-
-        // 将对话历史加入用户的 histories 列表
-//        user.getHistories().add(history);
-//        userRepository.save(user);
+        // user.getHistories().add(history);
+        // userRepository.save(user);
         return new CreateBotHistoryOkResponseDTO(
                 true, "Chat history created successfully",
                 history.getId(),
-                lastPromptChatContent);
+                interpolatedChats.get(interpolatedChats.size() - 1).getContent());
     }
 
     public ResponseDTO createComment(Integer id, String token, String content) {

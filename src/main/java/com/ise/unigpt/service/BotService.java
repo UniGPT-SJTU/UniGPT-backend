@@ -3,7 +3,6 @@ import com.ise.unigpt.dto.*;
 
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
 
 public interface BotService {
     /**
@@ -46,7 +45,7 @@ public interface BotService {
      * @param token 用户token
      * @return 创建结果
      */
-    ResponseDTO createBot(BotEditInfoDTO dto, String token);
+    ResponseDTO createBot(BotEditInfoDTO dto, String token) throws Exception;
 
     /**
      * @brief 更新机器人

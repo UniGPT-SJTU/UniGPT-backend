@@ -29,3 +29,8 @@ server:
       key-store-password: unigpt
       keyStoreType: PKCS12
       keyAlias: tomcat
+
+imageServerUrl: http://124.70.222.207:10339
+frontendServerUrl: http://localhost:3000
+jaccountClientId: ov3SLrO4HyZSELxcHiqS
+jaccountClientSecret: B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C
