@@ -1,6 +1,5 @@
 package com.ise.unigpt.controller;
 
-import com.ise.unigpt.dto.GetChatsErrorResponseDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.KnowledgeService;
@@ -40,6 +39,9 @@ public class KnowledgeController {
                     .body(new ResponseDTO(false, e.getMessage()));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
 
