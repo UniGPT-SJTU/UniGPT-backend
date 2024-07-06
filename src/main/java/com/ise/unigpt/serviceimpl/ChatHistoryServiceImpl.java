@@ -153,7 +153,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     }
 
     @Override
-    public void updateHistoryActiveTime(History history) throws Exception {
+    public void updateHistoryActiveTime(History history) {
         history.setLastActiveTime(new Date());
         historyRepository.save(history);
     }

@@ -136,7 +136,7 @@ public class LLMServiceImpl implements LLMService {
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
-                .tools(singletonMap(toolSpecification, toolExecutor))
+                // .tools(singletonMap(toolSpecification, toolExecutor))
                 .build();
 
         return assistant.chat(history.getId(), userMessage);
