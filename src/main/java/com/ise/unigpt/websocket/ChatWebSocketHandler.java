@@ -5,7 +5,9 @@ import biweekly.ICalendar;
 import dev.langchain4j.service.TokenStream;
 
 import com.ise.unigpt.dto.CanvasEventDTO;
-import com.ise.unigpt.dto.WebSocketMessageDTO;
+import com.ise.unigpt.dto.WebSocketClientMsgDTO;
+import com.ise.unigpt.dto.WebSocketConnMsgDTO;
+import com.ise.unigpt.dto.WebSocketServerMsgDTO;
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.ChatType;
 import org.springframework.web.socket.TextMessage;
@@ -31,12 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.service.LLMService.GenerateResponseOptions;
+import com.ise.unigpt.utils.JsonUtils;
+
 import com.ise.unigpt.service.LLMServiceFactory;
 
 @EnableWebSocketMessageBroker
@@ -116,11 +119,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             log.info("Received first message: " + payLoad);
 
             // 获得historyId
-            int historyId;
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> map = objectMapper.readValue(payLoad, Map.class);
-            String historyIdString = map.get("historyId");
-            historyId = Integer.parseInt(historyIdString);
+            Integer historyId = JsonUtils.fromJson(payLoad, WebSocketConnMsgDTO.class).getHistoryId();
             if (historyId == 0) {
                 throw new RuntimeException("Invalid history id");
             }
@@ -147,7 +146,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             handleRuntimeException(session, e);
         }
-
     }
 
     public void handleSecondMessage(WebSocketSession session, String payLoad) {
@@ -161,17 +159,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             // preHandle(session, bot.getId(), promptChatList);
 
             // 获取用户的消息
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> map = objectMapper.readValue(payLoad, Map.class);
+            WebSocketClientMsgDTO clientMsgDTO = JsonUtils.fromJson(payLoad, WebSocketClientMsgDTO.class);
 
             // 获取用户的消息
-            String userMessage = (String) map.get("chatContent");
+            String userMessage = clientMsgDTO.getChatContent();
 
             // 更新历史的最近活跃时间
             chatHistoryService.updateHistoryActiveTime(history);
 
-            Boolean cover = (Boolean) map.get("cover");
-            Boolean isUserAsk = (Boolean) map.get("userAsk");
+            Boolean cover = clientMsgDTO.getCover();
+            Boolean isUserAsk = clientMsgDTO.getUserAsk();
 
             // 如果cover为true，则删除末尾的两个对话
             if (cover) {
@@ -191,13 +188,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             AtomicReference<History> historyRef = new AtomicReference<>(history);
             tokenStream.onNext(token -> {
                 log.info("Response stream on next");
-                sendMessageWrapper(session, new WebSocketMessageDTO("token", token).toString());
+                sendMessageWrapper(session, JsonUtils.toJson(
+                        new WebSocketServerMsgDTO("token", token)));
             }).onComplete(response -> {
                 // 发送报文：
                 log.info("Response stream on complete");
                 replyMessageRef.set(response.content().text());
                 try {
-                    sendMessageWrapper(session, new WebSocketMessageDTO("complete", replyMessageRef.get()).toString());
+                    sendMessageWrapper(session,
+                            JsonUtils.toJson(new WebSocketServerMsgDTO("complete", replyMessageRef.get())));
                     // 将用户的消息存入history
                     if (!isUserAsk) {
                         chatHistoryService.createChat(history.getId(), userMessage, ChatType.USER,
@@ -208,6 +207,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     chatHistoryService.createChat(historyRef.get().getId(), replyMessageRef.get(), ChatType.BOT,
                             sessionToken.get(session));
                 } catch (Exception e) {
+                    log.error("on complete error");
                     log.error(e.getMessage());
                 }
             }).onError(error -> {
@@ -215,16 +215,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }).start();
 
         } catch (Exception e) {
-            // TODO: 修改此处的错误处理
-            // try {
-            //     // System.out.println(e.getMessage());
-            //     e.printStackTrace();
-            //     String replyMessage = "Error sending second reply message";
-            //     Map<String, String> replyMap = new HashMap<>();
-            //     replyMap.put("replyMessage", replyMessage);
-            // } catch (Exception e2) {
-            //     // System.out.println("Error sending error message");
-            // }
             handleRuntimeException(session, e);
         }
     }
@@ -241,7 +231,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private void handleRuntimeException(WebSocketSession session, Throwable e) {
         log.error(e.getMessage());
         e.printStackTrace();
-        sendMessageWrapper(session, e.getMessage());
+        sendMessageWrapper(session, JsonUtils.toJson(new WebSocketServerMsgDTO("error", e.getMessage())));
     }
 
     public String getCanvasEventList(String url) {
