@@ -40,4 +40,7 @@ public class Parameter {
         this.type = paramterDTO.getType();
         this.plugin = plugin;
     }
+
+    public Parameter() {
+    }
 }

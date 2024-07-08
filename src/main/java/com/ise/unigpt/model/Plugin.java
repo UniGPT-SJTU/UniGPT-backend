@@ -88,4 +88,9 @@ public class Plugin {
         // for parameters
         this.parameters = dto.getParameters().stream().map(p -> new Parameter(p, this)).toList();
     }
+
+    // constructor
+    public Plugin() {
+        // not used
+    }
 }

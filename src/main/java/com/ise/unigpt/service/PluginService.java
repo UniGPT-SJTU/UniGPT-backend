@@ -7,6 +7,7 @@ import com.ise.unigpt.dto.PluginEditInfoDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 
 public interface PluginService {
+
     /**
      * @brief 获取插件列表
      * @param q 搜索关键字
@@ -41,5 +42,4 @@ public interface PluginService {
      */
     ResponseDTO createPlugin(PluginCreateDTO dto, String token) throws Exception;
 
-    
 }

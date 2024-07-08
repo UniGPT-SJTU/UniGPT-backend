@@ -25,12 +25,11 @@ public class PluginDetailInfoDTO {
     private boolean starred;
     private boolean asCreator;
     private boolean asAdmin;
-    private List<String> promptKeys;
-
 
     public PluginDetailInfoDTO() {
         // only for test
     }
+
     public PluginDetailInfoDTO(Plugin plugin, User user) {
         this.id = plugin.getId();
         this.name = plugin.getName();

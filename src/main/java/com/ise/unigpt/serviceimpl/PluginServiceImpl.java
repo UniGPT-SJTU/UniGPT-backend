@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 import com.ise.unigpt.dto.GetPluginsOkResponseDTO;
 import com.ise.unigpt.dto.PluginBriefInfoDTO;
 import com.ise.unigpt.dto.PluginCreateDTO;
@@ -21,6 +23,7 @@ import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.PluginService;
 import com.ise.unigpt.utils.PaginationUtils;
 
+@Service
 public class PluginServiceImpl implements PluginService {
 
     private final PluginRepository pluginRepository;
@@ -31,6 +34,7 @@ public class PluginServiceImpl implements PluginService {
         this.authService = authService;
     }
 
+    @Override
     public GetPluginsOkResponseDTO getPlugins(String q, String order, Integer page, Integer pageSize) {
         List<PluginBriefInfoDTO> plugins;
         if (order.equals("latest")) {
@@ -62,6 +66,7 @@ public class PluginServiceImpl implements PluginService {
         return new PluginDetailInfoDTO(plugin, user);
     }
 
+    @Override
     public PluginEditInfoDTO getPluginEditInfo(Integer id, String token) {
         Plugin plugin = pluginRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Plugin not found for ID: " + id));
@@ -75,6 +80,7 @@ public class PluginServiceImpl implements PluginService {
         return new PluginEditInfoDTO(plugin, user);
     }
 
+    @Override
     public ResponseDTO createPlugin(PluginCreateDTO dto, String token) throws Exception {
         User user = authService.getUserByToken(token);
 
