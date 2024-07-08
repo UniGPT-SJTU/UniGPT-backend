@@ -1,7 +1,6 @@
 package com.ise.unigpt.serviceimpl;
 
 import java.util.ArrayList;
-import static java.util.Collections.singletonMap;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -32,7 +31,9 @@ public class LLMServiceImpl implements LLMService {
 
     private final ChatMemoryStore chatMemoryStore;
 
-    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore) {
+    private final DockerService dockerService;
+
+    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore, DockerService dockerService) {
         switch (type) {
             case CLAUDE:
                 baseUrl = System.getenv("CLAUDE_API_BASE_URL");
@@ -56,6 +57,7 @@ public class LLMServiceImpl implements LLMService {
                 break;
         }
         this.chatMemoryStore = chatMemoryStore;
+        this.dockerService = dockerService;
     }
 
     // TODO: 将preHandle移动到这里
@@ -110,7 +112,7 @@ public class LLMServiceImpl implements LLMService {
                 valuesList.add(jsonArgument.get(key).toString());
             });
 
-            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            String output = dockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
             // TODO: notify the frontend that the tool has been executed
             System.out.println("Tool output: " + output);
             return output;

@@ -1,7 +1,5 @@
 package com.ise.unigpt.service;
 
-import org.springframework.stereotype.Service;
-
 import com.ise.unigpt.model.History;
 
 import dev.langchain4j.service.TokenStream;
@@ -11,7 +9,6 @@ import lombok.Data;
 /**
  * 通用的大模型服务接口，供WebSocket部分后端开发者调用，使用样例见controller/ChatController.java
  */
-@Service
 public interface LLMService {
 
     @Data
