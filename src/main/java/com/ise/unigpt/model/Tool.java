@@ -2,12 +2,14 @@ package com.ise.unigpt.model;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -27,10 +29,10 @@ public class Tool {
     private String description;
 
     // list of parameters
-    @ElementCollection
-    @Column(name = "parameters", length = 3000)
-    private List<String> parameters;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "tool")
+    private List<Parameter> parameters;
 
-    @Column(name = "fileBody", nullable = false, columnDefinition = "LONGTEXT")
-    private String fileBody;
+    // the url of the tool
+    @Column(name = "url", nullable = false)
+    private String url;
 }

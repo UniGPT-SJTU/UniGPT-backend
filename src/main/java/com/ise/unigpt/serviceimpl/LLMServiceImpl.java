@@ -173,7 +173,7 @@ public class LLMServiceImpl implements LLMService {
 
         Assistant assistant = AiServices.builder(Assistant.class)
                 .chatLanguageModel(model)
-                // .chatMemoryProvider(chatMemoryProvider)
+                .chatMemoryProvider(chatMemoryProvider)
                 .tools(singletonMap(toolSpecification, toolExecutor))
                 .build();
 
