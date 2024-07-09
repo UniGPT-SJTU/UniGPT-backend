@@ -6,6 +6,7 @@ import com.ise.unigpt.dto.PluginCreateDTO;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -51,6 +52,7 @@ public class Plugin {
     private String avatar;
 
     // the urls of the photos
+    @ElementCollection
     @Column(name = "photos")
     private List<String> photos;
 

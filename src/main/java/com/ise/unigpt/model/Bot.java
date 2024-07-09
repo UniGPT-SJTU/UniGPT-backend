@@ -83,7 +83,7 @@ public class Bot {
     private List<Comment> comments;
 
     // 该机器人使用哪些插件
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "bot_use_plugin", joinColumns = @JoinColumn(name = "bot_id"), inverseJoinColumns = @JoinColumn(name = "plugin_id"))
     private List<Plugin> plugins;
 
@@ -106,6 +106,7 @@ public class Bot {
         this.llmArgs = LLMArgs.builder()
                 .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
                 .temperature(dto.getTemperature()).build();
+
     }
 
     public void updateInfo(BotEditInfoDTO dto) {

@@ -1,6 +1,5 @@
 package com.ise.unigpt.repository;
 
-
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +11,6 @@ import com.ise.unigpt.model.Plugin;
 public interface PluginRepository extends JpaRepository<Plugin, Integer> {
 
     List<Plugin> findAllByOrderByIdDesc();
+
+    Plugin findById(int id);
 }

@@ -1,22 +1,24 @@
 package com.ise.unigpt.serviceimpl;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
 
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
 import dev.langchain4j.agent.tool.ToolExecutor;
 import dev.langchain4j.agent.tool.ToolSpecification;
-import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
-import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
@@ -92,12 +94,11 @@ public class LLMServiceImpl implements LLMService {
 
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
-        ToolSpecification toolSpecification = ToolSpecification.builder()
-                .name("sqrt")
-                .description("Returns the value of the square root of a number")
-                .addParameter("number", type("string"), description("The number to calculate the square root of"))
-                .build();
 
+        // 获取history中的bot的plugins，将每个plugins创建对应的ToolSpecification
+        // 通过ToolSpecification创建对应的ToolExecutor
+        List<Plugin> plugins = history.getBot().getPlugins();
+        Map<ToolSpecification, ToolExecutor> tools = new HashMap<>();
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
@@ -117,6 +118,17 @@ public class LLMServiceImpl implements LLMService {
             System.out.println("Tool output: " + output);
             return output;
         };
+        for (Plugin plugin : plugins) {
+            ToolSpecification.Builder toolSpecificationBuilder = ToolSpecification.builder()
+                    .name(plugin.getName())
+                    .description(plugin.getDescription());
+            for (int i = 0; i < plugin.getParameters().size(); i++) {
+                toolSpecificationBuilder.addParameter(plugin.getParameters().get(i).getName(), type(plugin.getParameters().get(i).getType()), description(plugin.getParameters().get(i).getDescription()));
+            }
+            ToolSpecification toolSpecification = toolSpecificationBuilder.build();
+
+            tools.put(toolSpecification, toolExecutor);
+        }
 
         // TODO: 集成prehandle函数
         OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
@@ -135,7 +147,7 @@ public class LLMServiceImpl implements LLMService {
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
-                .tools(Collections.singletonMap(toolSpecification, toolExecutor))
+                .tools(tools)
                 .build();
 
         return assistant.chat(history.getId(), userMessage);

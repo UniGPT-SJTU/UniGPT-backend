@@ -26,7 +26,7 @@ public class BotDetailInfoDTO {
     private boolean asCreator;
     private boolean asAdmin;
     private List<String> promptKeys;
-    private List<PluginDTO> plugins;
+    private List<PluginBriefInfoDTO> plugins;
 
     public BotDetailInfoDTO() {
         // only for test
@@ -49,6 +49,6 @@ public class BotDetailInfoDTO {
         this.asCreator = bot.getCreator().equals(user);
         this.promptKeys = bot.getPromptKeys();
         this.asAdmin = user.getAsAdmin();
-        this.plugins = bot.getPlugins().stream().map(PluginDTO::new).toList();
+        this.plugins = bot.getPlugins().stream().map(plugin -> new PluginBriefInfoDTO(plugin, user)).toList();
     }
 }
