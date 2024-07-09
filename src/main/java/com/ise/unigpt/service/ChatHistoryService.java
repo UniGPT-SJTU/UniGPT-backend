@@ -65,9 +65,8 @@ public interface ChatHistoryService {
     /**
      * @brief 更新历史的最近活跃时间
      * @param history
-     * @throws Exception
      */
-    void updateHistoryActiveTime(History history) throws Exception;
+    void updateHistoryActiveTime(History history);
 
 
     /**

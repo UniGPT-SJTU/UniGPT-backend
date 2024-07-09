@@ -1,10 +1,11 @@
 package com.ise.unigpt.service;
 
+import org.springframework.stereotype.Service;
+
 import com.ise.unigpt.model.History;
 
+import dev.langchain4j.service.TokenStream;
 import lombok.Data;
-
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -53,5 +54,5 @@ public interface LLMService {
      * @return LLM基于对话补全生成的回复内容
      * @throws Exception 抛出异常
      */
-    public String generateResponse(History history, String userMessage, GenerateResponseOptions options) throws Exception;
+    public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options) throws Exception;
 }
