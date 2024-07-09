@@ -157,7 +157,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             History history = sessionHistory.get(session);
 
             // preHandle(session, bot.getId(), promptChatList);
-
             // 获取用户的消息
             WebSocketClientMsgDTO clientMsgDTO = JsonUtils.fromJson(payLoad, WebSocketClientMsgDTO.class);
 
@@ -183,6 +182,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                             GenerateResponseOptions.builder()
                                     .cover(cover)
                                     .isUserAsk(isUserAsk)
+                                    .sendFunctionCall((thisSession, replyMessage) -> {
+                                        sendMessageWrapper(session,
+                                                JsonUtils.toJson(new WebSocketServerMsgDTO("toolExecutionRequest", replyMessage)));
+                                    })
+                                    .sendFunctionResult((thisSession, replyMessage) -> {
+                                        sendMessageWrapper(session,
+                                                JsonUtils.toJson(new WebSocketServerMsgDTO("toolExecutionResult", replyMessage)));
+                                    })
                                     .build());
             AtomicReference<String> replyMessageRef = new AtomicReference<>();
             AtomicReference<History> historyRef = new AtomicReference<>(history);
@@ -245,8 +252,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             String icsData = response.body();
             if (Biweekly.parse(icsData).first() == null) {
-                return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。" +
-                        "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
+                return "我的canvas链接是错误的，请回答我“很抱歉，由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。"
+                        + "在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！";
             }
             ICalendar ical = Biweekly.parse(icsData).first();
 
