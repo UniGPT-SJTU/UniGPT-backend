@@ -52,6 +52,7 @@ public class PluginServiceImpl implements PluginService {
         return new GetPluginsOkResponseDTO(plugins.size(), PaginationUtils.paginate(plugins, page, pageSize));
     }
 
+    @Override
     public PluginDetailInfoDTO getPluginInfo(Integer id, String token) {
 
         Plugin plugin = pluginRepository.findById(id)
