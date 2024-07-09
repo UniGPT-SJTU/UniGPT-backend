@@ -14,13 +14,10 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/api/knowledge")
 public class KnowledgeController {
-    private final AuthService authService;
     private final KnowledgeService knowledgeService;
     public KnowledgeController(
-            AuthService authService,
             KnowledgeService knowledgeService
     ) {
-        this.authService = authService;
         this.knowledgeService = knowledgeService;
     }
 
@@ -44,6 +41,21 @@ public class KnowledgeController {
         }
         catch (IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/query/{id}")
+    public ResponseEntity<ResponseDTO> queryKnowledge(
+            @PathVariable Integer id,
+            @RequestParam("queryText") String queryText,
+            @RequestParam("maxResults") Integer maxResults
+    ){
+        try{
+            return ResponseEntity.ok(new ResponseDTO(true, knowledgeService.queryKnowledge(id, queryText, maxResults).toString()));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
         }
     }

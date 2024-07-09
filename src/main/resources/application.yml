@@ -8,16 +8,16 @@ spring:
       static-locations: file:./src/main/resources/static/
   application:
     name: unigpt
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
+  spring:
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+    datasource:
+        url: ${DB_URL}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+        driver-class-name: com.mysql.cj.jdbc.Driver
 logging:
   level:
     org.springframework.web.socket: DEBUG

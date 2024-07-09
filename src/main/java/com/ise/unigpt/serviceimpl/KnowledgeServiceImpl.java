@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -45,24 +46,14 @@ public class KnowledgeServiceImpl implements KnowledgeService{
 
     static int maxSegmentSizeInChar = 300, dimension = 384;
     private final BotRepository botRepository;
-    private final UserRepository userRepository;
-    private final HistoryRepository historyRepository;
-    private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
-    private final ChatHistoryService chatHistoryService;
+    private final EmbeddingModel embeddingModel;
 
     public KnowledgeServiceImpl(BotRepository botRepository,
-                          UserRepository userRepository,
-                          HistoryRepository historyRepository,
-                          PromptChatRepository promptChatRepository,
-                          AuthService authService,
-                          ChatHistoryService chatHistoryService) {
+                          AuthService authService) {
         this.botRepository = botRepository;
-        this.userRepository = userRepository;
-        this.promptChatRepository = promptChatRepository;
         this.authService = authService;
-        this.historyRepository = historyRepository;
-        this.chatHistoryService = chatHistoryService;
+        this.embeddingModel = new AllMiniLmL6V2EmbeddingModel();
     }
 
     public String extractText(MultipartFile file) throws IOException {
@@ -103,7 +94,7 @@ public class KnowledgeServiceImpl implements KnowledgeService{
             user = authService.getUserByToken(token);
         } catch (NoSuchElementException e) { throw new NoSuchElementException("User not found");}
 
-        if(!bot.getCreator().equals(user) && !user.getAsAdmin()){
+        if(!user.getAsAdmin() && !bot.getCreator().equals(user) ){
             throw new AuthenticationException("Unauthorized to upload file.");
         }
 
@@ -125,8 +116,6 @@ public class KnowledgeServiceImpl implements KnowledgeService{
                     .dimension(dimension)
                     .build();
 
-            EmbeddingModel embeddingModel = new AllMiniLmL6V2EmbeddingModel();
-
             for(TextSegment segment: textSegmentList)
                 embeddingStore.add(
                         embeddingModel.embed(segment).content(),
@@ -138,5 +127,25 @@ public class KnowledgeServiceImpl implements KnowledgeService{
         }
 
         return new ResponseDTO(true, "Successfully upload " + file.getOriginalFilename());
+    }
+
+    public List<String> queryKnowledge(Integer id, String queryText, Integer maxResults){
+        EmbeddingStore<TextSegment> embeddingStore = PgVectorEmbeddingStore.builder()
+                .host("localhost")
+                .port(5432)
+                .database("rag")
+                .user("bleaves") // TODO: save in environment
+                .password("bleaves")
+                .table("bot" + id)
+                .dimension(dimension)
+                .build();
+
+        Embedding queryEmb = embeddingModel.embed(TextSegment.from(queryText)).content();
+        List<EmbeddingMatch<TextSegment>> res = embeddingStore.findRelevant(queryEmb, maxResults);
+        List<String> resString = new ArrayList<>();
+        for(EmbeddingMatch<TextSegment> match: res){
+            resString.add(match.embedded().text());
+        }
+        return resString;
     }
 }
