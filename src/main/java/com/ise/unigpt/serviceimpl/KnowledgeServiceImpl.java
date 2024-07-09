@@ -4,11 +4,7 @@ import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
 import com.ise.unigpt.repository.BotRepository;
-import com.ise.unigpt.repository.HistoryRepository;
-import com.ise.unigpt.repository.PromptChatRepository;
-import com.ise.unigpt.repository.UserRepository;
 import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.service.KnowledgeService;
 
 
@@ -107,9 +103,9 @@ public class KnowledgeServiceImpl implements KnowledgeService{
             List<TextSegment> textSegmentList = splitter.split(document);
 
             EmbeddingStore<TextSegment> embeddingStore = PgVectorEmbeddingStore.builder()
-                    .host("localhost")
+                    .host(System.getenv("DB_HOST"))
                     .port(5432)
-                    .database("rag")
+                    .database("mydatabase")
                     .user("bleaves")
                     .password("bleaves")
                     .table("bot" + id)
@@ -131,9 +127,9 @@ public class KnowledgeServiceImpl implements KnowledgeService{
 
     public List<String> queryKnowledge(Integer id, String queryText, Integer maxResults){
         EmbeddingStore<TextSegment> embeddingStore = PgVectorEmbeddingStore.builder()
-                .host("localhost")
+                .host(System.getenv("DB_HOST"))
                 .port(5432)
-                .database("rag")
+                .database("mydatabase")
                 .user("bleaves") // TODO: save in environment
                 .password("bleaves")
                 .table("bot" + id)

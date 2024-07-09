@@ -48,8 +48,8 @@ public class KnowledgeController {
     @GetMapping("/query/{id}")
     public ResponseEntity<ResponseDTO> queryKnowledge(
             @PathVariable Integer id,
-            @RequestParam("queryText") String queryText,
-            @RequestParam("maxResults") Integer maxResults
+            @RequestParam String queryText,
+            @RequestParam(defaultValue = "1") Integer maxResults
     ){
         try{
             return ResponseEntity.ok(new ResponseDTO(true, knowledgeService.queryKnowledge(id, queryText, maxResults).toString()));
