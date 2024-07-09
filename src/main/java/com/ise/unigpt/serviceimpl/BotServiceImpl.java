@@ -1,22 +1,48 @@
 package com.ise.unigpt.serviceimpl;
 
-import com.ise.unigpt.dto.*;
-import com.ise.unigpt.model.*;
-import com.ise.unigpt.repository.BotRepository;
-import com.ise.unigpt.repository.PromptChatRepository;
-import com.ise.unigpt.repository.UserRepository;
-import com.ise.unigpt.repository.HistoryRepository;
-import com.ise.unigpt.repository.MemoryRepository;
-import com.ise.unigpt.service.AuthService;
-import com.ise.unigpt.service.BotService;
-import com.ise.unigpt.utils.PaginationUtils;
-import com.ise.unigpt.utils.StringTemplateParser;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.ise.unigpt.dto.BotBriefInfoDTO;
+import com.ise.unigpt.dto.BotDetailInfoDTO;
+import com.ise.unigpt.dto.BotEditInfoDTO;
+import com.ise.unigpt.dto.CommentDTO;
+import com.ise.unigpt.dto.CreateBotHistoryOkResponseDTO;
+import com.ise.unigpt.dto.GetBotHistoryOkResponseDTO;
+import com.ise.unigpt.dto.GetBotsOkResponseDTO;
+import com.ise.unigpt.dto.GetCommentsOkResponseDTO;
+import com.ise.unigpt.dto.PromptDTO;
+import com.ise.unigpt.dto.ResponseDTO;
+import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.Chat;
+import com.ise.unigpt.model.ChatType;
+import com.ise.unigpt.model.Comment;
+import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.Memory;
+import com.ise.unigpt.model.MemoryItem;
+import com.ise.unigpt.model.Plugin;
+import com.ise.unigpt.model.PromptChat;
+import com.ise.unigpt.model.User;
+import com.ise.unigpt.repository.BotRepository;
+import com.ise.unigpt.repository.HistoryRepository;
+import com.ise.unigpt.repository.MemoryRepository;
+import com.ise.unigpt.repository.PluginRepository;
+import com.ise.unigpt.repository.PromptChatRepository;
+import com.ise.unigpt.repository.UserRepository;
+import com.ise.unigpt.service.AuthService;
+import com.ise.unigpt.service.BotService;
+import com.ise.unigpt.utils.PaginationUtils;
+import com.ise.unigpt.utils.StringTemplateParser;
 
 @Service
 public class BotServiceImpl implements BotService {
@@ -25,6 +51,7 @@ public class BotServiceImpl implements BotService {
     private final UserRepository userRepository;
     private final HistoryRepository historyRepository;
     private final MemoryRepository memoryRepository;
+    private final PluginRepository pluginRepository;
 
     private final PromptChatRepository promptChatRepository;
     private final AuthService authService;
@@ -34,13 +61,14 @@ public class BotServiceImpl implements BotService {
             HistoryRepository historyRepository,
             MemoryRepository memoryRepository,
             PromptChatRepository promptChatRepository,
-            AuthService authService) {
+            AuthService authService, PluginRepository pluginRepository) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
         this.promptChatRepository = promptChatRepository;
         this.authService = authService;
         this.historyRepository = historyRepository;
         this.memoryRepository = memoryRepository;
+        this.pluginRepository = pluginRepository;
     }
 
     // TODO: 修改BotBriefInfoDTO.asCreator
@@ -152,9 +180,18 @@ public class BotServiceImpl implements BotService {
         List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
         promptChatRepository.saveAll(promptChats);
 
+        // 创建bot的plugin列表
+        // 对于每个plugin, 获取其中的id,使用findById方法获取plugin对象, 如果不存在则抛出异常
+        // 如果存在则将plugin对象加入到plugin列表中
+        List<Plugin> plugins = dto.getPlugins().stream()
+                .map(plugin -> pluginRepository.findById(plugin.getId())
+                .orElseThrow(() -> new NoSuchElementException("Plugin not found for ID: " + plugin.getId())))
+                .collect(Collectors.toList());
+
         // 创建bot并保存到数据库
         Bot newBot = new Bot(dto, creatorUser);
         newBot.setPromptChats(promptChats);
+        newBot.setPlugins(plugins);
         botRepository.save(newBot);
 
         // 更新用户的createBots列表
@@ -190,9 +227,15 @@ public class BotServiceImpl implements BotService {
         List<PromptChat> promptChats = dto.getPromptChats().stream().map(PromptChat::new).collect(Collectors.toList());
         promptChatRepository.saveAll(promptChats);
 
+        List<Plugin> plugins = dto.getPlugins().stream()
+                .map(plugin -> pluginRepository.findById(plugin.getId())
+                .orElseThrow(() -> new NoSuchElementException("Plugin not found for ID: " + plugin.getId())))
+                .collect(Collectors.toList());
+
         // 更新bot信息并保存到数据库
         updatedBot.updateInfo(dto);
         updatedBot.setPromptChats(promptChats);
+        updatedBot.setPlugins(plugins);
         botRepository.save(updatedBot);
 
         return new ResponseDTO(true, "Bot updated successfully");
