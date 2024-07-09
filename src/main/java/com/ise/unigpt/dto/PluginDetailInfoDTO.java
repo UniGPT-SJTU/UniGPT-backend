@@ -18,10 +18,6 @@ public class PluginDetailInfoDTO {
     private List<String> photos;
     private String detail;
     private String avatar;
-    private Integer likeNumber;
-    private Integer starNumber;
-    private boolean liked;
-    private boolean starred;
     private boolean asCreator;
     private boolean asAdmin;
     private List<BotBriefInfoDTO> bots;
