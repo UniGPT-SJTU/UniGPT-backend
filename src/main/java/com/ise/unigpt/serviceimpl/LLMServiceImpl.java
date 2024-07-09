@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
-import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
@@ -94,8 +93,6 @@ public class LLMServiceImpl implements LLMService {
         //         .description("Returns the value of the square root of a number")
         //         .addParameter("number", type("string"), description("The number to calculate the square root of"))
         //         .build();
-
-        List<Plugin> = history.getBot().getPlugins();
 
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed
