@@ -106,6 +106,7 @@ public class Bot {
         this.llmArgs = LLMArgs.builder()
                 .baseModelType(BaseModelType.fromValue(dto.getBaseModelAPI()))
                 .temperature(dto.getTemperature()).build();
+
     }
 
     public void updateInfo(BotEditInfoDTO dto) {

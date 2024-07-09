@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class BotServiceImpl implements BotService {
+
     private final BotRepository botRepository;
     private final UserRepository userRepository;
     private final HistoryRepository historyRepository;
@@ -51,7 +52,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.getIsPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false, false))
+                    false, false))
                     .collect(Collectors.toList());
         } else if (order.equals("like")) {
             bots = botRepository.findAllByOrderByLikeNumberDesc()
@@ -59,7 +60,7 @@ public class BotServiceImpl implements BotService {
                     .filter(bot -> q.isEmpty() || bot.getName().contains(q))
                     .filter(bot -> bot.getIsPublished())
                     .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                            false, false))
+                    false, false))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Invalid order parameter");
