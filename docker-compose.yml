@@ -6,7 +6,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DB_URL=jdbc:mysql://db:3306/unigpt
       - DB_USERNAME=unigpt
@@ -21,6 +22,10 @@ services:
       MYSQL_USER: unigpt
       MYSQL_PASSWORD: Kiwi339bleavescreeper
       MYSQL_DATABASE: unigpt
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
     volumes:
     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
