@@ -33,4 +33,15 @@ public class PluginBriefInfoDTO {
         this.asCreator = plugin.getCreator().equals(user);
         this.asAdmin = user.getAsAdmin();
     }
+
+    public PluginBriefInfoDTO() {
+        // only for test
+    }
+
+    public PluginBriefInfoDTO(Plugin plugin) {
+        this.id = plugin.getId();
+        this.name = plugin.getName();
+        this.description = plugin.getDescription();
+        this.avatar = plugin.getAvatar();
+    }
 }

@@ -21,7 +21,7 @@ public class BotEditInfoDTO {
     private List<PromptChatDTO> promptChats;
     private List<String> promptKeys;
     private double temperature;
-    private List<Integer> plugins;
+    private List<PluginBriefInfoDTO> plugins;
 
     public BotEditInfoDTO(Bot bot) {
         this.name = bot.getName();
@@ -35,7 +35,7 @@ public class BotEditInfoDTO {
         this.isPrompted = bot.getIsPrompted();
         this.promptChats = bot.getPromptChats().stream().map(PromptChatDTO::new).collect(Collectors.toList());
         this.promptKeys = bot.getPromptKeys();
-        this.plugins = bot.getPlugins().stream().map(plugin -> plugin.getId()).collect(Collectors.toList());
+        this.plugins = bot.getPlugins().stream().map(PluginBriefInfoDTO::new).collect(Collectors.toList());
     }
 
     public BotEditInfoDTO() {
