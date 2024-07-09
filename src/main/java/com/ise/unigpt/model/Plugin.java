@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -60,6 +61,10 @@ public class Plugin {
     // boolean is published
     @Column(name = "is_published")
     private Boolean isPublished;
+
+    // 哪些机器人使用了这个插件
+    @ManyToMany(mappedBy = "plugins")
+    private List<Bot> bots;
 
     // constructor
     public Plugin(String name, String description, List<Parameter> parameters, String url, User creator, String avatar, List<String> photos, String detail, Boolean isPublished) {

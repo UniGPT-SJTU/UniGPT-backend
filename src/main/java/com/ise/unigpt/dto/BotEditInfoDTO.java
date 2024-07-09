@@ -1,13 +1,15 @@
 package com.ise.unigpt.dto;
 
-import com.ise.unigpt.model.Bot;
-import lombok.Data;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ise.unigpt.model.Bot;
+
+import lombok.Data;
+
 @Data
 public class BotEditInfoDTO {
+
     private String name;
     private String avatar;
     private String description;
@@ -19,8 +21,9 @@ public class BotEditInfoDTO {
     private List<PromptChatDTO> promptChats;
     private List<String> promptKeys;
     private double temperature;
+    private List<PluginDTO> plugins;
 
-    public BotEditInfoDTO(Bot bot){
+    public BotEditInfoDTO(Bot bot) {
         this.name = bot.getName();
         this.avatar = bot.getAvatar();
         this.description = bot.getDescription();
@@ -32,9 +35,10 @@ public class BotEditInfoDTO {
         this.isPrompted = bot.getIsPrompted();
         this.promptChats = bot.getPromptChats().stream().map(PromptChatDTO::new).collect(Collectors.toList());
         this.promptKeys = bot.getPromptKeys();
+        this.plugins = bot.getPlugins().stream().map(PluginDTO::new).collect(Collectors.toList());
     }
+
     public BotEditInfoDTO() {
         // not used
     }
 }
-

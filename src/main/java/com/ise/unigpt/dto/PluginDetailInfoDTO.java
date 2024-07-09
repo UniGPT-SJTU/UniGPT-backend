@@ -18,7 +18,6 @@ public class PluginDetailInfoDTO {
     private List<String> photos;
     private String detail;
     private String avatar;
-    private String baseModelAPI;
     private Integer likeNumber;
     private Integer starNumber;
     private boolean liked;
