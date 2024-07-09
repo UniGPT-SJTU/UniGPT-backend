@@ -1,9 +1,13 @@
 package com.ise.unigpt.dto;
 
+import com.ise.unigpt.model.Bot;
+import com.ise.unigpt.model.User;
+
 import lombok.Data;
 
 @Data
 public class BotBriefInfoDTO {
+
     private Integer id;
     private String name;
     private String description;
@@ -19,5 +23,14 @@ public class BotBriefInfoDTO {
         this.avatar = avatar;
         this.asCreator = asCreator;
         this.asAdmin = asAdmin;
+    }
+
+    public BotBriefInfoDTO(Bot bot, User user) {
+        this.id = bot.getId();
+        this.name = bot.getName();
+        this.description = bot.getDescription();
+        this.avatar = bot.getAvatar();
+        this.asCreator = bot.getCreator().equals(user);
+        this.asAdmin = user.getAsAdmin();
     }
 }

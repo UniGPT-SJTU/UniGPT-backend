@@ -24,6 +24,7 @@ public class PluginDetailInfoDTO {
     private boolean starred;
     private boolean asCreator;
     private boolean asAdmin;
+    private List<BotBriefInfoDTO> bots;
 
     public PluginDetailInfoDTO() {
         // only for test
@@ -40,5 +41,6 @@ public class PluginDetailInfoDTO {
         this.avatar = plugin.getAvatar();
         this.asCreator = plugin.getCreator().equals(user);
         this.asAdmin = user.getAsAdmin();
+        this.bots = plugin.getBots().stream().map(bot -> new BotBriefInfoDTO(bot, user)).toList();
     }
 }
