@@ -13,12 +13,11 @@ import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 public class LLMServiceFactory {
 
     private final Map<BaseModelType, LLMService> llmServiceMap;
-    
 
-    public LLMServiceFactory(ChatMemoryStore chatMemoryStore) {
+    public LLMServiceFactory(ChatMemoryStore chatMemoryStore, DockerService dockerService) {
         llmServiceMap = new HashMap<>();
         for(BaseModelType type: BaseModelType.values()) {
-            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore));
+            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore, dockerService));
         }
     }
 

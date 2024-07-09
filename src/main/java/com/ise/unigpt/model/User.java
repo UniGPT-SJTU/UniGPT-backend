@@ -1,12 +1,22 @@
 package com.ise.unigpt.model;
 
-import com.ise.unigpt.dto.JaccountUserDTO;
-import com.ise.unigpt.dto.RegisterRequestDTO;
-import jakarta.persistence.*;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.ise.unigpt.dto.JaccountUserDTO;
+import com.ise.unigpt.dto.RegisterRequestDTO;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 @Data
 @Entity
@@ -63,6 +73,10 @@ public class User {
 
     @Column(name = "is_disabled")
     private Boolean disabled = false;
+
+    @OneToMany
+    @JoinColumn(name = "creator_id")
+    private List<Plugin> createPlugins;
 
     public User(RegisterRequestDTO dto) {
 

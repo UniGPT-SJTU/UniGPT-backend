@@ -1,13 +1,15 @@
 package com.ise.unigpt.serviceimpl;
 
 import java.util.ArrayList;
-import static java.util.Collections.singletonMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
@@ -17,12 +19,9 @@ import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
 import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
 import dev.langchain4j.agent.tool.ToolExecutor;
 import dev.langchain4j.agent.tool.ToolSpecification;
-import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
-import dev.langchain4j.model.output.Response;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -35,7 +34,9 @@ public class LLMServiceImpl implements LLMService {
 
     private final ChatMemoryStore chatMemoryStore;
 
-    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore) {
+    private final DockerService dockerService;
+
+    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore, DockerService dockerService) {
         switch (type) {
             case CLAUDE:
                 baseUrl = System.getenv("CLAUDE_API_BASE_URL");
@@ -59,6 +60,7 @@ public class LLMServiceImpl implements LLMService {
                 break;
         }
         this.chatMemoryStore = chatMemoryStore;
+        this.dockerService = dockerService;
     }
 
     // TODO: 将preHandle移动到这里
@@ -93,12 +95,10 @@ public class LLMServiceImpl implements LLMService {
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
 
-        ToolSpecification toolSpecification = ToolSpecification.builder()
-                .name("sqrt")
-                .description("Returns the value of the square root of a number")
-                .addParameter("number", type("string"), description("The number to calculate the square root of"))
-                .build();
-
+        // 获取history中的bot的plugins，将每个plugins创建对应的ToolSpecification
+        // 通过ToolSpecification创建对应的ToolExecutor
+        List<Plugin> plugins = history.getBot().getPlugins();
+        Map<ToolSpecification, ToolExecutor> tools = new HashMap<>();
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
@@ -113,11 +113,22 @@ public class LLMServiceImpl implements LLMService {
                 valuesList.add(jsonArgument.get(key).toString());
             });
 
-            String output = DockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            String output = dockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
             // TODO: notify the frontend that the tool has been executed
             System.out.println("Tool output: " + output);
             return output;
         };
+        for (Plugin plugin : plugins) {
+            ToolSpecification.Builder toolSpecificationBuilder = ToolSpecification.builder()
+                    .name(plugin.getName())
+                    .description(plugin.getDescription());
+            for (int i = 0; i < plugin.getParameters().size(); i++) {
+                toolSpecificationBuilder.addParameter(plugin.getParameters().get(i).getName(), type(plugin.getParameters().get(i).getType()), description(plugin.getParameters().get(i).getDescription()));
+            }
+            ToolSpecification toolSpecification = toolSpecificationBuilder.build();
+
+            tools.put(toolSpecification, toolExecutor);
+        }
 
         // // TODO: 集成prehandle函数
         OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
@@ -130,13 +141,13 @@ public class LLMServiceImpl implements LLMService {
         ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
                 .maxMessages(10)
-                .chatMemoryStore(chatMemoryStore)
+                // .chatMemoryStore(chatMemoryStore)
                 .build();
 
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
-                // .tools(singletonMap(toolSpecification, toolExecutor))
+                .tools(tools)
                 .build();
 
         return assistant.chat(history.getId(), userMessage);

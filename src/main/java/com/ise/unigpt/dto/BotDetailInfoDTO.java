@@ -1,10 +1,11 @@
 package com.ise.unigpt.dto;
 
+import java.util.List;
+
 import com.ise.unigpt.model.Bot;
 import com.ise.unigpt.model.User;
-import lombok.Data;
 
-import java.util.List;
+import lombok.Data;
 
 @Data
 public class BotDetailInfoDTO {
@@ -25,11 +26,12 @@ public class BotDetailInfoDTO {
     private boolean asCreator;
     private boolean asAdmin;
     private List<String> promptKeys;
-
+    private List<PluginBriefInfoDTO> plugins;
 
     public BotDetailInfoDTO() {
         // only for test
     }
+
     public BotDetailInfoDTO(Bot bot, User user) {
         this.id = bot.getId();
         this.name = bot.getName();
@@ -47,5 +49,6 @@ public class BotDetailInfoDTO {
         this.asCreator = bot.getCreator().equals(user);
         this.promptKeys = bot.getPromptKeys();
         this.asAdmin = user.getAsAdmin();
+        this.plugins = bot.getPlugins().stream().map(plugin -> new PluginBriefInfoDTO(plugin, user)).toList();
     }
 }
