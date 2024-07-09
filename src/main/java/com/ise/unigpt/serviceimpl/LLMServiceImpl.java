@@ -7,15 +7,13 @@ import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
+import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
 
-import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
-import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
 import dev.langchain4j.agent.tool.ToolExecutor;
-import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
@@ -91,12 +89,13 @@ public class LLMServiceImpl implements LLMService {
 
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
+        // ToolSpecification toolSpecification = ToolSpecification.builder()
+        //         .name("sqrt")
+        //         .description("Returns the value of the square root of a number")
+        //         .addParameter("number", type("string"), description("The number to calculate the square root of"))
+        //         .build();
 
-        ToolSpecification toolSpecification = ToolSpecification.builder()
-                .name("sqrt")
-                .description("Returns the value of the square root of a number")
-                .addParameter("number", type("string"), description("The number to calculate the square root of"))
-                .build();
+        List<Plugin> = history.getBot().getPlugins();
 
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed

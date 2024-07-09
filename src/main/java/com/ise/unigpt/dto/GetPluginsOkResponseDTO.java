@@ -6,16 +6,17 @@ import lombok.Data;
 
 @Data
 public class GetPluginsOkResponseDTO {
+
     private Integer total;
-    private List<PluginBriefInfoDTO> bots;
+    private List<PluginBriefInfoDTO> plugins;
 
     /**
-     * 
+     *
      * @param total 总数
-     * @param bots 机器人列表
+     * @param plugins 插件列表
      */
-    public GetPluginsOkResponseDTO(int total, List<PluginBriefInfoDTO> bots) {
+    public GetPluginsOkResponseDTO(int total, List<PluginBriefInfoDTO> plugins) {
         this.total = total;
-        this.bots = bots;
+        this.plugins = plugins;
     }
 }
