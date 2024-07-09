@@ -1,6 +1,7 @@
 package com.ise.unigpt.serviceimpl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -13,6 +14,9 @@ import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
 
 import dev.langchain4j.agent.tool.ToolExecutor;
+import dev.langchain4j.agent.tool.ToolSpecification;
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.type;
+import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
@@ -88,11 +92,11 @@ public class LLMServiceImpl implements LLMService {
 
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
-        // ToolSpecification toolSpecification = ToolSpecification.builder()
-        //         .name("sqrt")
-        //         .description("Returns the value of the square root of a number")
-        //         .addParameter("number", type("string"), description("The number to calculate the square root of"))
-        //         .build();
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+                .name("sqrt")
+                .description("Returns the value of the square root of a number")
+                .addParameter("number", type("string"), description("The number to calculate the square root of"))
+                .build();
 
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed
@@ -114,7 +118,7 @@ public class LLMServiceImpl implements LLMService {
             return output;
         };
 
-        // // TODO: 集成prehandle函数
+        // TODO: 集成prehandle函数
         OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl + "/v1")
                 .apiKey(apiKey)
@@ -125,13 +129,13 @@ public class LLMServiceImpl implements LLMService {
         ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
                 .maxMessages(10)
-                // .chatMemoryStore(chatMemoryStore)
+                .chatMemoryStore(chatMemoryStore)
                 .build();
 
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
-                // .tools(singletonMap(toolSpecification, toolExecutor))
+                .tools(Collections.singletonMap(toolSpecification, toolExecutor))
                 .build();
 
         return assistant.chat(history.getId(), userMessage);

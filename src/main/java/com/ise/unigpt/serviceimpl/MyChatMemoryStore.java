@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 
-// @Component
+@Component
 class MyChatMemoryStore implements ChatMemoryStore {
     private final Map<Integer, List<ChatMessage>> map = new HashMap<>();
 

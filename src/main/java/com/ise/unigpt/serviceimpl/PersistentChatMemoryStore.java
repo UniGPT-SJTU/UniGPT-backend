@@ -13,7 +13,7 @@ import com.ise.unigpt.repository.MemoryRepository;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 
-@Component
+// @Component
 public class PersistentChatMemoryStore implements ChatMemoryStore {
 
     private final MemoryRepository memoryRepository;
