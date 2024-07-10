@@ -1,0 +1,33 @@
+name: Build and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - master  # 当主分支收到推送时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker Image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        outputs: type=docker,name=your_image_name,dest=image.tar
+
+    - name: Copy Docker Image to remote server
+      run: |
+        scp -o StrictHostKeyChecking=no image.tar uni@124.70.222.207:~
+
+    - name: Load Docker Image on remote server
+      run: |
+        ssh -o StrictHostKeyChecking=no uni@124.70.222.207 'docker load -i ~/image.tar'
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
