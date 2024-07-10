@@ -18,9 +18,9 @@ jobs:
     - name: copy file via ssh key
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: 124.70.224.207
+        host: 124.70.222.207
         username: uni
+        password: ${{ secrets.SSH_PASSWORD }}
         port: 22
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "hello.txt"
         target: ~/
