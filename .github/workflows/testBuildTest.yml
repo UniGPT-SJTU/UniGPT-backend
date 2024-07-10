@@ -1,0 +1,19 @@
+name: Build and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - master  # 当主分支收到推送时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Copy Docker Image to remote server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        echo helloworld > hello.txt
+        scp -o StrictHostKeyChecking=no hello.txt uni@124.70.222.207:~
