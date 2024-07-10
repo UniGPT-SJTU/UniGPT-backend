@@ -156,7 +156,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             History history = sessionHistory.get(session);
 
-            // preHandle(session, bot.getId(), promptChatList);
             // 获取用户的消息
             WebSocketClientMsgDTO clientMsgDTO = JsonUtils.fromJson(payLoad, WebSocketClientMsgDTO.class);
 
@@ -171,7 +170,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             // 如果cover为true，则删除末尾的两个对话
             if (cover) {
-                chatHistoryService.deleteChats(history.getId(), 2, sessionToken.get(session));
+                chatHistoryService.deleteLastRoundOfChats(history.getId(), sessionToken.get(session));
             }
             // 生成回复消息
             TokenStream tokenStream = llmServiceFactory
