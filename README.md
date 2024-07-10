@@ -21,6 +21,7 @@ export LLAMA_API_BASE_URL="https://xqtd520qidong.com"
 export LLAMA_API_KEY="sk-hMdKUabqMiRM247Y2b23B02e8f484a9198D27cA2D66eAe4d"
 export KIMI_API_BASE_URL="https://api.moonshot.cn"
 export KIMI_API_KEY="sk-xn7ruJ2a0MYLAcheud6qVC87I6mx7b0wpFODccHCDW8oUWMg"
+export DB_HOST="124.70.222.207"
 ```
 ## 运行
 Linux 和 MacOS:

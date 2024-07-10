@@ -72,6 +72,7 @@ public class LLMServiceImpl implements LLMService {
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
             // TODO: notify the frontend that a tool is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
+            options.getSendFunctionCall().accept(options.getSession(), toolExecutionRequest.name());
             String argument = toolExecutionRequest.arguments();
 
             // Parse the argument JSON string to a JSONObject
@@ -84,6 +85,7 @@ public class LLMServiceImpl implements LLMService {
             });
 
             String output = dockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            options.getSendFunctionResult().accept(options.getSession(), output);
             // TODO: notify the frontend that the tool has been executed
             System.out.println("Tool output: " + output);
             return output;

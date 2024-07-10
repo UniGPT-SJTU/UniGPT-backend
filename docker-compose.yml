@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  app:
+    # 使用./DockerFile构建SpringBoot后端镜像
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_URL=jdbc:mysql://db:3306/unigpt
+      - DB_USERNAME=unigpt
+      - DB_PASSWORD=Kiwi339bleavescreeper
+
+  db:
+    image: mysql:8.2
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: unigpt
+      MYSQL_PASSWORD: Kiwi339bleavescreeper
+      MYSQL_DATABASE: unigpt
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    volumes:
+    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  db-data:
