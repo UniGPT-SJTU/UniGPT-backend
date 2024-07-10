@@ -84,15 +84,21 @@ public class LLMServiceImpl implements LLMService {
                 valuesList.add(jsonArgument.get(key).toString());
             });
 
-            String output = dockerService.invokeFunction(toolExecutionRequest.name(), "handler", valuesList);
+            // username 为toolname第一个“_”之前的字符串
+            String toolName = toolExecutionRequest.name();
+            String toolUsername = toolName.substring(0, toolName.indexOf("_"));
+            // toolname去掉username
+            String toolNameModified = toolName.substring(toolName.indexOf("_") + 1);
+            String output = dockerService.invokeFunction(toolUsername, toolNameModified, "handler", valuesList);
             options.getSendFunctionResult().accept(options.getSession(), output);
             // TODO: notify the frontend that the tool has been executed
             System.out.println("Tool output: " + output);
             return output;
         };
         for (Plugin plugin : plugins) {
+            String toolName = plugin.getCreator().getAccount() + "_" + plugin.getName();
             ToolSpecification.Builder toolSpecificationBuilder = ToolSpecification.builder()
-                    .name(plugin.getName())
+                    .name(toolName)
                     .description(plugin.getDescription());
             for (int i = 0; i < plugin.getParameters().size(); i++) {
                 toolSpecificationBuilder.addParameter(plugin.getParameters().get(i).getName(), type(plugin.getParameters().get(i).getType()), description(plugin.getParameters().get(i).getDescription()));

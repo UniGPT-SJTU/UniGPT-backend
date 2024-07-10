@@ -13,16 +13,17 @@ import com.ise.unigpt.service.DockerService;
 
 @Service
 public class DockerServiceImpl implements DockerService {
-    public String invokeFunction(String moduleName, String functionName, List<String> params) {
+
+    public String invokeFunction(String username, String moduleName, String functionName, List<String> params) {
         try {
 
             // 获取当前工作目录
             String currentDir = new File("").getAbsolutePath();
-            String moduleScriptPath = new File(currentDir, "src/main/resources/func/" + moduleName + ".py").getAbsolutePath();
+            String moduleScriptPath = new File(currentDir, "src/main/resources/" + username + "/" + moduleName + ".py").getAbsolutePath();
             String runScriptPath = new File(currentDir, "src/main/resources/func/run.py").getAbsolutePath();
             JSONObject jsonParams = new JSONObject();
             jsonParams.put("params", params);
-            
+
             // 构建Docker命令
             String[] command = {
                 "docker", "run", "--rm",
