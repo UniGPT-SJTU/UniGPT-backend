@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.ise.unigpt.dto.GetPluginsOkResponseDTO;
 import com.ise.unigpt.dto.PluginBriefInfoDTO;
 import com.ise.unigpt.dto.PluginCreateDTO;
+import com.ise.unigpt.dto.PluginCreateTestDTO;
 import com.ise.unigpt.dto.PluginDetailInfoDTO;
 import com.ise.unigpt.dto.PluginEditInfoDTO;
 import com.ise.unigpt.dto.ResponseDTO;
@@ -112,7 +113,7 @@ public class PluginServiceImpl implements PluginService {
     }
 
     @Override
-    public ResponseDTO testCreatePlugin(PluginCreateDTO dto, String token, List<String> params) throws Exception {
+    public ResponseDTO testCreatePlugin(PluginCreateTestDTO dto, String token) throws Exception {
         User user = authService.getUserByToken(token);
 
         // 构建目标文件路径
@@ -133,7 +134,7 @@ public class PluginServiceImpl implements PluginService {
         Files.writeString(file, dto.getCode(), StandardOpenOption.CREATE);
 
         // 调用dockerService执行测试
-        String output = dockerService.invokeFunction(user.getAccount(), dto.getName(), "handler", params);
+        String output = dockerService.invokeFunction(user.getAccount(), dto.getName(), "handler", dto.getParams());
 
         // 解析output为JSONObject来检查是否有error字段
         JSONObject jsonResponse = new JSONObject(output);

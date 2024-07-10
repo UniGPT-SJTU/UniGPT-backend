@@ -1,9 +1,8 @@
 package com.ise.unigpt.service;
 
-import java.util.List;
-
 import com.ise.unigpt.dto.GetPluginsOkResponseDTO;
 import com.ise.unigpt.dto.PluginCreateDTO;
+import com.ise.unigpt.dto.PluginCreateTestDTO;
 import com.ise.unigpt.dto.PluginDetailInfoDTO;
 import com.ise.unigpt.dto.PluginEditInfoDTO;
 import com.ise.unigpt.dto.ResponseDTO;
@@ -51,5 +50,5 @@ public interface PluginService {
      * @param params 参数列表
      * @return 创建结果
      */
-    ResponseDTO testCreatePlugin(PluginCreateDTO dto, String token, List<String> params) throws Exception;
+    ResponseDTO testCreatePlugin(PluginCreateTestDTO dto, String token) throws Exception;
 }

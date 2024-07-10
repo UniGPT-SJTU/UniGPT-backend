@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ise.unigpt.dto.PluginCreateDTO;
+import com.ise.unigpt.dto.PluginCreateTestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.PluginService;
 
@@ -79,11 +80,10 @@ public class PluginController {
 
     @PostMapping("/test")
     public ResponseEntity<Object> testCreatePlugin(
-            @RequestBody PluginCreateDTO dto,
-            @CookieValue("token") String token,
-            @RequestParam List<String> params) {
+            @RequestBody PluginCreateTestDTO dto,
+            @CookieValue("token") String token) {
         try {
-            return ResponseEntity.ok(pluginService.testCreatePlugin(dto, token, params));
+            return ResponseEntity.ok(pluginService.testCreatePlugin(dto, token));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
