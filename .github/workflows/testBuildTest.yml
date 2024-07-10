@@ -11,9 +11,16 @@ jobs:
 
     steps:
 
-    - name: Copy Docker Image to remote server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Create Hello-world txt
       run: |
         echo helloworld > hello.txt
-        scp -o StrictHostKeyChecking=no hello.txt uni@124.70.222.207:~
+        
+    - name: copy file via ssh key
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: 124.70.224.207
+        username: uni
+        port: 22
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "hello.txt"
+        target: ~/
