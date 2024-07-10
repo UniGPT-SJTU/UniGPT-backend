@@ -24,10 +24,8 @@ jobs:
 
     - name: Copy Docker Image to remote server
       run: |
-        scp -o StrictHostKeyChecking=no image.tar uni@124.70.222.207:~
+        scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} image.tar uni@124.70.222.207:~
 
     - name: Load Docker Image on remote server
       run: |
-        ssh -o StrictHostKeyChecking=no uni@124.70.222.207 'docker load -i ~/image.tar'
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} uni@124.70.222.207 'docker load -i ~/image.tar'
