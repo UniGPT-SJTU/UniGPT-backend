@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.ise.unigpt.model.Memory;
@@ -18,38 +19,32 @@ public class PersistentChatMemoryStore implements ChatMemoryStore {
 
     private final MemoryRepository memoryRepository;
 
+    private final Logger log = org.slf4j.LoggerFactory.getLogger(PersistentChatMemoryStore.class);
+
     public PersistentChatMemoryStore(MemoryRepository memoryRepository) {
         this.memoryRepository = memoryRepository;
     }
 
     @Override
     public List<ChatMessage> getMessages(Object memoryId) {
-        List<ChatMessage> chatMessages = memoryRepository.findById((Integer) memoryId)
-                .get()
+        Memory memory = memoryRepository.findById((Integer) memoryId).get();
+        List<ChatMessage> chatMessages = memory
                 .getMemoryItems()
                 .stream()
                 .map(memoryItem -> memoryItem.toChatMessage())
                 .collect(Collectors.toList());
 
-        // System.out.println("getMessages: chatMessages.size == " +
-        // chatMessages.size());
-        // for (ChatMessage chatMessage : chatMessages) {
-        // System.out.println("getMessages: chatMessage == " + chatMessage);
-        // }
         return chatMessages;
     }
 
     @Override
     public void updateMessages(Object memoryId, List<ChatMessage> messages) {
         Memory memory = memoryRepository.findById((Integer) memoryId).get();
-        // System.out.println("updateMessages: messages.size == " + messages.size());
-        // for (ChatMessage message : messages) {
-        // System.out.println("updateMessages: message == " + message);
-        // }
         List<MemoryItem> memoryItems = messages
                 .stream()
-                .map(chatMessage -> new MemoryItem(chatMessage, memory))
-                .toList();
+                .map(message -> new MemoryItem(message, memory))
+                .collect(Collectors.toList());
+
         memory.setMemoryItems(memoryItems);
         memoryRepository.save(memory);
     }

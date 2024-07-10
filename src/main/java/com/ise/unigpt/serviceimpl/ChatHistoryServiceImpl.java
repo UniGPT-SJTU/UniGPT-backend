@@ -8,6 +8,7 @@ import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.ChatHistoryService;
 import com.ise.unigpt.utils.PaginationUtils;
 
+import dev.langchain4j.data.message.ChatMessageType;
 import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -36,8 +37,9 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     }
 
     @Transactional
-    public void deleteChats(Integer historyId, Integer n, String token)
+    public void deleteLastRoundOfChats(Integer historyId, String token)
             throws AuthenticationException {
+
         History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new NoSuchElementException("History not found for ID: " + historyId));
         Memory memory = memoryRepository.findById(historyId)
@@ -49,23 +51,24 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw new AuthenticationException("User not authorized to access this history");
         }
 
-        List<Chat> chats = history.getChats();
-        int chatSize = chats.size();
-        int deletedChatSize = Math.min(n, chats.size());
+        // 删除最后一轮的对话（包括Chat和MemoryItem）
+        // 从后往前遍历，直到遇到第一个USER类型的对话
         
-        // 删除末尾的最多n个chat
-        for (int i = 0; i < deletedChatSize; i++) {
-            chats.remove(chatSize - 1 - i);
+        List<Chat> chats = history.getChats();
+        for(int i = chats.size() - 1; i >= 0; --i) {
+            Chat chat = chats.remove(i);
+            if(chat.getType() == ChatType.USER) {
+                break;
+            }
         }
         historyRepository.save(history);
 
         List<MemoryItem> memoryItems = memory.getMemoryItems();
-        int memoryItemSize = memoryItems.size();
-        int deletedMemoryItemSize = Math.min(n, memoryItemSize);
-
-        // 删除末尾的n个memoryItem
-        for (int i = 0; i < deletedMemoryItemSize; i++) {
-            memoryItems.remove(memoryItemSize - 1 - i);
+        for(int i = memoryItems.size() - 1 ;i >= 0; --i) {
+            MemoryItem memoryItem = memoryItems.remove(i);
+            if(memoryItem.getType() == ChatMessageType.USER) {
+                break;
+            }
         }
         memoryRepository.save(memory);
     }
