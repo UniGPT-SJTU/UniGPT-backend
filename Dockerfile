@@ -3,7 +3,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY keystore.p12 . 
 COPY src ./src
-COPY ./.mvn/wrapper/settings.xml /root/.m2/settings.xml
+# COPY ./.mvn/wrapper/settings.xml /root/.m2/settings.xml
 RUN mvn clean package -DskipTests
 
 FROM ubuntu:22.04
