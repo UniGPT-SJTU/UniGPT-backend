@@ -62,6 +62,7 @@ public class LLMServiceImpl implements LLMService {
         this.dockerService = dockerService;
     }
 
+    @Override
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
 
@@ -70,7 +71,6 @@ public class LLMServiceImpl implements LLMService {
         List<Plugin> plugins = history.getBot().getPlugins();
         Map<ToolSpecification, ToolExecutor> tools = new HashMap<>();
         ToolExecutor toolExecutor = (toolExecutionRequest, memoryId) -> {
-            // TODO: notify the frontend that a tool is being executed
             System.out.println("Executing tool: " + toolExecutionRequest.name());
             options.getSendFunctionCall().accept(options.getSession(), toolExecutionRequest.name());
             String argument = toolExecutionRequest.arguments();
@@ -91,7 +91,7 @@ public class LLMServiceImpl implements LLMService {
             String toolNameModified = toolName.substring(toolName.indexOf("_") + 1);
             String output = dockerService.invokeFunction(toolUsername, toolNameModified, "handler", valuesList);
             options.getSendFunctionResult().accept(options.getSession(), output);
-            // TODO: notify the frontend that the tool has been executed
+
             System.out.println("Tool output: " + output);
             return output;
         };
