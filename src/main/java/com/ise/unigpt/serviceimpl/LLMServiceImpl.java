@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import com.ise.unigpt.model.BaseModelType;
 import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.Plugin;
-import com.ise.unigpt.model.PromptChat;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
 import com.ise.unigpt.service.LLMService;
@@ -63,35 +62,6 @@ public class LLMServiceImpl implements LLMService {
         this.dockerService = dockerService;
     }
 
-    // TODO: 将preHandle移动到这里
-    public void preHandle(int botId, List<PromptChat> promptChatList) {
-        // if (botId == 22) {
-        // String url = user.getCanvasUrl();
-        // if (url == null || url.isEmpty()) {
-        // System.out.println("Canvas URL is empty");
-        // promptChatList.add(new PromptChat(PromptChatType.USER,
-        // "我还没有在个人主页添加Canvas链接，请回答我“很抱歉，" +
-        // "由于您还没有在个人主页添加Canvas链接，我无法帮助您规划任务。在您添加Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
-        // return;
-        // }
-        // //
-        // 正确的url格式:https://oc.sjtu.edu.cn/feeds/calendars/user_5ANNdRErwaHFWaUwCJuLqUk2kyoSNRwMGFtN933O.ics
-        // // 假如url格式不是https://oc.sjtu.edu.cn/feeds/calendars/user_{一串字符}.ics，返回错误信息
-        // if (!url.startsWith("https://oc.sjtu.edu.cn/feeds/calendars/user_") ||
-        // !url.endsWith(".ics")) {
-        // System.out.println("Canvas URL is invalid");
-        // promptChatList.add(new PromptChat(PromptChatType.USER,
-        // "我的个人主页的Canvas链接是错误的，请回答我“很抱歉，" +
-        // "由于您在个人主页添加的Canvas链接是错误的，我无法帮助您规划任务。在您修改Canvas链接后，可以再次与我对话，我将很乐意帮助您规划任务安排。祝您顺利完成所有任务！”"));
-        // return;
-        // }
-        // String canvasEventList = getCanvasEventList(url);
-        // promptChatList
-        // .add(new PromptChat(PromptChatType.USER, "Here are my upcoming Canvas
-        // events:" + canvasEventList));
-        // }
-    }
-
     public TokenStream generateResponse(History history, String userMessage, GenerateResponseOptions options)
             throws Exception {
 
@@ -130,7 +100,6 @@ public class LLMServiceImpl implements LLMService {
             tools.put(toolSpecification, toolExecutor);
         }
 
-        // TODO: 集成prehandle函数
         OpenAiStreamingChatModel model = OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl + "/v1")
                 .apiKey(apiKey)
@@ -140,7 +109,7 @@ public class LLMServiceImpl implements LLMService {
 
         ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
-                .maxMessages(10)
+                .maxMessages(100)
                 .chatMemoryStore(chatMemoryStore)
                 .build();
 
