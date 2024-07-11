@@ -24,6 +24,7 @@ export KIMI_API_KEY="sk-xn7ruJ2a0MYLAcheud6qVC87I6mx7b0wpFODccHCDW8oUWMg"
 export DB_HOST="124.70.222.207"
 export HTTP_PROXY_HOST="127.0.0.1" (可选，默认值为"127.0.0.1")
 export HTTP_PROXY_PORT="7890" (可选，默认值为"7890")
+export FRONTEND_SERVER_URL="http://localhost:3000" (可选，默认值为"http://localhost:3000")
 ```
 ## 运行
 Linux 和 MacOS:
