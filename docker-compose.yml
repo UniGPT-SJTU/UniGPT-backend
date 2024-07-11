@@ -12,8 +12,10 @@ services:
       - DB_URL=jdbc:mysql://db:3306/unigpt
       - DB_USERNAME=unigpt
       - DB_PASSWORD=Kiwi339bleavescreeper
-      - HTTP_PROXY_HOST="192.168.1.100"
-      - HTTP_PROXY_PORT="7890"
+      - HTTP_PROXY_HOST=192.168.1.100
+      - HTTP_PROXY_PORT=7890
+      - DB_HOST=124.70.222.207
+      - FRONTEND_SERVER_URL=http://124.70.222.207:3000
 
   db:
     image: mysql:8.2
