@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
+import dev.langchain4j.rag.content.retriever.ContentRetriever;
+import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
+import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
@@ -121,10 +125,27 @@ public class LLMServiceImpl implements LLMService {
                 .chatMemoryStore(chatMemoryStore)
                 .build();
 
+        ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
+                .embeddingStore(
+                        PgVectorEmbeddingStore.builder()
+                        .host(System.getenv("DB_HOST"))
+                        .port(5432)
+                        .database("mydatabase")
+                        .user("bleaves")
+                        .password("bleaves")
+                        .table("bot" + history.getBot().getId())
+                        .dimension(384)
+                        .build())
+                .embeddingModel(new AllMiniLmL6V2EmbeddingModel())
+                .maxResults(2) // on each interaction we will retrieve the 2 most relevant segments
+                .minScore(0.5) // we want to retrieve segments at least somewhat similar to user query
+                .build();
+
         Assistant assistant = AiServices.builder(Assistant.class)
                 .streamingChatLanguageModel(model)
                 .chatMemoryProvider(chatMemoryProvider)
                 .tools(tools)
+                .contentRetriever(contentRetriever)
                 .build();
 
         return assistant.chat(history.getId(), userMessage);
