@@ -3,6 +3,7 @@ services:
   app:
     # 使用./DockerFile构建SpringBoot后端镜像
     build: .
+    network_mode: "host"
     ports:
       - "8080:8080"
     depends_on:
@@ -12,7 +13,6 @@ services:
       - DB_URL=jdbc:mysql://db:3306/unigpt
       - DB_USERNAME=unigpt
       - DB_PASSWORD=Kiwi339bleavescreeper
-      - HTTP_PROXY_HOST=192.168.1.100
       - HTTP_PROXY_PORT=7890
       - DB_HOST=124.70.222.207
       - FRONTEND_SERVER_URL=http://124.70.222.207:3000
