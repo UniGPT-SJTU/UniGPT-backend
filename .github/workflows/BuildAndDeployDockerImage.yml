@@ -32,13 +32,17 @@ jobs:
         source: "image.tar"
         target: ~/
 
-    - name: Load Docker Image on remote server
+    - name: Load Docker Image and Restart Docker Container
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: 124.70.222.207
         username: uni
         password: ${{ secrets.SSH_PASSWORD }}
         port: 22
-        script: docker load -i ~/image.tar; rm ~/image.tar
+        script: docker load -i ~/image.tar && \
+                rm ~/image.tar && \
+                cd UniGPT-backend && \
+                docker compose pull app && \
+                docker compose up -d --no-deps app
 
         
