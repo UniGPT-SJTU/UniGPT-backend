@@ -20,24 +20,25 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        outputs: type=docker,name=your_image_name,dest=image.tar
+        outputs: type=docker,name=unigpt-backend-app,dest=image.tar
 
     - name: Copy Docker Image to remote server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no image.tar uni@124.70.222.207:~
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: 124.70.222.207
+        username: uni
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        source: "image.tar"
+        target: ~/
 
     - name: Load Docker Image on remote server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh -o StrictHostKeyChecking=no uni@124.70.222.207 'docker load -i ~/image.tar'
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: 124.70.222.207
+        username: uni
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        script: docker load -i ~/image.tar; rm ~/image.tar
 
         
