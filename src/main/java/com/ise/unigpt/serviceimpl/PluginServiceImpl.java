@@ -134,7 +134,7 @@ public class PluginServiceImpl implements PluginService {
         Files.writeString(file, dto.getCode(), StandardOpenOption.CREATE);
 
         // 调用dockerService执行测试
-        String output = dockerService.invokeFunction("test/" + user.getAccount(), dto.getName(), "handler", dto.getParams());
+        String output = dockerService.invokeFunction("test/" + user.getAccount(), dto.getName(), "handler", dto.getParamsValue());
 
         // 解析output为JSONObject来检查是否有error字段
         JSONObject jsonResponse = new JSONObject(output);
