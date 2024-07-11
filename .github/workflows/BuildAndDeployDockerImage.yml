@@ -20,7 +20,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        outputs: type=docker,name=unigpt-backend-app,dest=image.tar
+        outputs: type=docker,name=unigpt-backend-app,dest=backend_image.tar
 
     - name: Copy Docker Image to remote server
       uses: appleboy/scp-action@v0.1.7
@@ -29,7 +29,7 @@ jobs:
         username: uni
         password: ${{ secrets.SSH_PASSWORD }}
         port: 22
-        source: "image.tar"
+        source: "backend_image.tar"
         target: ~/
 
     - name: Load Docker Image and Restart Docker Container
@@ -39,10 +39,10 @@ jobs:
         username: uni
         password: ${{ secrets.SSH_PASSWORD }}
         port: 22
-        script: docker load -i ~/image.tar && \
-                rm ~/image.tar && \
-                cd UniGPT-backend && \
-                docker compose pull app && \
+        script: docker load -i ~/backend_image.tar && 
+                rm ~/backend_image.tar && 
+                cd UniGPT-backend && 
+                docker compose pull app && 
                 docker compose up -d --no-deps app
 
         
