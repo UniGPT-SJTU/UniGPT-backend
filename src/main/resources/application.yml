@@ -17,6 +17,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+  data:
+    mongodb:
+      uri: mongodb://bleaves:bleaves@124.70.222.207:27017/file_db
+      database: file_db
 logging:
   level:
     org.springframework.web.socket: DEBUG
