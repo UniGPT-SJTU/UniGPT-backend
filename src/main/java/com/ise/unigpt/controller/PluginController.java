@@ -1,5 +1,7 @@
 package com.ise.unigpt.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ise.unigpt.dto.PluginCreateDTO;
+import com.ise.unigpt.dto.PluginCreateTestDTO;
 import com.ise.unigpt.dto.ResponseDTO;
 import com.ise.unigpt.service.PluginService;
 
@@ -69,6 +72,18 @@ public class PluginController {
             @CookieValue("token") String token) {
         try {
             return ResponseEntity.ok(pluginService.createPlugin(dto, token));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<Object> testCreatePlugin(
+            @RequestBody PluginCreateTestDTO dto,
+            @CookieValue("token") String token) {
+        try {
+            return ResponseEntity.ok(pluginService.testCreatePlugin(dto, token));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO(false, e.getMessage()));
