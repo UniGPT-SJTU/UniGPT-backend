@@ -6,17 +6,26 @@ services:
     network_mode: "host"
     ports:
       - "8080:8080"
+    environment:
+      - DB_URL=jdbc:mysql://124.70.222.207:3306/unigpt
+      - DB_USERNAME=unigpt
+      - DB_PASSWORD=Kiwi339bleavescreeper
+      - OPENAI_API_BASE_URL=https://api.openai.com
+      - OPENAI_API_KEY=sk-j101-s9eW29r08H38nPRyMia7T3BlbkFJom4ndaHHCjhWkRRp3lsG
+      - CLAUDE_API_BASE_URL=https://api.claude-Plus.top
+      - CLAUDE_API_KEY=sk-JAuS27IqZB15lJST6a76A0111e2d4eEb9d7aD0Bd34F20271
+      - LLAMA_API_BASE_URL=https://xqtd520qidong.com
+      - LLAMA_API_KEY=sk-hMdKUabqMiRM247Y2b23B02e8f484a9198D27cA2D66eAe4d
+      - KIMI_API_BASE_URL=https://api.moonshot.cn
+      - KIMI_API_KEY=sk-xn7ruJ2a0MYLAcheud6qVC87I6mx7b0wpFODccHCDW8oUWMg
+      - DB_HOST=124.70.222.207
+      - HTTP_PROXY_HOST=127.0.0.1 
+      - HTTP_PROXY_PORT=7890 
+      - FRONTEND_SERVER_URL=http://124.70.222.207:3000 
+
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      - DB_URL=jdbc:mysql://db:3306/unigpt
-      - DB_USERNAME=unigpt
-      - DB_PASSWORD=Kiwi339bleavescreeper
-      - HTTP_PROXY_PORT=7890
-      - DB_HOST=124.70.222.207
-      - FRONTEND_SERVER_URL=http://124.70.222.207:3000
-
   db:
     image: mysql:8.2
     ports:
