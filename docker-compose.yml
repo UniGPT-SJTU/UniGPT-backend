@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=jdbc:mysql://124.70.222.207:3306/unigpt
+      - DB_URL=jdbc:mysql://localhost:3306/unigpt
       - DB_USERNAME=unigpt
       - DB_PASSWORD=Kiwi339bleavescreeper
       - OPENAI_API_BASE_URL=https://api.openai.com
@@ -19,7 +19,7 @@ services:
       - KIMI_API_BASE_URL=https://api.moonshot.cn
       - KIMI_API_KEY=sk-xn7ruJ2a0MYLAcheud6qVC87I6mx7b0wpFODccHCDW8oUWMg
 
-      - POSTGRES_HOST=postgresql_db
+      - POSTGRES_HOST=localhost
       - POSTGRES_PORT=5432
       - POSTGRES_DB=mydatabase
       - POSTGRES_USER=bleaves
