@@ -8,7 +8,6 @@ import java.util.Map;
 import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
-import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
@@ -16,6 +15,7 @@ import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
+import com.ise.unigpt.service.KnowledgeService;
 import com.ise.unigpt.service.LLMService;
 
 import static dev.langchain4j.agent.tool.JsonSchemaProperty.description;
@@ -39,7 +39,13 @@ public class LLMServiceImpl implements LLMService {
 
     private final DockerService dockerService;
 
-    public LLMServiceImpl(BaseModelType type, ChatMemoryStore chatMemoryStore, DockerService dockerService) {
+    private final KnowledgeService knowledgeService;
+
+    public LLMServiceImpl(
+            BaseModelType type,
+            ChatMemoryStore chatMemoryStore,
+            DockerService dockerService,
+            KnowledgeService knowledgeService) {
         switch (type) {
             case CLAUDE:
                 baseUrl = System.getenv("CLAUDE_API_BASE_URL");
@@ -64,6 +70,7 @@ public class LLMServiceImpl implements LLMService {
         }
         this.chatMemoryStore = chatMemoryStore;
         this.dockerService = dockerService;
+        this.knowledgeService = knowledgeService;
     }
 
     @Override
@@ -105,7 +112,9 @@ public class LLMServiceImpl implements LLMService {
                     .name(toolName)
                     .description(plugin.getDescription());
             for (int i = 0; i < plugin.getParameters().size(); i++) {
-                toolSpecificationBuilder.addParameter(plugin.getParameters().get(i).getName(), type(plugin.getParameters().get(i).getType()), description(plugin.getParameters().get(i).getDescription()));
+                toolSpecificationBuilder.addParameter(plugin.getParameters().get(i).getName(),
+                        type(plugin.getParameters().get(i).getType()),
+                        description(plugin.getParameters().get(i).getDescription()));
             }
             ToolSpecification toolSpecification = toolSpecificationBuilder.build();
 
@@ -127,15 +136,7 @@ public class LLMServiceImpl implements LLMService {
 
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(
-                        PgVectorEmbeddingStore.builder()
-                        .host(System.getenv("DB_HOST"))
-                        .port(5432)
-                        .database("mydatabase")
-                        .user("bleaves")
-                        .password("bleaves")
-                        .table("bot" + history.getBot().getId())
-                        .dimension(384)
-                        .build())
+                        knowledgeService.createEmbeddingStore(history.getBot().getId()))
                 .embeddingModel(new AllMiniLmL6V2EmbeddingModel())
                 .maxResults(2) // on each interaction we will retrieve the 2 most relevant segments
                 .minScore(0.5) // we want to retrieve segments at least somewhat similar to user query

@@ -14,10 +14,14 @@ public class LLMServiceFactory {
 
     private final Map<BaseModelType, LLMService> llmServiceMap;
 
-    public LLMServiceFactory(ChatMemoryStore chatMemoryStore, DockerService dockerService) {
+    public LLMServiceFactory(
+        ChatMemoryStore chatMemoryStore, 
+        DockerService dockerService, 
+        KnowledgeService knowledgeService
+    ) {
         llmServiceMap = new HashMap<>();
         for(BaseModelType type: BaseModelType.values()) {
-            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore, dockerService));
+            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore, dockerService, knowledgeService));
         }
     }
 
