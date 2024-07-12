@@ -27,7 +27,7 @@ services:
 
       - HTTP_PROXY_HOST=127.0.0.1 
       - HTTP_PROXY_PORT=7890 
-      - FRONTEND_SERVER_URL=http://localhost:3000
+      - FRONTEND_SERVER_URL=http://124.70.222.207:3000
 
     depends_on:
       db:
