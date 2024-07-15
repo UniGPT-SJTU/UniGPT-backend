@@ -1,10 +1,10 @@
 FROM maven:3.9.5 AS build
 WORKDIR /app
 COPY pom.xml .
+COPY ./.mvn/wrapper/settings.xml /root/.m2/settings.xml
 RUN mvn dependency:go-offline
 COPY keystore.p12 . 
 COPY src ./src
-COPY ./.mvn/wrapper/settings.xml /root/.m2/settings.xml
 RUN mvn clean package -DskipTests
 
 FROM ubuntu:22.04
