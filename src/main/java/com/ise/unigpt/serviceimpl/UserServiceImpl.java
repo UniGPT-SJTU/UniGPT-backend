@@ -1,8 +1,6 @@
 package com.ise.unigpt.serviceimpl;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.security.sasl.AuthenticationException;
@@ -44,12 +42,8 @@ public class UserServiceImpl implements UserService {
             Integer id,
             UpdateUserInfoRequestDTO updateUserInfoRequestDTO,
             String token) throws AuthenticationException {
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User not found for ID: " + id);
-        }
+        User targetUser = findUserById(id);
 
-        User targetUser = optionalUser.get();
         User requestUser = authService.getUserByToken(token);
         if (!targetUser.equals(requestUser)) {
             throw new AuthenticationException("Unauthorized to update user info");
@@ -65,20 +59,18 @@ public class UserServiceImpl implements UserService {
     // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getUsedBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
+        User user = findUserById(userid);
 
-        if (!authService.getUserByToken(token).equals(optionalUser.get())) {
+        if (!authService.getUserByToken(token).equals(user)) {
             throw new AuthenticationException("Unauthorized to get used bots");
         }
 
-        List<Bot> usedBots = optionalUser.get().getUsedBots();
+        List<Bot> usedBots = user.getUsedBots();
+        Collections.reverse(usedBots);
 
         List<BotBriefInfoDTO> bots = usedBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().getAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -87,20 +79,14 @@ public class UserServiceImpl implements UserService {
     // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getStarredBots(Integer userid, String token, Integer page, Integer pageSize)
             throws AuthenticationException {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
+        User user = findUserById(userid);
 
-        if (!authService.getUserByToken(token).equals(optionalUser.get())) {
-            throw new AuthenticationException("Unauthorized to get used bots");
-        }
-
-        List<Bot> starredBots = optionalUser.get().getStarBots();
+        List<Bot> starredBots = user.getStarBots();
+        Collections.reverse(starredBots);
 
         List<BotBriefInfoDTO> bots = starredBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
-                        bot.getCreator().equals(optionalUser.get()), optionalUser.get().getAsAdmin()))
+                        bot.getCreator().equals(user), user.getAsAdmin()))
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
@@ -108,12 +94,9 @@ public class UserServiceImpl implements UserService {
 
     // TODO: 修改BotBriefInfoDTO.asCreator
     public GetBotsOkResponseDTO getCreatedBots(Integer userid, String token, Integer page, Integer pageSize) {
-        Optional<User> optionalUser = repository.findById(userid);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User with id " + userid + " not found");
-        }
-        User user = optionalUser.get();
-        List<Bot> createdBots = optionalUser.get().getCreateBots();
+        User user = findUserById(userid);
+        List<Bot> createdBots = user.getCreateBots();
+        Collections.reverse(createdBots);
 
         List<BotBriefInfoDTO> bots = createdBots.stream()
                 .map(bot -> new BotBriefInfoDTO(bot.getId(), bot.getName(), bot.getDescription(), bot.getAvatar(),
@@ -121,7 +104,6 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
-
     }
 
     // type : id || name
@@ -179,11 +161,7 @@ public class UserServiceImpl implements UserService {
         if (!requestUser.getAsAdmin()) {
             throw new AuthenticationException("Unauthorized to ban user");
         }
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User with id " + id + " not found");
-        }
-        User targetUser = optionalUser.get();
+        User targetUser = findUserById(id);
         targetUser.setDisabled(state);
         repository.save(targetUser);
     }
@@ -199,10 +177,7 @@ public class UserServiceImpl implements UserService {
             throw new AuthenticationException("Unauthorized to get ban state");
         }
 
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isEmpty()) {
-            throw new NoSuchElementException("User with id " + id + " not found");
-        }
-        return optionalUser.get().getDisabled();
+        User user = findUserById(id);
+        return user.getDisabled();
     }
 }
