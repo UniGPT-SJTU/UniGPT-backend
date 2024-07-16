@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=jdbc:mysql://124.70.222.207:3306/unigpt
+      - DB_URL=jdbc:mysql://localhost:3306/unigpt
       - DB_USERNAME=unigpt
       - DB_PASSWORD=Kiwi339bleavescreeper
       - OPENAI_API_BASE_URL=https://api.openai.com
@@ -18,10 +18,16 @@ services:
       - LLAMA_API_KEY=sk-hMdKUabqMiRM247Y2b23B02e8f484a9198D27cA2D66eAe4d
       - KIMI_API_BASE_URL=https://api.moonshot.cn
       - KIMI_API_KEY=sk-xn7ruJ2a0MYLAcheud6qVC87I6mx7b0wpFODccHCDW8oUWMg
-      - DB_HOST=124.70.222.207
+
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=bleaves
+      - POSTGRES_PASSWORD=bleaves
+
       - HTTP_PROXY_HOST=127.0.0.1 
       - HTTP_PROXY_PORT=7890 
-      - FRONTEND_SERVER_URL=http://124.70.222.207:3000 
+      - FRONTEND_SERVER_URL=http://124.70.222.207:3000
 
     depends_on:
       db:
@@ -30,6 +36,34 @@ services:
     image: mysql:8.2
     ports:
       - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: unigpt
+      MYSQL_PASSWORD: Kiwi339bleavescreeper
+      MYSQL_DATABASE: unigpt
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    volumes:
+    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  postgresql_db:
+    image: pgvector/pgvector:pg14
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: bleaves
+      POSTGRES_USER: bleaves
+      POSTGRES_DB: mydatabase
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+  
+  test_db:
+    image: mysql:8.2
+    ports:
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_USER: unigpt

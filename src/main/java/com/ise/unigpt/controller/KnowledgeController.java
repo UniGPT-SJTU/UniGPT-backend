@@ -1,7 +1,6 @@
 package com.ise.unigpt.controller;
 
 import com.ise.unigpt.dto.ResponseDTO;
-import com.ise.unigpt.service.AuthService;
 import com.ise.unigpt.service.KnowledgeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,18 +44,18 @@ public class KnowledgeController {
         }
     }
 
-    @GetMapping("/query/{id}")
-    public ResponseEntity<ResponseDTO> queryKnowledge(
-            @PathVariable Integer id,
-            @RequestParam String queryText,
-            @RequestParam(defaultValue = "1") Integer maxResults
-    ){
-        try{
-            return ResponseEntity.ok(new ResponseDTO(true, knowledgeService.queryKnowledge(id, queryText, maxResults).toString()));
-        }
-        catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO(false, e.getMessage()));
-        }
-    }
+    // @GetMapping("/query/{id}")
+    // public ResponseEntity<ResponseDTO> queryKnowledge(
+    //         @PathVariable Integer id,
+    //         @RequestParam String queryText,
+    //         @RequestParam(defaultValue = "1") Integer maxResults
+    // ){
+    //     try{
+    //         return ResponseEntity.ok(new ResponseDTO(true, knowledgeService.queryKnowledge(id, queryText, maxResults).toString()));
+    //     }
+    //     catch (NoSuchElementException e) {
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(new ResponseDTO(false, e.getMessage()));
+    //     }
+    // }
 }

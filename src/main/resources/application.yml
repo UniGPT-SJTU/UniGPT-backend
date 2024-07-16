@@ -9,7 +9,7 @@ spring:
   application:
     name: unigpt
   datasource:
-    url: jdbc:mysql://124.70.222.207:3306/unigpt
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -37,3 +37,11 @@ imageServerUrl: http://124.70.222.207:10339
 frontendServerUrl: ${FRONTEND_SERVER_URL:http://localhost:3000}
 jaccountClientId: ov3SLrO4HyZSELxcHiqS
 jaccountClientSecret: B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C
+
+
+postgres:
+  host: ${POSTGRES_HOST:124.70.222.207}
+  port: ${POSTGRES_PORT:5432}
+  database: ${POSTGRES_DB:mydatabase}
+  username: ${POSTGRES_USER:bleaves}
+  password: ${POSTGRES_PASSWORD:bleaves}
