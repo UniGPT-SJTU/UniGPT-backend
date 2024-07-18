@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
-import dev.langchain4j.rag.content.retriever.ContentRetriever;
-import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import org.json.JSONObject;
 
 import com.ise.unigpt.model.BaseModelType;
@@ -24,7 +21,10 @@ import dev.langchain4j.agent.tool.ToolExecutor;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import dev.langchain4j.rag.content.retriever.ContentRetriever;
+import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -149,6 +149,8 @@ public class LLMServiceImpl implements LLMService {
                 .contentRetriever(contentRetriever)
                 .build();
 
+        options.getSendFunctionCall().accept(options.getSession(), "知识库调用");
+        options.getSendFunctionResult().accept(options.getSession(), "知识库调用结果");
         return assistant.chat(history.getId(), userMessage);
     }
 }
