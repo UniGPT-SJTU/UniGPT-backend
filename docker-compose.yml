@@ -25,13 +25,12 @@ services:
       - POSTGRES_USER=bleaves
       - POSTGRES_PASSWORD=bleaves
 
-      - HTTP_PROXY_HOST=127.0.0.1 
-      - HTTP_PROXY_PORT=7890 
-      - FRONTEND_SERVER_URL=http://124.70.222.207:3000
-
-    depends_on:
-      db:
-        condition: service_healthy
+      - HTTP_PROXY_HOST=127.0.0.1
+      - HTTP_PROXY_PORT=7890
+      - FRONTEND_SERVER_URL=http://123.60.187.205:3000
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
   db:
     image: mysql:8.2
     ports:
@@ -42,11 +41,27 @@ services:
       MYSQL_PASSWORD: Kiwi339bleavescreeper
       MYSQL_DATABASE: unigpt
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 5s
       retries: 10
     volumes:
-    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  nginx:
+    build: ../nginx/.
+    ports:
+      - "8081:8081"
+    volumes:
+      - ../nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ../nginx/authoriza.lua:/usr/local/openresty/nginx/conf/lua/authorize.lua
+      - ../nginx/init.sh:/init.sh
+    # network_mode: "host"
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "/bin/sh init.sh && tail -f /dev/null"
+      ]
 
   postgresql_db:
     image: pgvector/pgvector:pg14
@@ -59,7 +74,7 @@ services:
       - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
-  
+
   test_db:
     image: mysql:8.2
     ports:
@@ -70,10 +85,12 @@ services:
       MYSQL_PASSWORD: Kiwi339bleavescreeper
       MYSQL_DATABASE: unigpt
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 5s
       retries: 10
     volumes:
-    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
   db-data:
+
+
