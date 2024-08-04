@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.huaweicloud.sdk.core.auth.ICredential;
 import com.huaweicloud.sdk.core.auth.BasicCredentials;
 import com.huaweicloud.sdk.core.exception.ConnectionException;
@@ -22,7 +21,7 @@ import com.huaweicloud.sdk.functiongraph.v2.model.*;
 @RestController
 @RequestMapping("/api/functiongraph")
 public class FunctionGraphController {
-    
+
     private final FunctionGraphService functionGraphService;
 
     public FunctionGraphController(FunctionGraphService functionGraphService) {
@@ -31,14 +30,13 @@ public class FunctionGraphController {
 
     @PostMapping("/upload")
     public ResponseEntity<ResponseDTO> uploadFunction(@CookieValue(value = "token") String token) {
-        try{
-        functionGraphService.UploadFunction();
+        try {
+            functionGraphService.UploadFunction();
 
-        return ResponseEntity.ok(new ResponseDTO("success", "upload function success"));
-    } catch (Exception e) {
-        e.printStackTrace();
-    } catch (RequestTimeoutException e) {
-        return ResponseEntity.ok(new ResponseDTO("error", "upload error"));
+            return ResponseEntity.ok(new ResponseDTO(true, "Function uploaded successfully"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(new ResponseDTO(false, "Failed to upload function"));
+        }
     }
-
 }

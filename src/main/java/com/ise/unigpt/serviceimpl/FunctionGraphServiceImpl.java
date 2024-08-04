@@ -11,9 +11,9 @@ import com.huaweicloud.sdk.functiongraph.v2.model.*;
 
 import com.ise.unigpt.service.FunctionGraphService;
 
-public class FunctionGraphServiceImpl implements FunctionGraphService{
+public class FunctionGraphServiceImpl implements FunctionGraphService {
 
-    public void UploadFunction() {
+    public boolean UploadFunction() {
         // The AK and SK used for authentication are hard-coded or stored in plaintext, which has great security risks. It is recommended that the AK and SK be stored in ciphertext in configuration files or environment variables and decrypted during use to ensure security.
         // In this example, AK and SK are stored in environment variables for authentication. Before running this example, set environment variables CLOUD_SDK_AK and CLOUD_SDK_SK in the local environment
         String ak = System.getenv("HUAWEICLOUD_SDK_AK");
@@ -39,14 +39,22 @@ public class FunctionGraphServiceImpl implements FunctionGraphService{
             System.out.println(response.toString());
         } catch (ConnectionException e) {
             e.printStackTrace();
+            return false;
         } catch (RequestTimeoutException e) {
             e.printStackTrace();
+            return false;
         } catch (ServiceResponseException e) {
             e.printStackTrace();
             System.out.println(e.getHttpStatusCode());
             System.out.println(e.getRequestId());
             System.out.println(e.getErrorCode());
             System.out.println(e.getErrorMsg());
+            return false;
         }
+        return true;
+    }
+
+    public String CallFunction() {
+        return "temp";
     }
 }
