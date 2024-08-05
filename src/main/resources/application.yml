@@ -21,6 +21,9 @@ spring:
     mongodb:
       uri: mongodb://bleaves:bleaves@124.70.222.207:27017/file_db
       database: file_db
+    redis:
+      host: 123.60.187.205
+      port: 30004
 logging:
   level:
     org.springframework.web.socket: DEBUG

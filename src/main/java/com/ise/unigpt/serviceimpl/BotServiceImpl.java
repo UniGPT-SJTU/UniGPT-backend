@@ -10,6 +10,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
@@ -97,6 +100,7 @@ public class BotServiceImpl implements BotService {
         return new GetBotsOkResponseDTO(bots.size(), PaginationUtils.paginate(bots, page, pageSize));
     }
 
+    @Cacheable(value = "botBriefInfo", key = "{#id, #token}")
     public BotBriefInfoDTO getBotBriefInfo(Integer id, String token) {
         Bot bot = botRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bot not found for ID: " + id));
@@ -203,6 +207,9 @@ public class BotServiceImpl implements BotService {
         return new ResponseDTO(true, botId);
     }
 
+    @Autowired
+    private CacheManager cacheManager;
+
     public ResponseDTO updateBot(Integer id, BotEditInfoDTO dto, String token) {
 
         // 根据id获取bot
@@ -237,6 +244,10 @@ public class BotServiceImpl implements BotService {
         updatedBot.setPromptChats(promptChats);
         updatedBot.setPlugins(plugins);
         botRepository.save(updatedBot);
+
+        BotBriefInfoDTO briefInfo = new BotBriefInfoDTO(updatedBot, requestUser);
+        String key = String.format("%s,%s", id, token);
+        Objects.requireNonNull(cacheManager.getCache("botBriefInfo")).put(key, briefInfo);
 
         return new ResponseDTO(true, "Bot updated successfully");
     }
