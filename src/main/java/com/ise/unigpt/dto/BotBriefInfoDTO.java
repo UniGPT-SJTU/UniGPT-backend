@@ -5,8 +5,10 @@ import com.ise.unigpt.model.User;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class BotBriefInfoDTO {
+public class BotBriefInfoDTO implements Serializable {
 
     private Integer id;
     private String name;
