@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ise.unigpt.dto.JaccountUserDTO;
-import com.ise.unigpt.dto.RegisterRequestDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,9 +31,6 @@ public class User {
 
     @Column(name = "email")
     private String email;
-
-    @Column(name = "password")
-    private String password;
 
     @Column(name = "avatar")
     private String avatar;
@@ -78,22 +74,6 @@ public class User {
     @JoinColumn(name = "creator_id")
     private List<Plugin> createPlugins;
 
-    public User(RegisterRequestDTO dto) {
-
-        this.name = dto.getUsername();
-        this.email = dto.getEmail();
-        this.password = dto.getPassword();
-        this.avatar = dto.getAvatar();
-        this.description = dto.getDescription();
-
-        this.likeBots = new ArrayList<>();
-        this.starBots = new ArrayList<>();
-        this.usedBots = new ArrayList<>();
-        this.createBots = new ArrayList<>();
-
-        this.histories = new ArrayList<>();
-        this.asAdmin = false;
-    }
 
     public User(JaccountUserDTO dto) {
         this.name = dto.getName();

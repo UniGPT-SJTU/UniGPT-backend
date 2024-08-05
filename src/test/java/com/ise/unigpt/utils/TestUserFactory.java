@@ -11,7 +11,7 @@ public class TestUserFactory {
         user.setAvatar("avatar1");
         user.setAsAdmin(false);
         user.setDisabled(false);
-        user.setPassword("password");
+        // user.setPassword("password");
         user.setAccount("account");
         user.setCanvasUrl("canvasUrl");
         user.setDescription("description");
@@ -27,7 +27,7 @@ public class TestUserFactory {
         user.setEmail("creeper@hellomail");
         user.setAvatar("avatar1");
         user.setAsAdmin(true);
-        user.setPassword("password");
+        // user.setPassword("password");
         user.setAccount("account");
         user.setCanvasUrl("canvasUrl");
         user.setDescription("description");
@@ -43,7 +43,7 @@ public class TestUserFactory {
         user.setEmail("creeper@hellomail");
         user.setAvatar("avatar2");
         user.setAsAdmin(false);
-        user.setPassword("password");
+        // user.setPassword("password");
         user.setAccount("account");
         user.setCanvasUrl("canvasUrl");
         user.setDescription("description");
@@ -59,7 +59,7 @@ public class TestUserFactory {
         user.setEmail("creeper@hellomail");
         user.setAvatar("avatar3");
         user.setAsAdmin(false);
-        user.setPassword("password");
+        // user.setPassword("password");
         user.setAccount("account");
         user.setCanvasUrl("canvasUrl");
         user.setDescription("description");
