@@ -1,8 +1,10 @@
 package com.ise.unigpt.service;
 
+import java.io.IOException;
+
 public interface FunctionGraphService {
 
-    boolean UploadFunction();
+    public boolean uploadFunction() throws IOException;
 
-    String CallFunction();
+    public String CallFunction();
 }

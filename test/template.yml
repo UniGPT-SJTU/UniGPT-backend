@@ -1,0 +1,21 @@
+HcCrmTemplateVersion: v2
+Resources:
+  Type: HC::Serverless::Function
+  Properties:
+    Name: test
+    Handler: index.handler
+    Runtime: Python3.9
+    CodeType: inline
+    CodeFileName: index.zip
+    CodeUrl: ""
+    Description: ""
+    MemorySize: 128
+    Timeout: 30
+    Version: latest
+    Environment:
+      Variables: {}
+    InitializerHandler: ""
+    InitializerTimeout: 0
+    EnterpriseProjectId: "0"
+    FuncType: v2
+    URN: urn:fss:cn-east-3:040dd9f934e74b52bcb92bb1ab4c9748:function:default:test:latest

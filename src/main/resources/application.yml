@@ -19,7 +19,7 @@ spring:
     show-sql: false
   data:
     mongodb:
-      uri: mongodb://bleaves:bleaves@124.70.222.207:27017/file_db
+      uri: mongodb://bleaves:bleaves@123.60.187.205:27017/file_db
       database: file_db
 logging:
   level:
@@ -33,14 +33,14 @@ server:
       keyStoreType: PKCS12
       keyAlias: tomcat
 
-imageServerUrl: http://124.70.222.207:10339
+imageServerUrl: http://123.60.187.205:10339
 frontendServerUrl: ${FRONTEND_SERVER_URL:http://localhost:3000}
 jaccountClientId: ov3SLrO4HyZSELxcHiqS
 jaccountClientSecret: B9919DDA3BD9FBF7ADB9F84F67920D8CB6528620B9586D1C
 
 
 postgres:
-  host: ${POSTGRES_HOST:124.70.222.207}
+  host: ${POSTGRES_HOST:123.60.187.205}
   port: ${POSTGRES_PORT:5432}
   database: ${POSTGRES_DB:mydatabase}
   username: ${POSTGRES_USER:bleaves}
