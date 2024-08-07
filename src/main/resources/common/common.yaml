@@ -1,0 +1,32 @@
+HcCrmTemplateVersion: v1
+Resources:
+    test:
+        Type: HC::Serverless::Function
+        Properties:
+            Handler: index.handler
+            Runtime: Python3.9
+            CodeType: zip
+            CodeFileName: index.zip
+            CodeUrl: ""
+            Description: ""
+            MemorySize: 128
+            Timeout: 30
+            Version: latest
+            Environment:
+                Variables: {}
+                EncryptedVariables: {}
+            InitializerHandler: ""
+            InitializerTimeout: 0
+            PreStopHandler: ""
+            PreStopTimeout: 0
+            EnterpriseProjectId: "0"
+            FuncType: v2
+            CustomImage:
+                enabled: false
+                image: ""
+                command: ""
+                args: ""
+                workingdir: ""
+                uid: ""
+                gid: ""
+            CloudDebug: ""

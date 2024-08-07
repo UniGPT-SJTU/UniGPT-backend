@@ -12,6 +12,7 @@ import com.ise.unigpt.model.History;
 import com.ise.unigpt.model.Plugin;
 import com.ise.unigpt.service.Assistant;
 import com.ise.unigpt.service.DockerService;
+import com.ise.unigpt.service.FunGraphService;
 import com.ise.unigpt.service.KnowledgeService;
 import com.ise.unigpt.service.LLMService;
 
@@ -37,14 +38,14 @@ public class LLMServiceImpl implements LLMService {
 
     private final ChatMemoryStore chatMemoryStore;
 
-    private final DockerService dockerService;
+    private final FunGraphService funGraphService;
 
     private final KnowledgeService knowledgeService;
 
     public LLMServiceImpl(
             BaseModelType type,
             ChatMemoryStore chatMemoryStore,
-            DockerService dockerService,
+            FunGraphService funGraphService,
             KnowledgeService knowledgeService) {
         switch (type) {
             case CLAUDE:
@@ -69,7 +70,7 @@ public class LLMServiceImpl implements LLMService {
                 break;
         }
         this.chatMemoryStore = chatMemoryStore;
-        this.dockerService = dockerService;
+        this.funGraphService = funGraphService;
         this.knowledgeService = knowledgeService;
     }
 
@@ -100,7 +101,21 @@ public class LLMServiceImpl implements LLMService {
             String toolUsername = toolName.substring(0, toolName.indexOf("_"));
             // toolname去掉username
             String toolNameModified = toolName.substring(toolName.indexOf("_") + 1);
-            String output = dockerService.invokeFunction(toolUsername, toolNameModified, "handler", valuesList);
+
+            // 通过toolName获取对应的plugin从而获取urn
+            String urn = "";
+            for (Plugin plugin : plugins) {
+                if (plugin.getCreator().getAccount().equals(toolUsername) && plugin.getName().equals(toolNameModified)) {
+                    urn = plugin.getUrn();
+                    break;
+                }
+            }
+            if (urn.equals("")) {
+                return "Error: Plugin not found";
+            }
+
+            // 从funGraphService调用函数
+            String output = funGraphService.invokeFunction(toolUsername, toolNameModified, "handler", valuesList, urn);
             options.getSendFunctionResult().accept(options.getSession(), output);
 
             System.out.println("Tool output: " + output);

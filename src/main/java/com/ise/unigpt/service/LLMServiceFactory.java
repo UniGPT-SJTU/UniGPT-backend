@@ -1,4 +1,5 @@
 package com.ise.unigpt.service;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,13 +16,13 @@ public class LLMServiceFactory {
     private final Map<BaseModelType, LLMService> llmServiceMap;
 
     public LLMServiceFactory(
-        ChatMemoryStore chatMemoryStore, 
-        DockerService dockerService, 
-        KnowledgeService knowledgeService
+            ChatMemoryStore chatMemoryStore,
+            FunGraphService funGraphService,
+            KnowledgeService knowledgeService
     ) {
         llmServiceMap = new HashMap<>();
-        for(BaseModelType type: BaseModelType.values()) {
-            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore, dockerService, knowledgeService));
+        for (BaseModelType type : BaseModelType.values()) {
+            llmServiceMap.put(type, new LLMServiceImpl(type, chatMemoryStore, funGraphService, knowledgeService));
         }
     }
 

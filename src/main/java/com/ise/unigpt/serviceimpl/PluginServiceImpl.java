@@ -1,16 +1,28 @@
 package com.ise.unigpt.serviceimpl;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import com.huaweicloud.sdk.core.auth.BasicCredentials;
+import com.huaweicloud.sdk.core.auth.ICredential;
+import com.huaweicloud.sdk.functiongraph.v2.FunctionGraphClient;
+import com.huaweicloud.sdk.functiongraph.v2.model.ImportFunctionRequest;
+import com.huaweicloud.sdk.functiongraph.v2.model.ImportFunctionRequestBody;
+import com.huaweicloud.sdk.functiongraph.v2.model.ImportFunctionResponse;
+import com.huaweicloud.sdk.functiongraph.v2.region.FunctionGraphRegion;
 import com.ise.unigpt.dto.GetPluginsOkResponseDTO;
 import com.ise.unigpt.dto.PluginBriefInfoDTO;
 import com.ise.unigpt.dto.PluginCreateDTO;
@@ -91,7 +103,7 @@ public class PluginServiceImpl implements PluginService {
         User user = authService.getUserByToken(token);
 
         // 构建目标文件路径
-        String directoryPath = "src/main/resources/" + user.getAccount();
+        String directoryPath = "src/main/resources/" + user.getAccount() + "/" + dto.getName();
         String filePath = directoryPath + "/" + dto.getName() + ".py";
 
         // 判断文件是否存在，如果存在则抛出异常
@@ -107,8 +119,55 @@ public class PluginServiceImpl implements PluginService {
         Path file = Paths.get(filePath);
         Files.writeString(file, dto.getCode(), StandardOpenOption.CREATE);
 
-        Plugin plugin = new Plugin(dto, user, filePath);
-        pluginRepository.save(plugin);
+        // 拷贝index.py文件，index.py文件在src/main/resources/common/index.py
+        Path indexFile = Paths.get("src/main/resources/common/index.py");
+        Path targetIndexFile = Paths.get(directoryPath + "/index.py");
+        Files.copy(indexFile, targetIndexFile);
+
+        // 将index.py和name.py文件打包成zip文件
+        String zipFileName = "index" + ".zip";
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(Paths.get(zipFileName)))) {
+            addToZipFile(new File(filePath), zos);
+            addToZipFile(new File(directoryPath + "/index.py"), zos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 删除name.py文件和index.py文件
+        Files.delete(Paths.get(filePath));
+        Files.delete(Paths.get(directoryPath + "/index.py"));
+
+        // 拷贝yaml文件  yaml文件在src/main/resources/common/common.yaml， 拷贝后命名为DTO的name字段
+        Path yamlFile = Paths.get("src/main/resources/common/common.yaml");
+        Path targetYamlFile = Paths.get(directoryPath + "/" + dto.getName() + ".yaml");
+        Files.copy(yamlFile, targetYamlFile);
+
+        // 将yaml文件和index.zip文件打包成zip文件
+        String zipFileName2 = dto.getName() + ".zip";
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(Paths.get(zipFileName2)))) {
+            addToZipFile(new File(targetYamlFile.toString()), zos);
+            addToZipFile(new File(zipFileName), zos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 删除index.zip文件和yaml文件
+        Files.delete(Paths.get(zipFileName));
+        Files.delete(Paths.get(targetYamlFile.toString()));
+
+        String functionName = user.getAccount() + "_" + dto.getName();
+
+        // 上传到华为云
+        try {
+            String urn = uploadFunction(zipFileName2, functionName);
+            // 删除zip文件
+            Plugin plugin = new Plugin(dto, user, "", urn);
+            pluginRepository.save(plugin);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseDTO(false, "Upload function failed");
+        }
+
         return new ResponseDTO(true, "Create plugin successfully");
     }
 
@@ -144,5 +203,55 @@ public class PluginServiceImpl implements PluginService {
         Files.delete(Paths.get(filePath));
 
         return new ResponseDTO(isSuccess, output);
+    }
+
+    public String uploadFunction(String fileName, String functionName) throws IOException {
+
+        // zip 是根目录下test_latest.zip
+        String zipFileName = fileName;
+        File zipFile = new File(zipFileName);
+
+        // Read ZIP file content
+        byte[] zipFileContent = Files.readAllBytes(zipFile.toPath());
+
+        // Create request body
+        ImportFunctionRequestBody body = new ImportFunctionRequestBody()
+                .withFileCode(Base64.getEncoder().encodeToString(zipFileContent))
+                .withFileType("zip")
+                .withFileName(zipFileName)
+                .withFuncName(functionName);
+
+        String ak = System.getenv("HUAWEICLOUD_SDK_AK");
+        String sk = System.getenv("HUAWEICLOUD_SDK_SK");
+
+        ICredential auth = new BasicCredentials()
+                .withAk(ak)
+                .withSk(sk);
+
+        FunctionGraphClient client = FunctionGraphClient.newBuilder()
+                .withCredential(auth)
+                .withRegion(FunctionGraphRegion.valueOf("cn-east-3"))
+                .build();
+        ImportFunctionRequest request = new ImportFunctionRequest();
+
+        request.withBody(body);
+
+        ImportFunctionResponse response = client.importFunction(request);
+        System.out.println(response.toString());
+        // 返回函数的URN
+        return response.getFuncUrn();
+    }
+
+    private void addToZipFile(File file, ZipOutputStream zos) throws IOException {
+        try (var fis = Files.newInputStream(file.toPath())) {
+            ZipEntry zipEntry = new ZipEntry(file.getName());
+            zos.putNextEntry(zipEntry);
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+            zos.closeEntry();
+        }
     }
 }
